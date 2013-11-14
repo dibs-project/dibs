@@ -6,6 +6,8 @@ package de.huberlin.cms.hub;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -85,5 +87,24 @@ public class ApplicationService {
      */
     public Properties getConfig() {
         return config;
+    }
+
+    /**
+     * Gibt den Applicant mit der spezifizierten ID zurück.
+     *
+     * @param id ID des Applicants
+     * @return Applicant mit der spezifizierten ID
+     * @throws IllegalArgumentException falls die ID ungültig ist
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
+     */
+    public Applicant getApplicant(int id) throws SQLException {
+        PreparedStatement statement =
+            db.prepareStatement("SELECT * FROM onlbew.onlbew_reg WHERE reg_id=?");
+        statement.setInt(1, id);
+        ResultSet results = statement.executeQuery();
+        if (!results.next()) {
+            throw new IllegalArgumentException("invalid applicant ID");
+        }
+        return new Applicant(results);
     }
 }
