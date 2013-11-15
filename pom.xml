@@ -9,8 +9,8 @@
     <distributionManagement>
         <repository>
             <id>nexus</id>
-            <name>Internal Releases</name>
-            <url>https://emerald.cms.hu-berlin.de/nexus/content/repositories/releases</url>
+            <name>Internal Snapshots</name>
+            <url>https://emerald.cms.hu-berlin.de/nexus/content/repositories/snapshots</url>
         </repository>
     </distributionManagement>
 
