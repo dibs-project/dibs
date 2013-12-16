@@ -82,7 +82,7 @@ public class Applicant extends User {
     /**
      * Initialisiert den Applicant via Datenbankcursor.
      *
-     * @param results Datenbankzeiger, der auf eine Zeile aus onlbew_reg verweist.
+     * @param results Datenbankcursor, der auf eine Zeile aus onlbew.onlbew_reg verweist
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     Applicant(ResultSet results) throws SQLException {

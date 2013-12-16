@@ -90,6 +90,19 @@ public class ApplicationService {
     }
 
     /**
+     * Gibt die Einstellungen des Bewerbungssystems zurück.
+     *
+     * @return Einstellungen des Bewerbungssystems
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
+     */
+    public Settings getSettings() throws SQLException {
+        PreparedStatement statement = db.prepareStatement("SELECT * FROM dosv.settings");
+        ResultSet results = statement.executeQuery();
+        results.next();
+        return new Settings(results);
+    }
+
+    /**
      * Gibt den Applicant mit der spezifizierten ID zurück.
      *
      * @param id ID des Applicants
