@@ -1,8 +1,7 @@
 package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -19,9 +18,15 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 public class JournalTest {
+    static final int FIRST_RECORD_ID = 1;
+    static final ActionType ACTION_TYPE = ActionType.USER_CREATED;
+    static final ObjectType OBJECT_TYPE = ObjectType.APPLICANT;
+    static final int OBJECT_ID = 1;
+    static final int USER_ID = 2;
+    static final String DETAIL = "SessionExample";
+
     Journal journal;
     ApplicationService app;
-    List <JournalRecord> listRecord = new ArrayList<JournalRecord> ();
 
     @Before
     public void before() throws IOException, SQLException {
@@ -36,80 +41,54 @@ public class JournalTest {
             e.printStackTrace();
         }
         app = new ApplicationService(ApplicationService.openDatabase(config), config);
-        journal = new Journal();
-        journal.db = app.db;
+        journal = new Journal(app);
+    }
+
+    public boolean isEmptyList(int sizeOfList){
+        boolean result = false;
+        if(sizeOfList == 0){
+            result = true;
+        }
+        return result;
     }
 
     @Test
-    public void testRecord() throws SQLException {
+    public void testRecord() throws IOException, SQLException {
         JournalRecord record;
-        try {
-            record = journal.record(
-                    ActionType.USER_CREATED, ObjectType.APPLICANT, 2, 3, "ABCm34");
-            assertNotNull(record);
-            assertEquals("ABCm34", record.getDetail());
-            assertEquals(ActionType.USER_CREATED, record.getActionType());
-            assertEquals(ObjectType.APPLICANT, record.getObjectType());
-            assertEquals(2, record.getObjectID());
-            assertEquals(3, record.getUserID());
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    @Test
-    public void testRecordInvalidParameters() throws SQLException {
-        JournalRecord record;
-        try {
-            record = journal.record(
-                    ActionType.USER_CREATED, ObjectType.APPLICANT,0 ,0 , "ABCm34");
-            assertNotNull(record);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        record = journal.record(
+                ACTION_TYPE, OBJECT_TYPE, OBJECT_ID, USER_ID, DETAIL);
+        assertEquals(ACTION_TYPE, record.getActionType());
+        assertEquals(OBJECT_TYPE, record.getObjectType());
+        assertEquals(OBJECT_ID, record.getObjectId());
+        assertEquals(USER_ID, record.getUserId());
+        assertEquals(DETAIL, record.getDetail());
     }
 
     @Test
     public void testGetRecord() throws SQLException {
-        JournalRecord record = journal.getRecord(8);
-        assertEquals("USER_CREATED",record.actionType.toString());
-        assertEquals("ABCm34",record.detail);
+        JournalRecord record = journal.getRecord(FIRST_RECORD_ID);
+        assertEquals(ACTION_TYPE, record.actionType);
+        assertEquals(DETAIL, record.detail);
     }
 
     @Test(expected=IllegalArgumentException.class)
     public void testGetRecordInvalidId() throws SQLException {
-        JournalRecord record = journal.getRecord(9999999);
-        assertNull(record);
+        journal.getRecord(9999999);
     }
 
     @Test
-    public void testGetJournalperUserID() throws SQLException {
-        listRecord = journal.getJournal(2);
-        assertEquals(1,listRecord.size());
-        assertEquals(ActionType.USER_CREATED,listRecord.get(0).actionType);
-        assertEquals("ABCm34",listRecord.get(0).detail);
+    public void testGetJournalByUser() throws SQLException {
+        List <JournalRecord> records = new ArrayList<JournalRecord>();
+        records = journal.getJournal(USER_ID);
+        assertFalse(this.isEmptyList(records.size()));
+        assertEquals(ACTION_TYPE, records.get(0).actionType);
+        assertEquals(DETAIL, records.get(0).detail);
     }
 
     @Test
-    public void testGetJournalInvalidUserID() throws SQLException {
-        listRecord = journal.getJournal(-1);
-        assertEquals(0,listRecord.size());
+    public void testGetJournalByObject() throws SQLException {
+        List <JournalRecord> records = new ArrayList<JournalRecord>();
+        records = journal.getJournal(OBJECT_TYPE, 1);
+        assertFalse(this.isEmptyList(records.size()));
     }
-
-    @Test
-    public void testGetObject() throws SQLException {
-        listRecord = journal.getJournal(ObjectType.APPLICANT, 78);
-        assertEquals(1,listRecord.size());
-        assertEquals(ActionType.USER_CREATED,listRecord.get(0).actionType);
-        assertEquals("Session_ID 234Bjkllfa",listRecord.get(0).detail);
-    }
-
-    @Test
-    public void testGetObjectInvalidObjectID() throws SQLException {
-        listRecord = journal.getJournal(ObjectType.COURSE, -1);
-        assertEquals(0,listRecord.size());
-    }
-
 }

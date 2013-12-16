@@ -5,47 +5,43 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 public class JournalRecord {
-    int record_id;
+    int id;
+
+    /**
+     * Typ der Aktion
+     *
+     */
     enum ActionType {
-        /* Stammdaten aktualisieren */
-        USER_PROFILE_UPDATE,
-        /* Bewerbungsstatus ändern */
-        APLICATION_STATUS_EDITED,
-        /* Bewerber erstellen */
+        /** Bewerber erstellen */
         USER_CREATED;
     };
 
+    /**
+     * Typ des Objekts
+     *
+     */
     enum ObjectType {
-        /* Bewerber */
-        APPLICANT,
-        /* Bewerbung */
-        APPLICATION,
-        /* Studienangebot*/
-        COURSE;
+        /** Bewerber */
+        APPLICANT
     };
 
     ActionType actionType;
     ObjectType objectType;
-    int objectID;
-    int userID;
+    int objectId;
+    int userId;
     Timestamp timestamp;
     String detail;
 
     /**
-     * Initialisiert den JournalRecord
-     * @param actionTypeID
-     * @param detail
-     * @param objectID
-     * @param objectTypeID
-     * @param userID
+     * Initialisiert den JournalRecord.
      */
-    public JournalRecord(int record_id, ActionType actionType, ObjectType objectType, 
-            int objectID, int userID, Timestamp timestamp, String detail) {
-        this.record_id = record_id;
+    public JournalRecord(int id, ActionType actionType, ObjectType objectType,
+            int objectId, int userId, Timestamp timestamp, String detail) {
+        this.id = id;
         this.actionType = actionType;
         this.objectType = objectType;
-        this.objectID = objectID;
-        this.userID = userID;
+        this.objectId = objectId;
+        this.userId = userId;
         this.detail = detail;
         this.timestamp = timestamp;
     }
@@ -53,12 +49,12 @@ public class JournalRecord {
     /**
      * Initialisiert den JournalRecord via Datenbankcursor.
      *
-     * @param results Datenbankzeiger, der auf eine Zeile aus onlbew_reg verweist.
+     * @param results Datenbankzeiger, der auf eine Zeile aus journal_record verweist.
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     public JournalRecord(ResultSet results) throws SQLException {
         this(
-            results.getInt("record_id"),
+            results.getInt("id"),
             ActionType.valueOf((results.getString("action_type"))),
             ObjectType.valueOf((results.getString("object_type"))),
             results.getInt("object_id"),
@@ -68,22 +64,37 @@ public class JournalRecord {
             );
     }
 
-    public int getObjectID() {
-        return this.objectID;
-    }
-
+    /**
+     * Typ der Aktion
+     */
     public ActionType getActionType() {
         return this.actionType;
     }
 
+    /**
+     * Typ des Objekts
+     */
     public ObjectType getObjectType() {
         return this.objectType;
     }
 
-    public int getUserID() {
-        return this.userID;
+    /**
+     * ID des Objekts
+     */
+    public int getObjectId() {
+        return this.objectId;
     }
 
+    /**
+     * ID des Nutzers
+     */
+    public int getUserId() {
+        return this.userId;
+    }
+
+    /**
+     * Beschreibung des Eintrages
+     */
     public String getDetail() {
         return this.detail;
     }
