@@ -10,6 +10,11 @@ import org.junit.Test;
 
 public class ApplicationServiceTest extends HubTest {
     @Test
+    public void testGetSettings() throws SQLException {
+        service.getSettings();
+    }
+
+    @Test
     public void testGetApplicant() throws SQLException {
         service.getApplicant(APPLICANT_ID);
     }
