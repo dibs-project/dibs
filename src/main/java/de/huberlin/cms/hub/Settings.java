@@ -10,20 +10,22 @@ import java.util.Date;
 
 /**
  * Einstellungen und globale Daten des Bewerbungssystems.
+ *
+ * @author pfallers
  */
 public class Settings {
     String semester;
-    Date dosvUsersUpdated;
-    Date dosvApplicationsUpdated;
+    Date dosvApplicantsUpdateTime;
+    Date dosvApplicationsUpdateTime;
 
     /**
      * Initialisiert die Settings.
      */
-    public Settings(String semester, Date dosvUsersUpdated,
-            Date dosvApplicationsUpdated) {
+    public Settings(String semester, Date dosvApplicantsUpdateTime,
+            Date dosvApplicationsUpdateTime) {
         this.semester = semester;
-        this.dosvUsersUpdated = dosvUsersUpdated;
-        this.dosvApplicationsUpdated = dosvApplicationsUpdated;
+        this.dosvApplicantsUpdateTime = dosvApplicantsUpdateTime;
+        this.dosvApplicationsUpdateTime = dosvApplicationsUpdateTime;
     }
 
     /**
@@ -33,8 +35,9 @@ public class Settings {
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     Settings(ResultSet results) throws SQLException {
-        this(results.getString("semester"), results.getDate("dosv_users_updated"),
-            results.getDate("dosv_applications_updated"));
+        this(results.getString("semester"),
+            results.getDate("dosv_applicants_update_time"),
+            results.getDate("dosv_applications_update_time"));
     }
 
     /**
