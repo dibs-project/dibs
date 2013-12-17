@@ -18,4 +18,5 @@ public class ApplicationServiceTest extends HubTest {
     public void testGetApplicantInvalidId() throws SQLException {
         service.getApplicant(9999999);
     }
+
 }

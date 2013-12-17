@@ -24,6 +24,11 @@ public class HubTest {
      * ID eines allgemeinen Bewerbers.
      */
     public final static int APPLICANT_ID = 100;
+    
+    /**
+     * ID eines Record.
+     */
+    public final static int RECORD_ID = 1;
 
     /**
      * Bewerbungssystem zum Testen.

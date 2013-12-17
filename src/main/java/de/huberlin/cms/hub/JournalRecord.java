@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 public class JournalRecord {
-    int id;
 
     /**
      * Typ der Aktion
@@ -25,25 +24,26 @@ public class JournalRecord {
         APPLICANT
     };
 
+    int id;
     ActionType actionType;
     ObjectType objectType;
     int objectId;
     int userId;
-    Timestamp timestamp;
+    Timestamp time;
     String detail;
 
     /**
      * Initialisiert den JournalRecord.
      */
     public JournalRecord(int id, ActionType actionType, ObjectType objectType,
-            int objectId, int userId, Timestamp timestamp, String detail) {
+            int objectId, int userId, String detail, Timestamp time) {
         this.id = id;
         this.actionType = actionType;
         this.objectType = objectType;
         this.objectId = objectId;
         this.userId = userId;
         this.detail = detail;
-        this.timestamp = timestamp;
+        this.time = time;
     }
 
     /**
@@ -59,9 +59,16 @@ public class JournalRecord {
             ObjectType.valueOf((results.getString("object_type"))),
             results.getInt("object_id"),
             results.getInt("user_id"),
-            results.getTimestamp("timestamp"),
-            results.getString("detail")
-            );
+            results.getString("detail"),
+            results.getTimestamp("time")
+        );
+    }
+
+    /**
+     * ID
+     */
+    public int getId() {
+        return this.id;
     }
 
     /**

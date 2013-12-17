@@ -27,6 +27,7 @@ public class JournalTest {
 
     Journal journal;
     ApplicationService app;
+    JournalRecord first_record;
 
     @Before
     public void before() throws IOException, SQLException {
@@ -42,6 +43,8 @@ public class JournalTest {
         }
         app = new ApplicationService(ApplicationService.openDatabase(config), config);
         journal = new Journal(app);
+        first_record = journal.record(ACTION_TYPE, OBJECT_TYPE, OBJECT_ID, USER_ID,
+            DETAIL);
     }
 
     public boolean isEmptyList(int sizeOfList){
@@ -66,7 +69,7 @@ public class JournalTest {
 
     @Test
     public void testGetRecord() throws SQLException {
-        JournalRecord record = journal.getRecord(FIRST_RECORD_ID);
+        JournalRecord record = journal.getRecord(this.first_record.getId());
         assertEquals(ACTION_TYPE, record.actionType);
         assertEquals(DETAIL, record.detail);
     }

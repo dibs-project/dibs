@@ -41,7 +41,7 @@ public class Journal {
             // TODO: Parameter überprüfen
             String SQL =
                 "INSERT INTO dosv.journal_record ("
-                + "action_type, object_type, object_id, user_id,timestamp, detail) "
+                + "action_type, object_type, object_id, user_id, detail, time) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
 
             PreparedStatement statement =
@@ -50,10 +50,10 @@ public class Journal {
             statement.setString(2, objectType.toString());
             statement.setInt(3, objectId);
             statement.setInt(4, userId);
+            statement.setString(5, detail);
             java.util.Date date = new java.util.Date();
-            Timestamp timestamp = new Timestamp(date.getTime());
-            statement.setTimestamp(5, timestamp);
-            statement.setString(6, detail);
+            Timestamp time = new Timestamp(date.getTime());
+            statement.setTimestamp(6, time);
             statement.executeUpdate();
 
             ResultSet results = statement.getGeneratedKeys();

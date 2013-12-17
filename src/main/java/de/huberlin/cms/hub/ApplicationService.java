@@ -120,4 +120,13 @@ public class ApplicationService {
         }
         return new Applicant(results);
     }
+
+    /**
+     * Gibt das Logbuch.
+     *
+     * @return Journal
+     */
+    public Journal getJournal() {
+        return new Journal(this);
+    }
 }
