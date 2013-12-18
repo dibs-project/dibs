@@ -1,5 +1,6 @@
 package de.huberlin.cms.hub;
 
+import java.io.IOError;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,7 +37,7 @@ public class Journal {
      * @throws SQLException
      */
     public JournalRecord record(ActionType actionType, ObjectType objectType,
-            int objectId, int userId, String detail) throws IOException, SQLException {
+            int objectId, int userId, String detail) {
         try {
             // TODO: Parameter überprüfen
             String SQL =
@@ -57,18 +58,15 @@ public class Journal {
             statement.executeUpdate();
 
             ResultSet results = statement.getGeneratedKeys();
-            if (results.next()) {
-                int id = results.getInt("id");
-                JournalRecord record = getRecord(id);
-                this.db.commit();
-                return record;
-            }else {
-                throw new IllegalArgumentException("invalid ID");
-            }
+            results.next();
+            int id = results.getInt("id");
+            JournalRecord record = getRecord(id);
+            this.db.commit();
+            return record;
         } catch (SQLException e) {
-            this.db.rollback();
-            throw new IOException(e);
+            throw new IOError(e);
         }
+
     }
 
     /**
