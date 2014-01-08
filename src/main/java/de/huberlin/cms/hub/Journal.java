@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2013  HU Berlin
+ */
+
 package de.huberlin.cms.hub;
 
 import java.io.IOError;
@@ -38,35 +42,36 @@ public class Journal {
      */
     public JournalRecord record(ActionType actionType, ObjectType objectType,
             int objectId, int userId, String detail) {
-        try {
-            // TODO: Parameter überprüfen
-            String SQL =
-                "INSERT INTO dosv.journal_record ("
-                + "action_type, object_type, object_id, user_id, detail, time) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
+        java.util.Date date = new java.util.Date();
+        Timestamp time = new Timestamp(date.getTime());
 
-            PreparedStatement statement =
-                service.db.prepareStatement(SQL, PreparedStatement.RETURN_GENERATED_KEYS);
-            statement.setString(1, actionType.toString());
-            statement.setString(2, objectType.toString());
-            statement.setInt(3, objectId);
-            statement.setInt(4, userId);
-            statement.setString(5, detail);
-            java.util.Date date = new java.util.Date();
-            Timestamp time = new Timestamp(date.getTime());
-            statement.setTimestamp(6, time);
-            statement.executeUpdate();
+        if (actionType == null || time == null || objectId < 0 || userId < 0){
+            throw new IllegalArgumentException("invalid Action Type");
+        } else {
+            try {
+                // TODO: Parameter überprüfen
+                String SQL =
+                    "INSERT INTO dosv.journal_record ("
+                    + "action_type, object_type, object_id, user_id, detail, time) "
+                    + "VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
 
-            ResultSet results = statement.getGeneratedKeys();
-            results.next();
-            int id = results.getInt("id");
-            JournalRecord record = getRecord(id);
-            this.db.commit();
-            return record;
-        } catch (SQLException e) {
-            throw new IOError(e);
+                PreparedStatement statement = service.db.prepareStatement(SQL);
+                statement.setString(1, actionType.toString());
+                statement.setString(2, objectType == null ? null : objectType.toString());
+                statement.setInt(3, objectId);
+                statement.setInt(4, userId);
+                statement.setString(5, detail);
+                statement.setTimestamp(6, time);
+                ResultSet results = statement.executeQuery();
+                results.next();
+                int id = results.getInt("id");
+                JournalRecord record = getRecord(id);
+                this.db.commit();
+                return record;
+            } catch (SQLException e) {
+                throw new IOError(e);
+            }
         }
-
     }
 
     /**

@@ -1,9 +1,18 @@
+/*
+ * Copyright (C) 2013  HU Berlin
+ */
+
 package de.huberlin.cms.hub;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+/**
+ * JournalRecord Klasse - Eintrag des Logsbuch
+ * @author haphuong
+ *
+ */
 public class JournalRecord {
 
     /**
@@ -56,7 +65,8 @@ public class JournalRecord {
         this(
             results.getInt("id"),
             ActionType.valueOf((results.getString("action_type"))),
-            ObjectType.valueOf((results.getString("object_type"))),
+            results.getString("object_type") == null ? null :
+                ObjectType.valueOf(results.getString("object_type")),
             results.getInt("object_id"),
             results.getInt("user_id"),
             results.getString("detail"),

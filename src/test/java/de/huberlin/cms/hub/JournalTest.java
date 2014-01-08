@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2013  HU Berlin
+ */
+
 package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
@@ -15,7 +19,6 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 public class JournalTest extends HubTest{
-    static final int FIRST_RECORD_ID = 1;
     static final ActionType ACTION_TYPE = ActionType.USER_CREATED;
     static final ObjectType OBJECT_TYPE = ObjectType.APPLICANT;
     static final int OBJECT_ID = 1;
@@ -24,6 +27,7 @@ public class JournalTest extends HubTest{
 
     Journal journal;
     JournalRecord first_record;
+    JournalRecord record_empty_action_type;
 
     @Before
     public void before() throws IOException, SQLException {
@@ -48,6 +52,29 @@ public class JournalTest extends HubTest{
         assertEquals(OBJECT_ID, first_record.getObjectId());
         assertEquals(USER_ID, first_record.getUserId());
         assertEquals(DETAIL, first_record.getDetail());
+    }
+
+    @Test
+    public void testRecordNoObject(){
+        journal.record(ACTION_TYPE, null, 0, USER_ID, DETAIL);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testRecordNullActionType() {
+        this.record_empty_action_type = journal.record(null, OBJECT_TYPE, OBJECT_ID,
+            USER_ID, DETAIL);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testRecordInvalidObjectId() {
+        this.record_empty_action_type = journal.record(ACTION_TYPE, OBJECT_TYPE, -1,
+            USER_ID, DETAIL);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testRecordInvalidUserId() {
+        this.record_empty_action_type = journal.record(ACTION_TYPE, OBJECT_TYPE, 0, -1,
+            DETAIL);
     }
 
     @Test
