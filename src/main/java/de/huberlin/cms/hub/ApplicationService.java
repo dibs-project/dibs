@@ -4,6 +4,7 @@
 
 package de.huberlin.cms.hub;
 
+import java.io.IOError;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -65,6 +66,18 @@ public class ApplicationService {
         defaults.setProperty("dosv_password", "");
         this.config = new Properties(defaults);
         this.config.putAll(config);
+    }
+
+    public void setSemester(String semester) {
+        try {
+            PreparedStatement statement =
+                db.prepareStatement("UPDATE dosv.settings SET semester = ?");
+            statement.setString(1, semester);
+            statement.executeUpdate();
+            db.commit();
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
     /**
