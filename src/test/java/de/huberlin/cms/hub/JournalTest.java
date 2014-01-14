@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2013  HU Berlin
+ * HUB
+ * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
 package de.huberlin.cms.hub;
@@ -28,6 +29,7 @@ public class JournalTest extends HubTest{
     Journal journal;
     JournalRecord first_record;
     JournalRecord record_empty_action_type;
+    JournalRecord empty_detail;
 
     @Before
     public void before() throws IOException, SQLException {
@@ -52,6 +54,12 @@ public class JournalTest extends HubTest{
         assertEquals(OBJECT_ID, first_record.getObjectId());
         assertEquals(USER_ID, first_record.getUserId());
         assertEquals(DETAIL, first_record.getDetail());
+    }
+    
+    @Test
+    public void testRecordEmptyDetail(){
+        this.empty_detail = journal.record(ACTION_TYPE, null, 0, 0, null);
+        System.out.println(empty_detail.getDetail());
     }
 
     @Test
@@ -86,7 +94,7 @@ public class JournalTest extends HubTest{
 
     @Test(expected=IllegalArgumentException.class)
     public void testGetRecordInvalidId() throws SQLException {
-        journal.getRecord(9999999);
+        journal.getRecord(99999);
     }
 
     @Test
@@ -97,11 +105,31 @@ public class JournalTest extends HubTest{
         assertEquals(ACTION_TYPE, records.get(0).actionType);
         assertEquals(DETAIL, records.get(0).detail);
     }
+    
+    @Test
+    public void testGetJournalByUser0() throws SQLException {
+        List <JournalRecord> records = new ArrayList<JournalRecord>();
+        records = journal.getJournal(0);
+        System.out.println(records.size());
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testGetJournalByInvalidUser() throws SQLException {
+        List <JournalRecord> records = new ArrayList<JournalRecord>();
+        records = journal.getJournal(-1);
+    }
 
     @Test
     public void testGetJournalByObject() throws SQLException {
         List <JournalRecord> records = new ArrayList<JournalRecord>();
         records = journal.getJournal(OBJECT_TYPE, 1);
         assertFalse(this.isEmptyList(records.size()));
+    }
+    
+    @Test
+    public void testGetJournalByNoObject() throws SQLException {
+        List <JournalRecord> records = new ArrayList<JournalRecord>();
+        records = journal.getJournal(null, 0);
+        System.out.println(records.size());
     }
 }

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2013  HU Berlin
+ * HUB
+ * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
 package de.huberlin.cms.hub;
@@ -17,7 +18,11 @@ import java.util.List;
 import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
-
+/**
+ * Journal Klasse - Logsbuch
+ * @author haphuong
+ *
+ */
 public class Journal {
     public List<JournalRecord> journal = new ArrayList <JournalRecord>();
     ApplicationService service;
@@ -31,9 +36,9 @@ public class Journal {
     /**
      * Schreibt einen Eintrag ins Logbuch.
      *
-     * @param actionType Typ der Aktion
-     * @param objectType Typ des Objekts
-     * @param objectId ID des Objekts
+     * @param actionType Typ der Aktion, das nicht null sein darf.
+     * @param objectType Typ des Objekts, Null-Wert für Global-Object
+     * @param objectId ID des Objekts, 0 für Global-Object
      * @param userId ID des Nutzers
      * @param detail  Beschreibung des Eintrags
      * @return JournalRecord der Eintrag
@@ -49,7 +54,6 @@ public class Journal {
             throw new IllegalArgumentException("invalid Action Type");
         } else {
             try {
-                // TODO: Parameter überprüfen
                 String SQL =
                     "INSERT INTO dosv.journal_record ("
                     + "action_type, object_type, object_id, user_id, detail, time) "
@@ -82,14 +86,18 @@ public class Journal {
      * @throws SQLException
      */
     public JournalRecord getRecord(int id) throws SQLException {
-        PreparedStatement statement =
-            this.db.prepareStatement("SELECT * FROM dosv.journal_record WHERE id=?");
-        statement.setInt(1, id);
-        ResultSet results = statement.executeQuery();
-        if (!results.next()) {
-            throw new IllegalArgumentException("invalid ID");
+        if (id < 0) {
+            throw new IllegalArgumentException("invalid Id");
+        } else {
+            PreparedStatement statement =
+                this.db.prepareStatement("SELECT * FROM dosv.journal_record WHERE id=?");
+            statement.setInt(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException("invalid ID");
+            }
+            return new JournalRecord(results);
         }
-        return new JournalRecord(results);
     }
 
     /**
@@ -102,16 +110,26 @@ public class Journal {
      */
     public List<JournalRecord> getJournal(ObjectType objectType, int objectId) throws
             SQLException {
-        PreparedStatement statement =
-            this.db.prepareStatement("SELECT * FROM dosv.journal_record WHERE "
-                    + "object_type=? AND object_id=?");
-        statement.setString(1, objectType.toString());
-        statement.setInt(2, objectId);
-        ResultSet results = statement.executeQuery();
-        while(results.next()) {
-            journal.add(new JournalRecord(results));
+        String sql;
+        if(objectId < 0) {
+            throw new IllegalArgumentException("invalid objectId");
+        } else {
+            if(objectType == null) {
+            sql = "SELECT * FROM dosv.journal_record WHERE object_type IS NULL AND "
+                    + "object_id=?";
+            } else {
+                sql = "SELECT * FROM dosv.journal_record WHERE object_type = '"+ objectType
+                    + "' AND object_id=?";
+            }
+            PreparedStatement statement = this.db.prepareStatement(sql);
+            statement.setInt(1, objectId);
+            System.out.println(statement);
+            ResultSet results = statement.executeQuery();
+            while(results.next()) {
+                journal.add(new JournalRecord(results));
+            }
+            return journal;
         }
-        return journal;
     }
 
     /**
@@ -122,13 +140,19 @@ public class Journal {
      * @throws SQLException
      */
     public List<JournalRecord> getJournal(int userId) throws SQLException {
-        PreparedStatement statement =
-            this.db.prepareStatement("SELECT * FROM dosv.journal_record WHERE user_id=?");
-        statement.setInt(1, userId);
-        ResultSet results = statement.executeQuery();
-        while(results.next()) {
-            journal.add(new JournalRecord(results));
+         if (userId == 0 || userId > 0){
+            PreparedStatement statement = this.db.prepareStatement("SELECT * FROM "
+                + "dosv.journal_record WHERE user_id=?");
+            
+            statement.setInt(1, userId);
+            ResultSet results = statement.executeQuery();
+            System.out.println(statement);
+            while(results.next()) {
+                journal.add(new JournalRecord(results));
+            }
+            return journal;
+        } else {
+            throw new IllegalArgumentException("invalid userId");
         }
-        return journal;
     }
 }

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2013  HU Berlin
+ * HUB
+ * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
 package de.huberlin.cms.hub;
@@ -21,7 +22,10 @@ public class JournalRecord {
      */
     enum ActionType {
         /** Bewerber erstellen */
-        USER_CREATED;
+        USER_CREATED,
+        PROFILES_UPDATED,
+        PROFILES_UPDATE_FAILED,
+        USER_EDITED;
     };
 
     /**
