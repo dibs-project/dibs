@@ -110,22 +110,21 @@ public class Journal {
      */
     public List<JournalRecord> getJournal(ObjectType objectType, int objectId) throws
             SQLException {
-        String sql;
-        if(objectId < 0) {
+        String SQL;
+        if (objectId < 0) {
             throw new IllegalArgumentException("invalid objectId");
         } else {
-            if(objectType == null) {
-            sql = "SELECT * FROM dosv.journal_record WHERE object_type IS NULL AND "
+            if (objectType == null) {
+                SQL = "SELECT * FROM dosv.journal_record WHERE object_type IS NULL AND "
                     + "object_id=?";
             } else {
-                sql = "SELECT * FROM dosv.journal_record WHERE object_type = '"+ objectType
-                    + "' AND object_id=?";
+                SQL = "SELECT * FROM dosv.journal_record WHERE object_type = '" +
+                    objectType + "' AND object_id=?";
             }
-            PreparedStatement statement = this.db.prepareStatement(sql);
+            PreparedStatement statement = this.db.prepareStatement(SQL);
             statement.setInt(1, objectId);
-            System.out.println(statement);
             ResultSet results = statement.executeQuery();
-            while(results.next()) {
+            while (results.next()) {
                 journal.add(new JournalRecord(results));
             }
             return journal;
@@ -140,14 +139,12 @@ public class Journal {
      * @throws SQLException
      */
     public List<JournalRecord> getJournal(int userId) throws SQLException {
-         if (userId == 0 || userId > 0){
+         if (userId == 0 || userId > 0) {
             PreparedStatement statement = this.db.prepareStatement("SELECT * FROM "
                 + "dosv.journal_record WHERE user_id=?");
-            
             statement.setInt(1, userId);
             ResultSet results = statement.executeQuery();
-            System.out.println(statement);
-            while(results.next()) {
+            while (results.next()) {
                 journal.add(new JournalRecord(results));
             }
             return journal;
