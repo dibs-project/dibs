@@ -59,7 +59,7 @@ public class JournalTest extends HubTest{
     @Test
     public void testRecordEmptyDetail(){
         this.empty_detail = journal.record(ACTION_TYPE, null, 0, 0, null);
-        System.out.println(empty_detail.getDetail());
+        assertEquals(null, empty_detail.getDetail());
     }
 
     @Test
@@ -110,7 +110,6 @@ public class JournalTest extends HubTest{
     public void testGetJournalByUser0() throws SQLException {
         List <JournalRecord> records = new ArrayList<JournalRecord>();
         records = journal.getJournal(0);
-        System.out.println(records.size());
     }
 
     @Test(expected=IllegalArgumentException.class)
@@ -130,6 +129,5 @@ public class JournalTest extends HubTest{
     public void testGetJournalByNoObject() throws SQLException {
         List <JournalRecord> records = new ArrayList<JournalRecord>();
         records = journal.getJournal(null, 0);
-        System.out.println(records.size());
     }
 }

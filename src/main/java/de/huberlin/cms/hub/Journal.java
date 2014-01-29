@@ -20,8 +20,8 @@ import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
  * Journal Klasse - Logsbuch
- * @author haphuong
  *
+ * @author haphuong
  */
 public class Journal {
     public List<JournalRecord> journal = new ArrayList <JournalRecord>();
