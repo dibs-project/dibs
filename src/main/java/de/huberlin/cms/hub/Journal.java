@@ -37,8 +37,8 @@ public class Journal {
      * Schreibt einen Eintrag ins Logbuch.
      *
      * @param actionType Typ der Aktion, das nicht null sein darf.
-     * @param objectType Typ des Objekts, Null-Wert für Global-Object
-     * @param objectId ID des Objekts, 0 für Global-Object
+     * @param objectType Typ des Objekts
+     * @param objectId ID des Objekts
      * @param userId ID des Nutzers
      * @param detail  Beschreibung des Eintrags
      * @return JournalRecord der Eintrag

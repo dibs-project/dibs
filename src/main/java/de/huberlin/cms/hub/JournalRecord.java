@@ -11,8 +11,8 @@ import java.sql.Timestamp;
 
 /**
  * JournalRecord Klasse - Eintrag des Logsbuch
+ * 
  * @author haphuong
- *
  */
 public class JournalRecord {
 
@@ -22,10 +22,7 @@ public class JournalRecord {
      */
     enum ActionType {
         /** Bewerber erstellen */
-        USER_CREATED,
-        PROFILES_UPDATED,
-        PROFILES_UPDATE_FAILED,
-        USER_EDITED;
+        USER_CREATED
     };
 
     /**
@@ -62,7 +59,7 @@ public class JournalRecord {
     /**
      * Initialisiert den JournalRecord via Datenbankcursor.
      *
-     * @param results Datenbankzeiger, der auf eine Zeile aus journal_record verweist.
+     * @param results Datenbankzeiger, der auf eine Zeile aus dosv.journal_record verweist.
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     public JournalRecord(ResultSet results) throws SQLException {
