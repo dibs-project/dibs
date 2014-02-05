@@ -39,9 +39,20 @@ public class ApplicationServiceTest {
     }
 
     @Test
+    public void testSetSemester() throws SQLException {
+        String semester = "2222SS";
+        service.setSemester(semester);
+        assertEquals(semester, service.getSettings().getSemester());
+    }
+
+    @Test
+    public void testGetSettings() throws SQLException {
+        service.getSettings();
+    }
+
+    @Test
     public void testGetApplicant() throws SQLException {
-        Applicant applicant = service.getApplicant(55000);
-        assertEquals("Lovelace", applicant.surname);
+        service.getApplicant(100);
     }
 
     @Test(expected=IllegalArgumentException.class)
