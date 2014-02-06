@@ -20,7 +20,7 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
- * Test der Klasse Journal
+ * Test der Klasse Journal.
  *
  * @author haphuong
  */
@@ -38,7 +38,7 @@ public class JournalTest extends HubTest{
 
     @Before
     public void before() throws IOException, SQLException {
-        super.before();
+        super.commonBefore();
         this.journal = new Journal(this.service);
         this.first_record = journal.record(ACTION_TYPE, OBJECT_TYPE, OBJECT_ID, USER_ID,
             DETAIL);

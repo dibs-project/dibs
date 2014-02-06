@@ -19,7 +19,7 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
- * Journal Klasse - Logsbuch
+ * Journal Klasse - Logsbuch.
  *
  * @author haphuong
  */
@@ -37,11 +37,11 @@ public class Journal {
      * Schreibt einen Eintrag ins Logbuch.
      *
      * @param actionType Typ der Aktion, das nicht null sein darf.
-     * @param objectType Typ des Objekts
-     * @param objectId ID des Objekts
-     * @param userId ID des Nutzers
-     * @param detail  Beschreibung des Eintrags
-     * @return JournalRecord der Eintrag
+     * @param objectType Typ des Objekts.
+     * @param objectId ID des Objekts.
+     * @param userId ID des Nutzers.
+     * @param detail  Beschreibung des Eintrags.
+     * @return JournalRecord der Eintrag.
      * @throws IOException
      * @throws SQLException
      */
@@ -81,8 +81,8 @@ public class Journal {
     /**
      * Gibt den Eintrag mit der spezifizierten ID zurück.
      *
-     * @param id ID des Eintrages
-     * @return JournalRecord der Eintrag
+     * @param id ID des Eintrages.
+     * @return JournalRecord der Eintrag.
      * @throws SQLException
      */
     public JournalRecord getRecord(int id) throws SQLException {
@@ -103,9 +103,9 @@ public class Journal {
     /**
      * Gibt alle Einträge mit dem spezifizierten Typ und der ID eines Objekts zurück.
      *
-     * @param objectType Typ des Objekts
-     * @param objectId ID des Objekts
-     * @return List<JournalRecord> Liste der Einträgen
+     * @param objectType Typ des Objekts.
+     * @param objectId ID des Objekts.
+     * @return List<JournalRecord> Liste der Einträgen.
      * @throws SQLException
      */
     public List<JournalRecord> getJournal(ObjectType objectType, int objectId) throws
@@ -134,8 +134,8 @@ public class Journal {
     /**
      * Gibt alle Einträge mit der Nutzer-ID zurück.
      *
-     * @param userId ID des Nutzers
-     * @return List<JournalRecord> Liste der Einträgen
+     * @param userId ID des Nutzers.
+     * @return List<JournalRecord> Liste der Einträgen.
      * @throws SQLException
      */
     public List<JournalRecord> getJournal(int userId) throws SQLException {
