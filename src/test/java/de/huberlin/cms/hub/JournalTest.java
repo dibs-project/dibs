@@ -19,6 +19,11 @@ import org.junit.Test;
 import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
+/**
+ * Test der Klasse Journal
+ *
+ * @author haphuong
+ */
 public class JournalTest extends HubTest{
     static final ActionType ACTION_TYPE = ActionType.USER_CREATED;
     static final ObjectType OBJECT_TYPE = ObjectType.APPLICANT;
@@ -55,7 +60,7 @@ public class JournalTest extends HubTest{
         assertEquals(USER_ID, first_record.getUserId());
         assertEquals(DETAIL, first_record.getDetail());
     }
-    
+
     @Test
     public void testRecordEmptyDetail(){
         this.empty_detail = journal.record(ACTION_TYPE, null, 0, 0, null);
@@ -124,7 +129,7 @@ public class JournalTest extends HubTest{
         records = journal.getJournal(OBJECT_TYPE, 1);
         assertFalse(this.isEmptyList(records.size()));
     }
-    
+
     @Test
     public void testGetJournalByNoObject() throws SQLException {
         List <JournalRecord> records = new ArrayList<JournalRecord>();
