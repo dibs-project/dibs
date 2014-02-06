@@ -36,7 +36,7 @@ public class HubTest {
     protected ApplicationService service;
 
     @Before
-    public void before() throws IOException, SQLException {
+    public void commonBefore() throws IOException, SQLException {
         Properties config = new Properties();
         try {
             config.load(new FileInputStream("hub.properties"));
