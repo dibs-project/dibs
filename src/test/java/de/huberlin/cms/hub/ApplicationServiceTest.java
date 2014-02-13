@@ -1,5 +1,6 @@
 /*
  * HUB
+ * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
 package de.huberlin.cms.hub;
@@ -12,20 +13,15 @@ import org.junit.Test;
 
 public class ApplicationServiceTest extends HubTest {
     @Test
-    public void testSetSemester() throws SQLException {
+    public void testSetSemester() {
         String semester = "2222SS";
         service.setSemester(semester);
         assertEquals(semester, service.getSettings().getSemester());
     }
 
     @Test
-    public void testGetSettings() throws SQLException {
+    public void testGetSettings() {
         service.getSettings();
-    }
-
-    @Test
-    public void testGetApplicant() throws SQLException {
-        service.getApplicant(APPLICANT_ID);
     }
 
     @Test(expected=IllegalArgumentException.class)
