@@ -9,9 +9,11 @@ import static org.junit.Assume.assumeTrue;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.Before;
 
 /**
@@ -24,6 +26,11 @@ public class HubTest {
      * ID eines allgemeinen Bewerbers.
      */
     public final static int APPLICANT_ID = 100;
+
+    /**
+     * Verwendete Datenbankverbindung.
+     */
+    protected Connection db;
 
     /**
      * Bewerbungssystem zum Testen.
@@ -39,6 +46,15 @@ public class HubTest {
             // skip the tests
             assumeTrue(false);
         }
-        service = new ApplicationService(ApplicationService.openDatabase(config), config);
+
+        this.db = ApplicationService.openDatabase(config);
+        service = new ApplicationService(this.db, config);
+    }
+
+    @After
+    public void commonAfter() throws SQLException {
+        if (this.db != null) {
+            this.db.close();
+        }
     }
 }
