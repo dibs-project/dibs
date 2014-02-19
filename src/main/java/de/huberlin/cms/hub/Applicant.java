@@ -184,7 +184,7 @@ public class Applicant extends User {
     /**
      * Hat der Benutzer ein DoSV-Konto?
      */
-    public boolean getDosv() {
+    public boolean isDosv() {
         return dosv;
     }
 
