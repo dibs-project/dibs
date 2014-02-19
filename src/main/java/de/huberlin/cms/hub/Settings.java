@@ -60,7 +60,7 @@ public class Settings {
      */
     Settings(ResultSet results) throws SQLException {
         this(results.getString("semester"),
-            results.getDate("dosv_applicants_update_time"),
-            results.getDate("dosv_applications_update_time"));
+            results.getTimestamp("dosv_applicants_update_time"),
+            results.getTimestamp("dosv_applications_update_time"));
     }
 }
