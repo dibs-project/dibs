@@ -22,7 +22,7 @@ import org.junit.Before;
  * Aufräumen) der Testumgebung. Für Tests werden eine Datenbankverbindung, das
  * Bewerbungssystem und ein allgemeiner Bewerber bereitgestellt.
  * <p>
- * Die Konfiguration der Datenbank und des Bewerbungssystems werden aus der Datei
+ * Die Konfiguration der Datenbank und des Bewerbungssystems wird aus der Datei
  * <code>hub.properties</code> gelesen.
  *
  * @author pfallers
