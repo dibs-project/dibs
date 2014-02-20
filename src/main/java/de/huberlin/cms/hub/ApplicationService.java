@@ -4,6 +4,7 @@
 
 package de.huberlin.cms.hub;
 
+import java.io.IOError;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -68,6 +69,24 @@ public class ApplicationService {
     }
 
     /**
+     * Stellt das aktuelle Semester für das Bewerbungssystem ein.
+     *
+     * @param semester Neue aktuelle Semester.
+     * @see Settings#getSemester()
+     */
+    public void setSemester(String semester) {
+        try {
+            PreparedStatement statement =
+                db.prepareStatement("UPDATE dosv.settings SET semester = ?");
+            statement.setString(1, semester);
+            statement.executeUpdate();
+            db.commit();
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
      * Verwendete Datenbankverbindung.
      */
     public Connection getDb() {
@@ -93,13 +112,17 @@ public class ApplicationService {
      * Gibt die Einstellungen des Bewerbungssystems zurück.
      *
      * @return Einstellungen des Bewerbungssystems
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
-    public Settings getSettings() throws SQLException {
-        PreparedStatement statement = db.prepareStatement("SELECT * FROM dosv.settings");
-        ResultSet results = statement.executeQuery();
-        results.next();
-        return new Settings(results);
+    public Settings getSettings() {
+        try {
+            PreparedStatement statement =
+                db.prepareStatement("SELECT * FROM dosv.settings");
+            ResultSet results = statement.executeQuery();
+            results.next();
+            return new Settings(results);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
     /**

@@ -1,3 +1,5 @@
+-- TODO: Schema zu hub umbenennen
+
 CREATE TABLE dosv.settings (
     semester VARCHAR(6),
     dosv_applicants_update_time TIMESTAMP,
