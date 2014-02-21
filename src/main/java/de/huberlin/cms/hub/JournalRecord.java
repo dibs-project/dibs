@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 /**
- * JournalRecord Klasse - Eintrag des Logsbuch.
+ * JournalRecord Klasse - Protokolleintrag, ein Eintrag im Protokoll.
  *
  * @author haphuong
  */
@@ -55,7 +55,7 @@ public class JournalRecord {
     }
 
     /**
-     * Initialisiert den JournalRecord via Datenbankcursor.
+     * Initialisiert den Protokolleintrag über die Datenbank.
      *
      * @param results Datenbankzeiger, der auf eine Zeile aus dosv.journal_record verweist.
      * @throws SQLException, falls ein Datenbankzugriffsfehler auftritt.
@@ -109,7 +109,7 @@ public class JournalRecord {
     }
 
     /**
-     * Beschreibung des Eintrages.
+     * Beschreibung des Protokolleintrags.
      */
     public String getDetail() {
         return this.detail;

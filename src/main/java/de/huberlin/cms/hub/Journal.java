@@ -19,7 +19,8 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
- * Journal Klasse - Logsbuch.
+ * Journal Klasse - Protokoll, in welchem sämtliche prozessrelevanten Aktionen
+ * protokolliert werden.
  *
  * @author haphuong
  */
@@ -34,9 +35,9 @@ public class Journal {
     }
 
     /**
-     * Schreibt einen Eintrag ins Logbuch.
+     * Schreibt einen Protokolleintrag in das Protokoll.
      *
-     * @param actionType Typ der Aktion, das nicht null sein darf.
+     * @param actionType Typ der Aktion, darf nicht null sein.
      * @param objectType Typ des Objekts.
      * @param objectId ID des Objekts.
      * @param userId ID des Nutzers.
@@ -79,7 +80,7 @@ public class Journal {
     }
 
     /**
-     * Gibt den Eintrag mit der spezifizierten ID zurück.
+     * Gibt den Protokolleintrag mit der spezifizierten ID zurück.
      *
      * @param id ID des Eintrages.
      * @return JournalRecord der Eintrag.
@@ -101,11 +102,11 @@ public class Journal {
     }
 
     /**
-     * Gibt alle Einträge mit dem spezifizierten Typ und der ID eines Objekts zurück.
+     * Gibt alle Protokolleinträge mit dem spezifizierten Typ und der ID eines Objekts zurück.
      *
      * @param objectType Typ des Objekts.
      * @param objectId ID des Objekts.
-     * @return List<JournalRecord> Liste der Einträgen.
+     * @return List<JournalRecord> Liste der Protokolleinträge.
      * @throws SQLException
      */
     public List<JournalRecord> getJournal(ObjectType objectType, int objectId) throws
@@ -132,10 +133,10 @@ public class Journal {
     }
 
     /**
-     * Gibt alle Einträge mit der Nutzer-ID zurück.
+     * Gibt alle Protokolleinträge mit der Nutzer-ID zurück.
      *
      * @param userId ID des Nutzers.
-     * @return List<JournalRecord> Liste der Einträgen.
+     * @return List<JournalRecord> Liste der Protokolleinträge.
      * @throws SQLException
      */
     public List<JournalRecord> getJournal(int userId) throws SQLException {
