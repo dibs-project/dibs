@@ -19,7 +19,7 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
- * Journal Klasse - Protokoll, in welchem sämtliche prozessrelevanten Aktionen
+ * Journal Klasse - Protokollbuch, in welchem sämtliche prozessrelevanten Aktionen
  * protokolliert werden.
  *
  * @author haphuong
@@ -42,9 +42,9 @@ public class Journal {
      * @param objectId ID des Objekts.
      * @param userId ID des Nutzers.
      * @param detail  Beschreibung des Eintrags.
-     * @return JournalRecord der Eintrag.
+     * @return der Eintrag.
      * @throws IOException
-     * @throws SQLException
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
      */
     public JournalRecord record(ActionType actionType, ObjectType objectType,
             int objectId, int userId, String detail) {
@@ -55,12 +55,12 @@ public class Journal {
             throw new IllegalArgumentException("invalid Action Type");
         } else {
             try {
-                String SQL =
+                String sql =
                     "INSERT INTO dosv.journal_record ("
                     + "action_type, object_type, object_id, user_id, detail, time) "
                     + "VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
 
-                PreparedStatement statement = service.db.prepareStatement(SQL);
+                PreparedStatement statement = service.db.prepareStatement(sql);
                 statement.setString(1, actionType.toString());
                 statement.setString(2, objectType == null ? null : objectType.toString());
                 statement.setInt(3, objectId);
@@ -82,9 +82,9 @@ public class Journal {
     /**
      * Gibt den Protokolleintrag mit der spezifizierten ID zurück.
      *
-     * @param id ID des Eintrages.
-     * @return JournalRecord der Eintrag.
-     * @throws SQLException
+     * @param id ID des Protokolleintrag.
+     * @return den Protokollseintrag mit der spezifizierten ID.
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
      */
     public JournalRecord getRecord(int id) throws SQLException {
         if (id < 0) {
@@ -106,23 +106,23 @@ public class Journal {
      *
      * @param objectType Typ des Objekts.
      * @param objectId ID des Objekts.
-     * @return List<JournalRecord> Liste der Protokolleinträge.
-     * @throws SQLException
+     * @return Liste der Protokolleinträge.
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     public List<JournalRecord> getJournal(ObjectType objectType, int objectId) throws
             SQLException {
-        String SQL;
+        String sql;
         if (objectId < 0) {
             throw new IllegalArgumentException("invalid objectId");
         } else {
             if (objectType == null) {
-                SQL = "SELECT * FROM dosv.journal_record WHERE object_type IS NULL AND "
+                sql = "SELECT * FROM dosv.journal_record WHERE object_type IS NULL AND "
                     + "object_id=?";
             } else {
-                SQL = "SELECT * FROM dosv.journal_record WHERE object_type = '" +
+                sql = "SELECT * FROM dosv.journal_record WHERE object_type = '" +
                     objectType + "' AND object_id=?";
             }
-            PreparedStatement statement = this.db.prepareStatement(SQL);
+            PreparedStatement statement = this.db.prepareStatement(sql);
             statement.setInt(1, objectId);
             ResultSet results = statement.executeQuery();
             while (results.next()) {
@@ -136,8 +136,8 @@ public class Journal {
      * Gibt alle Protokolleinträge mit der Nutzer-ID zurück.
      *
      * @param userId ID des Nutzers.
-     * @return List<JournalRecord> Liste der Protokolleinträge.
-     * @throws SQLException
+     * @return Liste der Protokolleinträge.
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
      */
     public List<JournalRecord> getJournal(int userId) throws SQLException {
          if (userId == 0 || userId > 0) {
