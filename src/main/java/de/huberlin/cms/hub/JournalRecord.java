@@ -21,7 +21,10 @@ public class JournalRecord {
      */
     enum ActionType {
         /** Bewerber erstellen. */
-        USER_CREATED
+        USER_CREATED,
+        USER_EDITED,
+        PROFILES_UPDATED,
+        PROFILES_UPDATE_FAILED;
     };
 
     /**

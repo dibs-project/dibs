@@ -46,7 +46,7 @@ public class Journal {
      * @param actionType Typ.
      * @param objectType Typ des Objekts.
      * @param objectId ID des Objekts, die nicht negativ sein darf.
-     * @param userId ID des Nutzers, die nicht negativ sein darf..
+     * @param userId ID des Nutzers, die nicht negativ sein darf.
      * @param detail  Beschreibung des Protokolleintrags.
      * @return den Protokolleintrag.
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
@@ -71,8 +71,10 @@ public class Journal {
                 statement.setInt(4, userId);
                 statement.setString(5, detail);
                 statement.setTimestamp(6, time);
+
                 ResultSet results = statement.executeQuery();
                 results.next();
+
                 int id = results.getInt("id");
                 JournalRecord record = getRecord(id);
                 this.db.commit();
