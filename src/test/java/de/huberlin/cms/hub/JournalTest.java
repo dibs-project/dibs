@@ -24,15 +24,17 @@ import de.huberlin.cms.hub.JournalRecord.ObjectType;
  *
  * @author haphuong
  */
-public class JournalTest extends HubTest{
-    static final ActionType ACTION_TYPE = ActionType.USER_CREATED;
-    static final ObjectType OBJECT_TYPE = ObjectType.APPLICANT;
-    static final int OBJECT_ID = 1;
-    static final int USER_ID = 2;
-    static final String DETAIL = "SessionExample";
 
-    Journal journal;
+public class JournalTest extends HubTest{
+    private static final ActionType ACTION_TYPE = ActionType.USER_CREATED;
+    private static final ObjectType OBJECT_TYPE = ObjectType.APPLICANT;
+    private static final int OBJECT_ID = 1;
+    private static final int USER_ID = 2;
+    private static final String DETAIL = "SessionExample";
+
+    protected Journal journal;
     JournalRecord first_record;
+    JournalRecord null_record;
     JournalRecord record_empty_action_type;
     JournalRecord empty_detail;
 
@@ -59,17 +61,13 @@ public class JournalTest extends HubTest{
         assertEquals(OBJECT_ID, first_record.getObjectId());
         assertEquals(USER_ID, first_record.getUserId());
         assertEquals(DETAIL, first_record.getDetail());
+        //(null,first_record.getTime());
     }
 
     @Test
-    public void testRecordEmptyDetail(){
-        this.empty_detail = journal.record(ACTION_TYPE, null, 0, 0, null);
-        assertEquals(null, empty_detail.getDetail());
-    }
-
-    @Test
-    public void testRecordNoObject(){
-        journal.record(ACTION_TYPE, null, 0, USER_ID, DETAIL);
+    public void testEmptyObjectTypEmptyDetail() {
+        this.journal = new Journal(this.service);
+        this.null_record = journal.record(ACTION_TYPE, null, 0, 0, null);
     }
 
     @Test(expected=IllegalArgumentException.class)
@@ -90,13 +88,6 @@ public class JournalTest extends HubTest{
             DETAIL);
     }
 
-    @Test
-    public void testGetRecord() throws SQLException {
-        JournalRecord record = journal.getRecord(this.first_record.getId());
-        assertEquals(ACTION_TYPE, record.actionType);
-        assertEquals(DETAIL, record.detail);
-    }
-
     @Test(expected=IllegalArgumentException.class)
     public void testGetRecordInvalidId() throws SQLException {
         journal.getRecord(99999);
@@ -107,12 +98,12 @@ public class JournalTest extends HubTest{
         List <JournalRecord> records = new ArrayList<JournalRecord>();
         records = journal.getJournal(USER_ID);
         assertFalse(this.isEmptyList(records.size()));
-        assertEquals(ACTION_TYPE, records.get(0).actionType);
-        assertEquals(DETAIL, records.get(0).detail);
+        assertEquals(ACTION_TYPE, records.get(0).getActionType());
+        assertEquals(DETAIL, records.get(0).getDetail());
     }
-    
+
     @Test
-    public void testGetJournalByUser0() throws SQLException {
+    public void testGetJournalByZeroUserId() throws SQLException {
         List <JournalRecord> records = new ArrayList<JournalRecord>();
         records = journal.getJournal(0);
     }
@@ -131,8 +122,8 @@ public class JournalTest extends HubTest{
     }
 
     @Test
-    public void testGetJournalByNoObject() throws SQLException {
-        List <JournalRecord> records = new ArrayList<JournalRecord>();
-        records = journal.getJournal(null, 0);
+    public void testGetRecord() throws SQLException {
+        JournalRecord record = journal.getRecord(this.first_record.getId());
+        assertEquals(ACTION_TYPE, record.getActionType());
     }
 }

@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 /**
- *  Modulliert einen Protokolleintrag, ein Eintrag im Protokollbuch ist.
+ *  Modelliert einen Eintrag im Protokollbuch.
  *
  * @author haphuong
  */
@@ -19,29 +19,26 @@ public class JournalRecord {
     /**
      * Typ der Aktion des Bewerbungsdienstes.
      */
-    enum ActionType {
+    public enum ActionType {
         /** Bewerber erstellen. */
-        USER_CREATED,
-        USER_EDITED,
-        PROFILES_UPDATED,
-        PROFILES_UPDATE_FAILED;
+        USER_CREATED
     };
 
     /**
      * Typ des Objekts des Bewerbungsdienstes.
      */
-    enum ObjectType {
+    public enum ObjectType {
         /** Bewerber. */
         APPLICANT
     };
 
-    int id;
-    ActionType actionType;
-    ObjectType objectType;
-    int objectId;
-    int userId;
-    Timestamp time;
-    String detail;
+    private int id;
+    private ActionType actionType;
+    private ObjectType objectType;
+    private int objectId;
+    private int userId;
+    private Timestamp time;
+    private String detail;
 
     /**
      * Initialisiert den Protokolleintrag.
@@ -58,7 +55,7 @@ public class JournalRecord {
     }
 
     /**
-     * Initialisiert den Protokolleintrag über die Datenbankcursor.
+     * Initialisiert den Protokolleintrag über den Datenbankcursor.
      *
      * @param results Datenbankzeiger, der auf eine Zeile aus dosv.journal_record verweist.
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
@@ -116,6 +113,13 @@ public class JournalRecord {
      */
     public String getDetail() {
         return this.detail;
+    }
+
+    /**
+     * Zeitstempel.
+     */
+    public Timestamp getTime() {
+        return this.time;
     }
 
 }
