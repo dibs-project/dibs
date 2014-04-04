@@ -61,7 +61,6 @@ public class JournalTest extends HubTest{
         assertEquals(OBJECT_ID, first_record.getObjectId());
         assertEquals(USER_ID, first_record.getUserId());
         assertEquals(DETAIL, first_record.getDetail());
-        //(null,first_record.getTime());
     }
 
     @Test

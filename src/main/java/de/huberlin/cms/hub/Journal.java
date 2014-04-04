@@ -87,7 +87,7 @@ public class Journal {
     /**
      * Gibt den Protokolleintrag mit der spezifizierten ID zurück.
      *
-     * @param id ID des Protokolleintrags.
+     * @param id ID des Protokolleintrags, nicht negativ sein darf.
      * @return den Protokolleintrag mit der spezifizierten ID.
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
      */
@@ -110,7 +110,7 @@ public class Journal {
      * zurück.
      *
      * @param objectType Typ des Objekts.
-     * @param objectId ID des Objekts.
+     * @param objectId ID des Objekts, die nicht negativ sein darf.
      * @return alle Protokolleinträge mit dem spezifizierten Typ und der ID des Objekts.
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
      */
@@ -142,7 +142,7 @@ public class Journal {
     /**
      * Gibt alle Protokolleinträge mit der Nutzer-ID zurück.
      *
-     * @param userId ID des Nutzers.
+     * @param userId ID des Nutzers, nicht negativ sein darf.
      * @return alle Protokolleinträge, die von der Nutzer-ID bearbeitet wurden.
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
      */
