@@ -7,10 +7,11 @@ package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
 
-import java.sql.SQLException;
-
 import org.junit.Test;
 
+/**
+ * @author Sven Pfaller
+ */
 public class ApplicationServiceTest extends HubTest {
     @Test
     public void testSetSemester() {
@@ -22,10 +23,5 @@ public class ApplicationServiceTest extends HubTest {
     @Test
     public void testGetSettings() {
         service.getSettings();
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testGetApplicantInvalidId() throws SQLException {
-        service.getApplicant(9999999);
     }
 }
