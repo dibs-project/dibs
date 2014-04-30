@@ -76,9 +76,14 @@ public class HubTest {
         try {
 
             this.db.setAutoCommit(false);
-            PreparedStatement statement =
-                this.db.prepareStatement("DROP TABLE IF EXISTS settings");
-            statement.executeUpdate();
+            PreparedStatement statement;
+
+            String[] tables = {"user", "settings"};
+            for (String table : tables) {
+                statement = this.db.prepareStatement(
+                    String.format("DROP TABLE IF EXISTS \"%s\"", table));
+                statement.executeUpdate();
+            }
 
             InputStreamReader reader =
                 new InputStreamReader(this.getClass().getResourceAsStream("/hub.sql"));
