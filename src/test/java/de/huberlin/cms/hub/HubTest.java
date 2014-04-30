@@ -29,6 +29,9 @@ import org.junit.Before;
  * @author Sven Pfaller
  */
 public class HubTest {
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
     /**
      * Konfiguration der Testumgebung.
      *
