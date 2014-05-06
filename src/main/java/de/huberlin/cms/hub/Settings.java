@@ -12,7 +12,7 @@ import java.util.Date;
 /**
  * Einstellungen und globale Daten des Bewerbungssystems.
  *
- * @author pfallers
+ * @author Sven Pfaller
  */
 public class Settings {
     private String semester;
@@ -55,8 +55,9 @@ public class Settings {
     /**
      * Initialisiert die Settings via Datenbankcursor.
      *
-     * @param results Datenbankcursor, der auf eine Zeile aus dosv.settings verweist
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
+     * @param results Datenbankcursor, der auf eine Zeile aus <code>settings</code>
+     *     verweist.
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
      */
     Settings(ResultSet results) throws SQLException {
         this(results.getString("semester"),

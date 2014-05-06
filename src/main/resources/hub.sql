@@ -1,12 +1,18 @@
--- TODO: Schema zu hub umbenennen
+CREATE TABLE "user" (
+    id VARCHAR(256) PRIMARY KEY,
+    name VARCHAR(256) NOT NULL,
+    email VARCHAR(256) NOT NULL
+);
 
-CREATE TABLE dosv.settings (
+CREATE TABLE settings (
     semester VARCHAR(6),
     dosv_applicants_update_time TIMESTAMP,
     dosv_applications_update_time TIMESTAMP
 );
 
-CREATE TABLE dosv.journal_record (
+INSERT INTO settings (semester) VALUES ('2014WS');
+
+CREATE TABLE journal_record (
     id SERIAL PRIMARY KEY,
     action_type VARCHAR(256) NOT NULL,
     object_type VARCHAR(256),
@@ -15,5 +21,3 @@ CREATE TABLE dosv.journal_record (
     detail TEXT,
     time TIMESTAMP NOT NULL
 );
-
-INSERT INTO dosv.settings VALUES ('2014WS', NULL, NULL);
