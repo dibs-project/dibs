@@ -1,5 +1,6 @@
 /*
- * hub
+ * HUB
+ * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
 package de.huberlin.cms.hub;
@@ -18,6 +19,8 @@ import java.util.Properties;
  * ApplicationService an sich ist nicht threadsafe, aber ein leichtgewichtiges Objekt.
  * Soll er in mehreren Threads benutzt werden (z.B. in einer Webanwendung) kann einfach
  * für jeden Thread ein eigenes Objekt erstellt werden.
+ *
+ * @author Sven Pfaller
  */
 public class ApplicationService {
     protected Connection db;
@@ -71,7 +74,7 @@ public class ApplicationService {
     /**
      * Stellt das aktuelle Semester für das Bewerbungssystem ein.
      *
-     * @param semester Neue aktuelle Semester.
+     * @param semester Neues aktuelles Semester.
      * @see Settings#getSemester()
      */
     public void setSemester(String semester) {
@@ -123,24 +126,5 @@ public class ApplicationService {
         } catch (SQLException e) {
             throw new IOError(e);
         }
-    }
-
-    /**
-     * Gibt den Applicant mit der spezifizierten ID zurück.
-     *
-     * @param id ID des Applicants
-     * @return Applicant mit der spezifizierten ID
-     * @throws IllegalArgumentException falls die ID ungültig ist
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
-     */
-    public Applicant getApplicant(int id) throws SQLException {
-        PreparedStatement statement =
-            db.prepareStatement("SELECT * FROM onlbew.onlbew_reg WHERE reg_id=?");
-        statement.setInt(1, id);
-        ResultSet results = statement.executeQuery();
-        if (!results.next()) {
-            throw new IllegalArgumentException("invalid applicant ID");
-        }
-        return new Applicant(results);
     }
 }

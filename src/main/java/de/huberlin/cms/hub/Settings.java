@@ -12,7 +12,7 @@ import java.util.Date;
 /**
  * Einstellungen und globale Daten des Bewerbungssystems.
  *
- * @author pfallers
+ * @author Sven Pfaller
  */
 public class Settings {
     private String semester;

@@ -19,13 +19,13 @@ import org.junit.Before;
 
 /**
  * Basisklasse für HUB-Tests. Übernimmt die Initialisierung (und das anschließende
- * Aufräumen) der Testumgebung. Für Tests werden eine Datenbankverbindung, das
- * Bewerbungssystem und ein allgemeiner Bewerber bereitgestellt.
+ * Aufräumen) der Testumgebung. Für Tests werden eine Datenbankverbindung und das
+ * Bewerbungssystem bereitgestellt.
  * <p>
  * Die Konfiguration der Datenbank und des Bewerbungssystems wird aus der Datei
  * <code>hub.properties</code> gelesen.
  *
- * @author pfallers
+ * @author Sven Pfaller
  * @see ApplicationService#getConfig()
  * @see ApplicationService#openDatabase(Properties)
  */
@@ -40,11 +40,6 @@ public class HubTest {
      */
     protected ApplicationService service;
 
-    /**
-     * Allgemeiner Bewerber.
-     */
-    protected Applicant applicant;
-
     @Before
     public void commonBefore() throws IOException, SQLException {
         Properties config = new Properties();
@@ -57,7 +52,6 @@ public class HubTest {
 
         this.db = ApplicationService.openDatabase(config);
         this.service = new ApplicationService(this.db, config);
-        this.applicant = this.service.getApplicant(100);
     }
 
     @After
