@@ -29,7 +29,7 @@ public class JournalRecord {
      */
     public enum ObjectType {
         /** Bewerber. */
-        APPLICANT
+        USER
     };
 
     private int id;
@@ -57,8 +57,9 @@ public class JournalRecord {
     /**
      * Initialisiert den Protokolleintrag über den Datenbankcursor.
      *
-     * @param results Datenbankzeiger, der auf eine Zeile aus dosv.journal_record verweist.
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
+     * @param results Datenbankzeiger, der auf eine Zeile aus <code>journal_record</code>
+     * verweist
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     public JournalRecord(ResultSet results) throws SQLException {
         this(

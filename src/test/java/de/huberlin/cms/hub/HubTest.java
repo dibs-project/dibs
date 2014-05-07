@@ -86,7 +86,7 @@ public class HubTest {
             this.db.setAutoCommit(false);
             PreparedStatement statement;
 
-            String[] tables = {"user", "settings"};
+            String[] tables = {"user", "settings", "journal_record"};
             for (String table : tables) {
                 statement = this.db.prepareStatement(
                     String.format("DROP TABLE IF EXISTS \"%s\"", table));
@@ -115,3 +115,4 @@ public class HubTest {
         }
     }
 }
+

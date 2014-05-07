@@ -51,8 +51,8 @@ public class User {
     /**
      * Initialisiert den User via Datenbankcursor.
      *
-     * @param results Datenbankcursor, der auf eine Zeile aus <code>user</code> verweist.
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
+     * @param results Datenbankcursor, der auf eine Zeile aus <code>user</code> verweist
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     User(ResultSet results) throws SQLException {
         this(results.getString("id"), results.getString("name"),

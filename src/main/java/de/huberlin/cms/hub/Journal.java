@@ -36,19 +36,19 @@ public class Journal {
      */
     public Journal(ApplicationService service) {
         this.service = service;
-        this.db = service.db;
+        this.db = service.getDb();
     }
 
     /**
      * Schreibt einen Protokolleintrag ins Protokollbuch.
      *
-     * @param actionType Typ der ausgeführten Aktion, das nicht leer sein darf.
-     * @param objectType Typ des Objekts.
-     * @param objectId ID des Objekts, die nicht negativ sein darf.
-     * @param userId ID des Nutzers, die nicht negativ sein darf.
-     * @param detail Beschreibung des Protokolleintrags.
-     * @return den Protokolleintrag.
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
+     * @param actionType Typ der ausgeführten Aktion, das nicht leer sein darf
+     * @param objectType Typ des Objekts
+     * @param objectId ID des Objekts, die nicht negativ sein darf
+     * @param userId ID des Nutzers, die nicht negativ sein darf
+     * @param detail Beschreibung des Protokolleintrags
+     * @return den Protokolleintrag
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     public JournalRecord record(ActionType actionType, ObjectType objectType,
             int objectId, int userId, String detail) {
@@ -60,11 +60,11 @@ public class Journal {
         Timestamp time = new Timestamp(date.getTime());
 
         try {
-            String sql = "INSERT INTO dosv.journal_record "
-                + "(action_type, object_type, object_id, user_id, detail, time) "
-                + "VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
+            String sql = "INSERT INTO journal_record (action_type, object_type, "
+                + "object_id, user_id, detail, time) VALUES (?, ?, ?, ?, ?, ?) "
+                + "RETURNING id";
 
-            PreparedStatement statement = service.db.prepareStatement(sql);
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
             statement.setString(1, actionType.toString());
             statement.setString(2, objectType == null ? null : objectType.toString());
             statement.setInt(3, objectId);
@@ -87,16 +87,16 @@ public class Journal {
     /**
      * Gibt den Protokolleintrag mit der spezifizierten ID zurück.
      *
-     * @param id ID des Protokolleintrags, die nicht negativ sein darf.
-     * @return den Protokolleintrag mit der spezifizierten ID.
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
+     * @param id ID des Protokolleintrags, die nicht negativ sein darf
+     * @return den Protokolleintrag mit der spezifizierten ID
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     public JournalRecord getRecord(int id) throws SQLException {
         if (id < 0)
             throw new IllegalArgumentException("invalid record Id");
 
         PreparedStatement statement =
-            this.db.prepareStatement("SELECT * FROM dosv.journal_record WHERE id=?");
+            this.db.prepareStatement("SELECT * FROM journal_record WHERE id=?");
         statement.setInt(1, id);
         ResultSet results = statement.executeQuery();
         if (!results.next()) {
@@ -109,10 +109,10 @@ public class Journal {
      * Gibt alle Protokolleinträge mit dem spezifizierten Typ und der ID des Objektes
      * zurück.
      *
-     * @param objectType Typ des Objekts.
-     * @param objectId ID des Objekts, die nicht negativ sein darf.
-     * @return alle Protokolleinträge mit dem spezifizierten Typ und der ID des Objekts.
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
+     * @param objectType Typ des Objekts
+     * @param objectId ID des Objekts, die nicht negativ sein darf
+     * @return alle Protokolleinträge mit dem spezifizierten Typ und der ID des Objekts
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     public List<JournalRecord> getJournal(ObjectType objectType, int objectId) throws
             SQLException {
@@ -123,11 +123,11 @@ public class Journal {
             throw new IllegalArgumentException("invalid objectId");
 
         if (objectType == null) {
-            sql = "SELECT * FROM dosv.journal_record WHERE object_type IS NULL AND "
-                + "object_id=?";
+            sql = "SELECT * FROM journal_record WHERE object_type IS NULL AND "
+                    + "object_id=?";
         } else {
-            sql = "SELECT * FROM dosv.journal_record WHERE object_type = '" +
-                objectType + "' AND object_id=?";
+            sql = "SELECT * FROM journal_record WHERE object_type = '" + objectType 
+                    + "' AND object_id=?";
         }
         PreparedStatement statement = this.db.prepareStatement(sql);
         statement.setInt(1, objectId);
@@ -142,9 +142,9 @@ public class Journal {
     /**
      * Gibt alle Protokolleinträge mit der Nutzer-ID zurück.
      *
-     * @param userId ID des Nutzers, die nicht negativ sein darf.
-     * @return alle Protokolleinträge, die von der Nutzer-ID bearbeitet wurden.
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
+     * @param userId ID des Nutzers, die nicht negativ sein darf
+     * @return alle Protokolleinträge, die von der Nutzer-ID bearbeitet wurden
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     public List<JournalRecord> getJournal(int userId) throws SQLException {
         List<JournalRecord> journal = new ArrayList <JournalRecord>();
@@ -153,7 +153,7 @@ public class Journal {
             throw new IllegalArgumentException("invalid user Id");
 
         PreparedStatement statement = this.db.prepareStatement("SELECT * FROM "
-            + "dosv.journal_record WHERE user_id=?");
+            + "journal_record WHERE user_id=?");
         statement.setInt(1, userId);
         ResultSet results = statement.executeQuery();
         while (results.next()) {

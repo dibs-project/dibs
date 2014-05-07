@@ -47,7 +47,7 @@ public class ApplicationService {
      * @see DriverManager#getConnection
      */
     public static Connection openDatabase(Properties config) throws SQLException {
-        String url = config.getProperty("db_url", "jdbc:postgresql://localhost:5432/hub");
+        String url = config.getProperty("db_url", "jdbc:postgresql://localhost:5432/hub_test");
         String user = config.getProperty("db_user", "");
         String password = config.getProperty("db_password", "");
         Connection db = DriverManager.getConnection(url, user, password);
@@ -160,7 +160,6 @@ public class ApplicationService {
                 db.prepareStatement("UPDATE settings SET semester = ?");
             statement.setString(1, semester);
             statement.executeUpdate();
-            db.commit();
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -202,25 +201,6 @@ public class ApplicationService {
         } catch (SQLException e) {
             throw new IOError(e);
         }
-    }
-
-    /**
-     * Gibt den Applicant mit der spezifizierten ID zurück.
-     *
-     * @param id ID des Applicants
-     * @return Applicant mit der spezifizierten ID
-     * @throws IllegalArgumentException falls die ID ungültig ist
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
-     */
-    public Applicant getApplicant(int id) throws SQLException {
-        PreparedStatement statement =
-            db.prepareStatement("SELECT * FROM onlbew.onlbew_reg WHERE reg_id=?");
-        statement.setInt(1, id);
-        ResultSet results = statement.executeQuery();
-        if (!results.next()) {
-            throw new IllegalArgumentException("invalid applicant ID");
-        }
-        return new Applicant(results);
     }
 
     /**

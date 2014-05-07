@@ -56,8 +56,8 @@ public class Settings {
      * Initialisiert die Settings via Datenbankcursor.
      *
      * @param results Datenbankcursor, der auf eine Zeile aus <code>settings</code>
-     *     verweist.
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt.
+     *     verweist
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     Settings(ResultSet results) throws SQLException {
         this(results.getString("semester"),

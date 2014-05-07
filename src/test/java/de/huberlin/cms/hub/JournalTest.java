@@ -27,7 +27,7 @@ import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 public class JournalTest extends HubTest{
     private static final ActionType ACTION_TYPE = ActionType.USER_CREATED;
-    private static final ObjectType OBJECT_TYPE = ObjectType.APPLICANT;
+    private static final ObjectType OBJECT_TYPE = ObjectType.USER;
     private static final int OBJECT_ID = 1;
     private static final int USER_ID = 2;
     private static final String DETAIL = "SessionExample";
