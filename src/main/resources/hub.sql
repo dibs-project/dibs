@@ -13,11 +13,11 @@ CREATE TABLE settings (
 INSERT INTO settings (semester) VALUES ('2014WS');
 
 CREATE TABLE journal_record (
-    id SERIAL PRIMARY KEY,
+    id VARCHAR(256) PRIMARY KEY,
     action_type VARCHAR(256) NOT NULL,
     object_type VARCHAR(256),
-    object_id INTEGER,
-    user_id INTEGER,
+    object_id VARCHAR(256),
+    user_id VARCHAR(256) NOT NULL,
     detail TEXT,
     time TIMESTAMP NOT NULL
 );

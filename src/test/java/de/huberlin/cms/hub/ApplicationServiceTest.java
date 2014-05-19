@@ -7,6 +7,7 @@ package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import org.junit.Test;
@@ -58,5 +59,11 @@ public class ApplicationServiceTest extends HubTest {
     @Test
     public void testGetSettings() {
         service.getSettings();
+    }
+
+    @Test
+    public void testGetJournal() throws SQLException {
+        Journal journal = service.getJournal();
+        journal.getJournal("1");
     }
 }

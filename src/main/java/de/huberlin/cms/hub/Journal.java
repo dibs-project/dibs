@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
@@ -42,43 +43,41 @@ public class Journal {
     /**
      * Schreibt einen Protokolleintrag ins Protokollbuch.
      *
-     * @param actionType Typ der ausgeführten Aktion, das nicht leer sein darf
+     * @param actionType Typ der ausgeführten Aktion
      * @param objectType Typ des Objekts
-     * @param objectId ID des Objekts, die nicht negativ sein darf
-     * @param userId ID des Nutzers, die nicht negativ sein darf
+     * @param objectId ID des Objekts
+     * @param userId ID des Nutzers
      * @param detail Beschreibung des Protokolleintrags
      * @return den Protokolleintrag
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     public JournalRecord record(ActionType actionType, ObjectType objectType,
-            int objectId, int userId, String detail) {
+            String objectId, String userId, String detail) {
 
-        if (actionType == null || objectId < 0 || userId < 0)
-            throw new IllegalArgumentException("invalid Action Type or object ID or user ID");
+        if (actionType == null) {
+            throw new IllegalArgumentException("illegal actionType: null");
+        }
+        if (userId.isEmpty()) {
+            throw new IllegalArgumentException("illegal userID: empty");
+        }
 
         java.util.Date date = new java.util.Date();
         Timestamp time = new Timestamp(date.getTime());
 
         try {
-            String sql = "INSERT INTO journal_record (action_type, object_type, "
-                + "object_id, user_id, detail, time) VALUES (?, ?, ?, ?, ?, ?) "
-                + "RETURNING id";
-
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, actionType.toString());
-            statement.setString(2, objectType == null ? null : objectType.toString());
-            statement.setInt(3, objectId);
-            statement.setInt(4, userId);
-            statement.setString(5, detail);
-            statement.setTimestamp(6, time);
-
-            ResultSet results = statement.executeQuery();
-            results.next();
-
-            int id = results.getInt("id");
-            JournalRecord record = getRecord(id);
-            this.db.commit();
-            return record;
+            String id = Integer.toString(new Random().nextInt());
+            PreparedStatement statement =
+                db.prepareStatement("INSERT INTO journal_record VALUES "
+                + "(?, ?, ?, ?, ?, ?, ?)");
+            statement.setString(1, id);
+            statement.setString(2, actionType.toString());
+            statement.setString(3, objectType == null ? null : objectType.toString());
+            statement.setString(4, objectId);
+            statement.setString(5, userId);
+            statement.setString(6, detail);
+            statement.setTimestamp(7, time);
+            statement.executeUpdate();
+            return this.getRecord(id);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -87,20 +86,21 @@ public class Journal {
     /**
      * Gibt den Protokolleintrag mit der spezifizierten ID zurück.
      *
-     * @param id ID des Protokolleintrags, die nicht negativ sein darf
+     * @param id ID des Protokolleintrags
      * @return den Protokolleintrag mit der spezifizierten ID
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
-    public JournalRecord getRecord(int id) throws SQLException {
-        if (id < 0)
-            throw new IllegalArgumentException("invalid record Id");
+    public JournalRecord getRecord(String id) throws SQLException {
+        if (id.isEmpty()) {
+            throw new IllegalArgumentException("illegal recordID: empty");
+        }
 
         PreparedStatement statement =
-            this.db.prepareStatement("SELECT * FROM journal_record WHERE id=?");
-        statement.setInt(1, id);
+            this.db.prepareStatement("SELECT * FROM journal_record WHERE id = ?");
+        statement.setString(1, id);
         ResultSet results = statement.executeQuery();
         if (!results.next()) {
-            throw new IllegalArgumentException("invalid record ID");
+            throw new IllegalArgumentException("illegal recordID: record does not exist");
         }
         return new JournalRecord(results);
     }
@@ -110,18 +110,14 @@ public class Journal {
      * zurück.
      *
      * @param objectType Typ des Objekts
-     * @param objectId ID des Objekts, die nicht negativ sein darf
+     * @param objectId ID des Objekts
      * @return alle Protokolleinträge mit dem spezifizierten Typ und der ID des Objekts
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
-    public List<JournalRecord> getJournal(ObjectType objectType, int objectId) throws
+    public List<JournalRecord> getJournal(ObjectType objectType, String objectId) throws
             SQLException {
         List<JournalRecord> journal = new ArrayList <JournalRecord>();
         String sql;
-
-        if (objectId < 0)
-            throw new IllegalArgumentException("invalid objectId");
-
         if (objectType == null) {
             sql = "SELECT * FROM journal_record WHERE object_type IS NULL AND "
                     + "object_id=?";
@@ -130,8 +126,7 @@ public class Journal {
                     + "' AND object_id=?";
         }
         PreparedStatement statement = this.db.prepareStatement(sql);
-        statement.setInt(1, objectId);
-
+        statement.setString(1, objectId);
         ResultSet results = statement.executeQuery();
         while (results.next()) {
             journal.add(new JournalRecord(results));
@@ -142,19 +137,18 @@ public class Journal {
     /**
      * Gibt alle Protokolleinträge mit der Nutzer-ID zurück.
      *
-     * @param userId ID des Nutzers, die nicht negativ sein darf
-     * @return alle Protokolleinträge, die von der Nutzer-ID bearbeitet wurden
+     * @param userId ID des Nutzers
+     * @return alle Protokolleinträge, die von dem Nutzer bearbeitet wurden
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
-    public List<JournalRecord> getJournal(int userId) throws SQLException {
+    public List<JournalRecord> getJournal(String userId) throws SQLException {
+        if (userId.isEmpty())
+            throw new IllegalArgumentException("illegal userID: empty");
+
         List<JournalRecord> journal = new ArrayList <JournalRecord>();
-
-        if (userId < 0)
-            throw new IllegalArgumentException("invalid user Id");
-
         PreparedStatement statement = this.db.prepareStatement("SELECT * FROM "
-            + "journal_record WHERE user_id=?");
-        statement.setInt(1, userId);
+            + "journal_record WHERE user_id = ?");
+        statement.setString(1, userId);
         ResultSet results = statement.executeQuery();
         while (results.next()) {
             journal.add(new JournalRecord(results));

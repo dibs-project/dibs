@@ -6,12 +6,12 @@
 package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,107 +22,97 @@ import de.huberlin.cms.hub.JournalRecord.ObjectType;
 /**
  * Test der Klasse Journal.
  *
- * @author haphuong
+ * @author Phuong Anh Ha
  */
 
 public class JournalTest extends HubTest{
-    private static final ActionType ACTION_TYPE = ActionType.USER_CREATED;
-    private static final ObjectType OBJECT_TYPE = ObjectType.USER;
-    private static final int OBJECT_ID = 1;
-    private static final int USER_ID = 2;
-    private static final String DETAIL = "SessionExample";
-
-    protected Journal journal;
+    Journal journal;
     JournalRecord first_record;
-    JournalRecord null_record;
-    JournalRecord record_empty_action_type;
-    JournalRecord empty_detail;
 
     @Before
     public void before() throws IOException, SQLException {
-        super.commonBefore();
         this.journal = new Journal(this.service);
-        this.first_record = journal.record(ACTION_TYPE, OBJECT_TYPE, OBJECT_ID, USER_ID,
-            DETAIL);
-    }
-
-    public boolean isEmptyList(int sizeOfList){
-        boolean result = false;
-        if(sizeOfList == 0){
-            result = true;
-        }
-        return result;
+        this.first_record = journal.record(ActionType.USER_CREATED, ObjectType.USER, "1",
+            "1", "first test");
     }
 
     @Test
     public void testRecord() {
-        assertEquals(ACTION_TYPE, first_record.getActionType());
-        assertEquals(OBJECT_TYPE, first_record.getObjectType());
-        assertEquals(OBJECT_ID, first_record.getObjectId());
-        assertEquals(USER_ID, first_record.getUserId());
-        assertEquals(DETAIL, first_record.getDetail());
+        assertEquals(ActionType.USER_CREATED, first_record.getActionType());
     }
 
     @Test
-    public void testEmptyObjectTypEmptyDetail() {
-        this.journal = new Journal(this.service);
-        this.null_record = journal.record(ACTION_TYPE, null, 0, 0, null);
-    }
-
-    @Test(expected=IllegalArgumentException.class)
     public void testRecordNullActionType() {
-        this.record_empty_action_type = journal.record(null, OBJECT_TYPE, OBJECT_ID,
-            USER_ID, DETAIL);
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testRecordInvalidObjectId() {
-        this.record_empty_action_type = journal.record(ACTION_TYPE, OBJECT_TYPE, -1,
-            USER_ID, DETAIL);
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testRecordInvalidUserId() {
-        this.record_empty_action_type = journal.record(ACTION_TYPE, OBJECT_TYPE, 0, -1,
-            DETAIL);
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testGetRecordInvalidId() throws SQLException {
-        journal.getRecord(99999);
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("actionType");
+        journal.record(null, ObjectType.USER, "1", "1", "first test");
     }
 
     @Test
-    public void testGetJournalByUser() throws SQLException {
-        List <JournalRecord> records = new ArrayList<JournalRecord>();
-        records = journal.getJournal(USER_ID);
-        assertFalse(this.isEmptyList(records.size()));
-        assertEquals(ACTION_TYPE, records.get(0).getActionType());
-        assertEquals(DETAIL, records.get(0).getDetail());
+    public void testRecordEmptyUserID() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("userID");
+        journal.record(ActionType.USER_CREATED, ObjectType.USER, "1", "", "test");
     }
 
     @Test
-    public void testGetJournalByZeroUserId() throws SQLException {
-        List <JournalRecord> records = new ArrayList<JournalRecord>();
-        records = journal.getJournal(0);
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testGetJournalByInvalidUser() throws SQLException {
-        List <JournalRecord> records = new ArrayList<JournalRecord>();
-        records = journal.getJournal(-1);
-    }
-
-    @Test
-    public void testGetJournalByObject() throws SQLException {
-        List <JournalRecord> records = new ArrayList<JournalRecord>();
-        records = journal.getJournal(OBJECT_TYPE, 1);
-        assertFalse(this.isEmptyList(records.size()));
+    public void testRecordNullActionTypeEmptyUserID() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("actionType");
+        journal.record(null, ObjectType.USER, "1", "", "test");
     }
 
     @Test
     public void testGetRecord() throws SQLException {
-        JournalRecord record = journal.getRecord(this.first_record.getId());
-        assertEquals(ACTION_TYPE, record.getActionType());
+        JournalRecord record = journal.getRecord(first_record.getId());
+        assertEquals(record.getId(), first_record.getId());
     }
+
+    @Test
+    public void testGetRecordEmptyID() throws SQLException {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("recordID");
+        journal.getRecord("");
+    }
+
+    @Test
+    public void testGetRecordInvalidID() throws SQLException {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("recordID");
+        journal.getRecord("foo");
+    }
+
+    @Test
+    public void testGetJournal() throws SQLException {
+        List<JournalRecord> records = new ArrayList <JournalRecord>();
+        records = journal.getJournal(first_record.getUserId());
+        assertEquals(records.get(0).getId(),first_record.getId() );
+    }
+
+    @Test
+    public void testGetJournalInvalidUserID() throws SQLException {
+        journal.getJournal("foo");
+    }
+
+    @Test
+    public void testGetJournalEmptyUserID() throws SQLException {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("userID");
+        journal.getJournal("");
+    }
+
+    @Test
+    public void testGetJournalObjectTypeObjectID() throws SQLException {
+        List<JournalRecord> records = new ArrayList <JournalRecord>();
+        records = journal.getJournal(first_record.getObjectType(),
+            first_record.getObjectId());
+        assertEquals(records.get(0).getId(),first_record.getId() );
+    }
+
+    @Test
+    public void testGetJournalNullObjectTypeEmptyObjectID() throws SQLException {
+        journal.getJournal(null,"");
+    }
+
+
 }

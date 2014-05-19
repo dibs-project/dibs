@@ -10,17 +10,16 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 /**
- *  Modelliert einen Eintrag im Protokollbuch.
+ *  Eintrag im Protokollbuch, den eine Prozessaktion eines Dienstes aufschreibt.
  *
  * @author haphuong
  */
 public class JournalRecord {
-
     /**
      * Typ der Aktion des Bewerbungsdienstes.
      */
     public enum ActionType {
-        /** Bewerber erstellen. */
+        /** Nutzer erstellen. */
         USER_CREATED
     };
 
@@ -28,23 +27,23 @@ public class JournalRecord {
      * Typ des Objekts des Bewerbungsdienstes.
      */
     public enum ObjectType {
-        /** Bewerber. */
+        /** Benutzer. */
         USER
     };
 
-    private int id;
+    private String id;
     private ActionType actionType;
     private ObjectType objectType;
-    private int objectId;
-    private int userId;
+    private String objectId;
+    private String userId;
     private Timestamp time;
     private String detail;
 
     /**
      * Initialisiert den Protokolleintrag.
      */
-    public JournalRecord(int id, ActionType actionType, ObjectType objectType,
-            int objectId, int userId, String detail, Timestamp time) {
+    public JournalRecord(String id, ActionType actionType, ObjectType objectType,
+            String objectId, String userId, String detail, Timestamp time) {
         this.id = id;
         this.actionType = actionType;
         this.objectType = objectType;
@@ -63,12 +62,12 @@ public class JournalRecord {
      */
     public JournalRecord(ResultSet results) throws SQLException {
         this(
-            results.getInt("id"),
+            results.getString("id"),
             ActionType.valueOf((results.getString("action_type"))),
             results.getString("object_type") == null ? null :
                 ObjectType.valueOf(results.getString("object_type")),
-            results.getInt("object_id"),
-            results.getInt("user_id"),
+            results.getString("object_id"),
+            results.getString("user_id"),
             results.getString("detail"),
             results.getTimestamp("time")
         );
@@ -77,7 +76,7 @@ public class JournalRecord {
     /**
      * ID des Protokolleintrags.
      */
-    public int getId() {
+    public String getId() {
         return this.id;
     }
 
@@ -98,14 +97,14 @@ public class JournalRecord {
     /**
      * ID des Objekts.
      */
-    public int getObjectId() {
+    public String getObjectId() {
         return this.objectId;
     }
 
     /**
      * ID des Nutzers.
      */
-    public int getUserId() {
+    public String getUserId() {
         return this.userId;
     }
 
@@ -122,5 +121,4 @@ public class JournalRecord {
     public Timestamp getTime() {
         return this.time;
     }
-
 }
