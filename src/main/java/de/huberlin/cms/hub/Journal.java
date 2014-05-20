@@ -93,6 +93,7 @@ public class Journal {
         if (id.isEmpty()) {
             throw new IllegalArgumentException("illegal recordID: empty");
         }
+
         PreparedStatement statement =
             this.db.prepareStatement("SELECT * FROM journal_record WHERE id = ?");
         statement.setString(1, id);
@@ -123,6 +124,7 @@ public class Journal {
             sql = "SELECT * FROM journal_record WHERE object_type = '" + objectType
                 + "' AND object_id=?";
         }
+
         PreparedStatement statement = this.db.prepareStatement(sql);
         statement.setString(1, objectId);
         ResultSet results = statement.executeQuery();
@@ -143,6 +145,7 @@ public class Journal {
         if (userId.isEmpty()) {
             throw new IllegalArgumentException("illegal userID: empty");
         }
+
         List<JournalRecord> journal = new ArrayList <JournalRecord>();
         PreparedStatement statement =
             this.db.prepareStatement("SELECT * FROM journal_record WHERE user_id = ?");
