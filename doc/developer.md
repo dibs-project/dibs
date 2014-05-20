@@ -5,7 +5,7 @@ Entwicklungsumgebung einrichten
 -------------------------------
 
 Um die Testumgebung zu konfigurieren, kopiere die Datei `test.default.properties` nach
-`test.properties` und passe sie deinen Bürfnissen an.
+`test.properties` und passe sie deinen Bedürfnissen an.
 
 HUB testen
 ----------
