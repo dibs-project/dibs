@@ -1,51 +1,62 @@
 /*
- * hub
+ * HUB
+ * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
 package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Properties;
+import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 
-public class ApplicationServiceTest {
-    ApplicationService service;
-    Properties config;
-
-    @Before
-    public void before() throws IOException, SQLException {
-        config = new Properties();
-        try {
-            config.load(new FileInputStream("hub.properties"));
-        } catch (FileNotFoundException e) {
-            // skip the tests
-            assumeTrue(false);
-        }
-        service = new ApplicationService(ApplicationService.openDatabase(config), config);
+/**
+ * @author Sven Pfaller
+ */
+public class ApplicationServiceTest extends HubTest {
+    @Test
+    public void testCreateUser() {
+        String email = "moss@example.org";
+        User user = this.service.createUser("Maurice", email);
+        assertEquals(email, user.getEmail());
     }
 
     @Test
-    public void testOpenDatabase() throws SQLException {
-        assertNotNull(ApplicationService.openDatabase(config));
+    public void testCreateUserEmptyEmail() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("email");
+        this.service.createUser("Maurice", "");
     }
 
     @Test
-    public void testGetApplicant() throws SQLException {
-        Applicant applicant = service.getApplicant(55000);
-        assertEquals("Lovelace", applicant.surname);
+    public void testGetUser() {
+        User user = this.service.getUser(this.user.getId());
+        assertEquals(this.user.getId(), user.getId());
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testGetApplicantInvalidId() throws SQLException {
-        service.getApplicant(9999999);
+    @Test
+    public void testGetUserNonExisting() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("id");
+        this.service.getUser("foo");
+    }
+
+    @Test
+    public void testGetUsers() {
+        List<User> users = this.service.getUsers();
+        assertEquals(this.user.getId(), users.get(0).getId());
+    }
+
+    @Test
+    public void testSetSemester() {
+        String semester = "2222SS";
+        service.setSemester(semester);
+        assertEquals(semester, service.getSettings().getSemester());
+    }
+
+    @Test
+    public void testGetSettings() {
+        service.getSettings();
     }
 }

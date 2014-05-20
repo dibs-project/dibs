@@ -1,135 +1,61 @@
 /*
- * hub
+ * HUB
+ * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
 package de.huberlin.cms.hub;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * Benutzer, der mit dem Bewerbungssystem interagiert.
- * <p>
- * Der Name eines Benutzers setzt sich wie folgt zusammen:
- * <pre>
- *    Doktor Maurice   van   Moss
- *    title  firstName infix surname
- * </pre>
+ *
+ * @author Sven Pfaller
  */
-public abstract class User {
-
-    /**
-     * Geschlecht.
-     */
-    public enum Gender {
-        /** männlich / Mann */
-        MALE,
-        /** weiblich / Frau */
-        FEMALE;
-
-        /**
-         * Konvertiert einen onlbew_reg.geschl- zu einem Gender-Wert.
-         *
-         * @param value Wert aus onlbew_reg.geschl
-         * @return korrespondierenden Gender-Wert
-         */
-        @Deprecated
-        static Gender fromGeschl(String value) {
-            if (value.equals("M")) {
-                return MALE;
-            } else if (value.equals("W")) {
-                return FEMALE;
-            } else {
-                // unerreichbar
-                throw new RuntimeException();
-            }
-        }
-    }
-
-    protected int id;
-    protected String surname;
-    protected String firstName;
-    protected String title;
-    protected String infix;
-    protected Gender gender;
-    protected String email;
-    protected String huAccount;
-    protected String password;
+public class User {
+    private String id;
+    private String name;
+    private String email;
 
     /**
      * Initialisiert den User.
      */
-    public User(int id, String surname, String firstName, String title, String infix,
-            Gender gender, String email, String huAccount, String password) {
+    User(String id, String name, String email) {
         this.id = id;
-        this.surname = surname;
-        this.firstName = firstName;
-        this.title = title;
-        this.infix = infix;
-        this.gender = gender;
+        this.name = name;
         this.email = email;
-        this.huAccount = huAccount;
-        this.password = password;
     }
 
     /**
      * Eindeutige ID.
      */
-    public int getId() {
-        return id;
+    public String getId() {
+        return this.id;
     }
 
     /**
-     * Nachname / Familienname.
+     * Name, mit dem der Benutzer von HUB angesprochen wird.
      */
-    public String getSurname() {
-        return surname;
-    }
-
-    /**
-     * Vorname.
-     */
-    public String getFirstName() {
-        return firstName;
-    }
-
-    /**
-     * Titel, z.B.&nbsp;Doktor.
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * Namensinfix, bzw.&nbsp;Namenszusatz, z.B.&nbsp;von, zu, etc.
-     */
-    public String getInfix() {
-        return infix;
-    }
-
-    /**
-     * Geschlecht.
-     */
-    public Gender getGender() {
-        return gender;
+    public String getName() {
+        return this.name;
     }
 
     /**
      * Email-Adresse.
      */
     public String getEmail() {
-        return email;
+        return this.email;
     }
 
     /**
-     * Name des HU-Accounts.
+     * Initialisiert den User via Datenbankcursor.
+     *
+     * @param results Datenbankcursor, der auf eine Zeile aus <code>user</code> verweist
+     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
-    public String getHuAccount() {
-        return huAccount;
-    }
-
-    // TODO: Hashformat?
-    /**
-     * Hash des Passworts.
-     */
-    public String getPassword() {
-        return password;
+    User(ResultSet results) throws SQLException {
+        this(results.getString("id"), results.getString("name"),
+            results.getString("email"));
     }
 }
