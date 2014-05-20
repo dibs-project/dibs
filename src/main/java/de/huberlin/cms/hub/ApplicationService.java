@@ -47,7 +47,7 @@ public class ApplicationService {
      * @see DriverManager#getConnection
      */
     public static Connection openDatabase(Properties config) throws SQLException {
-        String url = config.getProperty("db_url", "jdbc:postgresql://localhost:5432/hub_test");
+        String url = config.getProperty("db_url", "jdbc:postgresql://localhost:5432/hub");
         String user = config.getProperty("db_user", "");
         String password = config.getProperty("db_password", "");
         Connection db = DriverManager.getConnection(url, user, password);
