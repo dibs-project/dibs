@@ -25,7 +25,7 @@ import org.junit.Before;
  *
  * @author Sven Pfaller
  */
-public class HubTest {
+public abstract class HubTest {
     /**
      * Konfiguration der Testumgebung.
      *
