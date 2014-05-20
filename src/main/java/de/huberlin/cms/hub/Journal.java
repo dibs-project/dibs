@@ -67,8 +67,7 @@ public class Journal {
         try {
             String id = Integer.toString(new Random().nextInt());
             PreparedStatement statement =
-                db.prepareStatement("INSERT INTO journal_record VALUES "
-                + "(?, ?, ?, ?, ?, ?, ?)");
+                db.prepareStatement("INSERT INTO journal_record VALUES (?, ?, ?, ?, ?, ?, ?)");
             statement.setString(1, id);
             statement.setString(2, actionType.toString());
             statement.setString(3, objectType == null ? null : objectType.toString());
@@ -94,7 +93,6 @@ public class Journal {
         if (id.isEmpty()) {
             throw new IllegalArgumentException("illegal recordID: empty");
         }
-
         PreparedStatement statement =
             this.db.prepareStatement("SELECT * FROM journal_record WHERE id = ?");
         statement.setString(1, id);
@@ -120,10 +118,10 @@ public class Journal {
         String sql;
         if (objectType == null) {
             sql = "SELECT * FROM journal_record WHERE object_type IS NULL AND "
-                    + "object_id=?";
+                + "object_id=?";
         } else {
-            sql = "SELECT * FROM journal_record WHERE object_type = '" + objectType 
-                    + "' AND object_id=?";
+            sql = "SELECT * FROM journal_record WHERE object_type = '" + objectType
+                + "' AND object_id=?";
         }
         PreparedStatement statement = this.db.prepareStatement(sql);
         statement.setString(1, objectId);
@@ -142,9 +140,9 @@ public class Journal {
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     public List<JournalRecord> getJournal(String userId) throws SQLException {
-        if (userId.isEmpty())
+        if (userId.isEmpty()) {
             throw new IllegalArgumentException("illegal userID: empty");
-
+        }
         List<JournalRecord> journal = new ArrayList <JournalRecord>();
         PreparedStatement statement = this.db.prepareStatement("SELECT * FROM "
             + "journal_record WHERE user_id = ?");
