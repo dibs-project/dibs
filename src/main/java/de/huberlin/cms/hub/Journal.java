@@ -144,8 +144,8 @@ public class Journal {
             throw new IllegalArgumentException("illegal userID: empty");
         }
         List<JournalRecord> journal = new ArrayList <JournalRecord>();
-        PreparedStatement statement = this.db.prepareStatement("SELECT * FROM "
-            + "journal_record WHERE user_id = ?");
+        PreparedStatement statement =
+            this.db.prepareStatement("SELECT * FROM journal_record WHERE user_id = ?");
         statement.setString(1, userId);
         ResultSet results = statement.executeQuery();
         while (results.next()) {
