@@ -5,8 +5,6 @@
 
 package de.huberlin.cms.hub;
 
-import static org.junit.Assume.assumeTrue;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,14 +20,19 @@ import org.junit.Before;
  * Aufräumen) der Testumgebung. Für Tests werden eine Datenbankverbindung und das
  * Bewerbungssystem bereitgestellt.
  * <p>
- * Die Konfiguration der Datenbank und des Bewerbungssystems wird aus der Datei
- * <code>hub.properties</code> gelesen.
+ * Die Konfiguration der Testumgebung wird aus der Datei <code>test.properties</code>
+ * gelesen.
  *
  * @author Sven Pfaller
- * @see ApplicationService#getConfig()
- * @see ApplicationService#openDatabase(Properties)
  */
-public class HubTest {
+public abstract class HubTest {
+    /**
+     * Konfiguration der Testumgebung.
+     *
+     * @see <code>test.default.properties</code>
+     */
+    protected Properties config;
+
     /**
      * Verwendete Datenbankverbindung.
      */
@@ -42,16 +45,16 @@ public class HubTest {
 
     @Before
     public void commonBefore() throws IOException, SQLException {
-        Properties config = new Properties();
+        this.config = new Properties();
+        this.config.load(new FileInputStream("test.default.properties"));
         try {
-            config.load(new FileInputStream("hub.properties"));
+            this.config.load(new FileInputStream("test.properties"));
         } catch (FileNotFoundException e) {
-            // Tests abbrechen
-            assumeTrue(false);
+            // ignorieren
         }
 
-        this.db = ApplicationService.openDatabase(config);
-        this.service = new ApplicationService(this.db, config);
+        this.db = ApplicationService.openDatabase(this.config);
+        this.service = new ApplicationService(this.db, this.config);
     }
 
     @After
