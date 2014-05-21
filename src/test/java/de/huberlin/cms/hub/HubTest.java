@@ -89,7 +89,8 @@ public class HubTest {
             String[] tables = {"user", "settings", "journal_record"};
             for (String table : tables) {
                 statement = this.db.prepareStatement(
-                    String.format("DROP TABLE IF EXISTS \"%s\"", table));
+                    String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
+                System.out.println(statement);
                 statement.executeUpdate();
             }
 

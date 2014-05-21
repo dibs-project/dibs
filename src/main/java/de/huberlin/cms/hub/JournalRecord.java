@@ -10,9 +10,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 /**
- *  Eintrag im Protokollbuch, den eine Prozessaktion eines Dienstes aufschreibt.
+ * Eintrag im Protokollbuch, den eine Prozessaktion eines Dienstes aufschreibt.
  *
- * @author haphuong
+ * @author Phuong Anh Ha
  */
 public class JournalRecord {
     /**
@@ -43,14 +43,14 @@ public class JournalRecord {
      * Initialisiert den Protokolleintrag.
      */
     public JournalRecord(String id, ActionType actionType, ObjectType objectType,
-            String objectId, String userId, String detail, Timestamp time) {
+            String objectId, String userId, Timestamp time, String detail) {
         this.id = id;
         this.actionType = actionType;
         this.objectType = objectType;
         this.objectId = objectId;
         this.userId = userId;
-        this.detail = detail;
         this.time = time;
+        this.detail = detail;
     }
 
     /**
@@ -60,16 +60,17 @@ public class JournalRecord {
      * verweist
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
-    public JournalRecord(ResultSet results) throws SQLException {
+    JournalRecord(ResultSet results) throws SQLException {
         this(
             results.getString("id"),
-            ActionType.valueOf((results.getString("action_type"))),
+            ActionType.valueOf(results.getString("action_type")),
+            //TODO: Utility
             results.getString("object_type") == null ? null :
                 ObjectType.valueOf(results.getString("object_type")),
             results.getString("object_id"),
             results.getString("user_id"),
-            results.getString("detail"),
-            results.getTimestamp("time")
+            results.getTimestamp("time"),
+            results.getString("detail")
         );
     }
 
@@ -109,16 +110,16 @@ public class JournalRecord {
     }
 
     /**
-     * Beschreibung des Protokolleintrags.
-     */
-    public String getDetail() {
-        return this.detail;
-    }
-
-    /**
      * Zeitstempel.
      */
     public Timestamp getTime() {
         return this.time;
+    }
+
+    /**
+     * Beschreibung des Protokolleintrags.
+     */
+    public String getDetail() {
+        return this.detail;
     }
 }

@@ -10,14 +10,16 @@ CREATE TABLE settings (
     dosv_applications_update_time TIMESTAMP
 );
 
-INSERT INTO settings (semester) VALUES ('2014WS');
-
 CREATE TABLE journal_record (
     id VARCHAR(256) PRIMARY KEY,
     action_type VARCHAR(256) NOT NULL,
     object_type VARCHAR(256),
     object_id VARCHAR(256),
-    user_id VARCHAR(256) NOT NULL,
-    detail TEXT,
-    time TIMESTAMP NOT NULL
+    user_id VARCHAR(256) REFERENCES "user" (id),
+    time TIMESTAMP NOT NULL,
+    detail TEXT 
 );
+
+INSERT INTO settings (semester) VALUES ('2014WS');
+
+

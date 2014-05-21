@@ -20,6 +20,7 @@ public class ApplicationServiceTest extends HubTest {
     public void testCreateUser() {
         String email = "moss@example.org";
         User user = this.service.createUser("Maurice", email);
+//        this.service.getJournal().getRecord(id)
         assertEquals(email, user.getEmail());
     }
 
@@ -59,11 +60,5 @@ public class ApplicationServiceTest extends HubTest {
     @Test
     public void testGetSettings() {
         service.getSettings();
-    }
-
-    @Test
-    public void testGetJournal() throws SQLException {
-        Journal journal = service.getJournal();
-        journal.getJournal("1");
     }
 }

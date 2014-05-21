@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -22,7 +23,7 @@ import de.huberlin.cms.hub.JournalRecord.ObjectType;
  * Respräsentiert das Protokollbuch, welches die gesamte Prozessaktionen eines Dienstes
  * aufschreibt.
  *
- * @author haphuong
+ * @author Phuong Anh Ha
  */
 public class Journal {
     private ApplicationService service;
@@ -49,20 +50,19 @@ public class Journal {
      * @param userId ID des Nutzers
      * @param detail Beschreibung des Protokolleintrags
      * @return den Protokolleintrag
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
+     * @throws SQLException falls ein DatenbankABFRAGEfehler auftritt  ????
      */
     public JournalRecord record(ActionType actionType, ObjectType objectType,
             String objectId, String userId, String detail) {
-
+        //TODO: test SQLException wenn actionType==null
         if (actionType == null) {
-            throw new IllegalArgumentException("illegal actionType: null");
+            throw new NullPointerException("illegal actionType: null");
         }
-        if (userId.isEmpty()) {
+        if (objectId == null&&objectType!=null) {
             throw new IllegalArgumentException("illegal userID: empty");
         }
 
-        java.util.Date date = new java.util.Date();
-        Timestamp time = new Timestamp(date.getTime());
+        Timestamp time = new Timestamp(new Date().getTime());
 
         try {
             String id = Integer.toString(new Random().nextInt());
@@ -73,8 +73,9 @@ public class Journal {
             statement.setString(3, objectType == null ? null : objectType.toString());
             statement.setString(4, objectId);
             statement.setString(5, userId);
-            statement.setString(6, detail);
-            statement.setTimestamp(7, time);
+            statement.setTimestamp(6, time);
+            statement.setString(7, detail);
+            System.out.println(statement);
             statement.executeUpdate();
             return this.getRecord(id);
         } catch (SQLException e) {
@@ -89,19 +90,20 @@ public class Journal {
      * @return den Protokolleintrag mit der spezifizierten ID
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
-    public JournalRecord getRecord(String id) throws SQLException {
-        if (id.isEmpty()) {
-            throw new IllegalArgumentException("illegal recordID: empty");
+    public JournalRecord getRecord(String id) {
+        try {
+            PreparedStatement statement =
+                this.db.prepareStatement("SELECT * FROM journal_record WHERE id = ?");
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException("illegal Id: record does not exist");
+            }
+            return new JournalRecord(results);
         }
-
-        PreparedStatement statement =
-            this.db.prepareStatement("SELECT * FROM journal_record WHERE id = ?");
-        statement.setString(1, id);
-        ResultSet results = statement.executeQuery();
-        if (!results.next()) {
-            throw new IllegalArgumentException("illegal recordID: record does not exist");
+        catch (SQLException e)                                                                                                                                                                                                                                                                                            {
+            throw new IOError(e);
         }
-        return new JournalRecord(results);
     }
 
     /**
@@ -117,9 +119,10 @@ public class Journal {
             SQLException {
         List<JournalRecord> journal = new ArrayList <JournalRecord>();
         String sql;
-        if (objectType == null) {
+        //TODO: beide?
+        if (objectType == null||objectId.isEmpty()) {
             sql = "SELECT * FROM journal_record WHERE object_type IS NULL AND "
-                + "object_id=?";
+                + "object_id IS NULL";
         } else {
             sql = "SELECT * FROM journal_record WHERE object_type = '" + objectType
                 + "' AND object_id=?";
@@ -141,19 +144,20 @@ public class Journal {
      * @return alle Protokolleinträge, die von dem Nutzer bearbeitet wurden
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
-    public List<JournalRecord> getJournal(String userId) throws SQLException {
-        if (userId.isEmpty()) {
-            throw new IllegalArgumentException("illegal userID: empty");
+    public List<JournalRecord> getJournal(String userId) {
+        try {
+            List<JournalRecord> journal = new ArrayList <JournalRecord>();
+            PreparedStatement statement =
+                this.db.prepareStatement("SELECT * FROM journal_record WHERE user_id = ?");
+            statement.setString(1, userId);
+            ResultSet results = statement.executeQuery();
+            while (results.next()) {
+                journal.add(new JournalRecord(results));
+            }
+            return journal;
         }
-
-        List<JournalRecord> journal = new ArrayList <JournalRecord>();
-        PreparedStatement statement =
-            this.db.prepareStatement("SELECT * FROM journal_record WHERE user_id = ?");
-        statement.setString(1, userId);
-        ResultSet results = statement.executeQuery();
-        while (results.next()) {
-            journal.add(new JournalRecord(results));
+        catch (SQLException e) {
+            throw new IOError(e);
         }
-        return journal;
     }
 }
