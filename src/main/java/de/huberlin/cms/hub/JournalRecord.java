@@ -64,9 +64,7 @@ public class JournalRecord {
         this(
             results.getString("id"),
             ActionType.valueOf(results.getString("action_type")),
-            //TODO: Utility
-            results.getString("object_type") == null ? null :
-                ObjectType.valueOf(results.getString("object_type")),
+            Util.valueOfEnum(ObjectType.class, results.getString("object_type")),
             results.getString("object_id"),
             results.getString("user_id"),
             results.getTimestamp("time"),

@@ -17,9 +17,7 @@ CREATE TABLE journal_record (
     object_id VARCHAR(256),
     user_id VARCHAR(256) REFERENCES "user" (id),
     time TIMESTAMP NOT NULL,
-    detail TEXT 
+    detail TEXT
 );
 
 INSERT INTO settings (semester) VALUES ('2014WS');
-
-

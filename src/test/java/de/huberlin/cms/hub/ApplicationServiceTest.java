@@ -7,7 +7,6 @@ package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import org.junit.Test;
@@ -20,7 +19,6 @@ public class ApplicationServiceTest extends HubTest {
     public void testCreateUser() {
         String email = "moss@example.org";
         User user = this.service.createUser("Maurice", email);
-//        this.service.getJournal().getRecord(id)
         assertEquals(email, user.getEmail());
     }
 

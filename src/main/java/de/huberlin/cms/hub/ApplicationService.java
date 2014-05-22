@@ -17,7 +17,6 @@ import java.util.Properties;
 import java.util.Random;
 
 import de.huberlin.cms.hub.JournalRecord.ActionType;
-import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
@@ -96,6 +95,7 @@ public class ApplicationService {
         }
 
         try {
+            this.db.setAutoCommit(false);
             // TODO: besseres Format für zufällige IDs
             String id = Integer.toString(new Random().nextInt());
             PreparedStatement statement =
@@ -104,7 +104,9 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setString(3, email);
             statement.executeUpdate();
-            journal.record(ActionType.USER_CREATED, ObjectType.USER, id, null, null);
+            journal.record(ActionType.USER_CREATED, null, null, null, id);
+            this.db.commit();
+            this.db.setAutoCommit(true);
             return this.getUser(id);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -114,7 +116,7 @@ public class ApplicationService {
     /**
      * Gibt den Benutzer mit der spezifizierten ID zurück.
      *
-     * @param id ID des Benutzer
+     * @param id ID des Benutzers
      * @return Benutzer mit der spezifizierten ID
      * @throws IllegalArgumentException wenn kein Benutzer mit der spezifizierten ID
      *     existiert

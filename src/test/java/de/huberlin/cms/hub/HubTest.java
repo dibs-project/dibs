@@ -90,7 +90,6 @@ public class HubTest {
             for (String table : tables) {
                 statement = this.db.prepareStatement(
                     String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
-                System.out.println(statement);
                 statement.executeUpdate();
             }
 
@@ -116,4 +115,3 @@ public class HubTest {
         }
     }
 }
-
