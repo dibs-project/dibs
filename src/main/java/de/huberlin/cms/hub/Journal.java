@@ -49,9 +49,10 @@ public class Journal {
      * @param userId ID des Nutzers
      * @param detail Beschreibung des Protokolleintrags
      * @return den Protokolleintrag
-     * @throws NullPointerException wenn es keine Aktion <code>actionType</code> hingewiesen wird.
-     * @throws IllegalArgumentException wenn <code>actionType</code> leer ist  oder 
-     *     <code>objectId</code> und <code>objectType</code> nicht gleichzeitig null sein
+     * @throws NullPointerException wenn kein Aktiontyp <code>actionType</code>
+     *     zu dem Beitrag hingewiesen wird
+     * @throws IllegalArgumentException wenn der Beitrag um kein Objekt geht aber
+     *     code>objectId</code> und <code>objectType</code> nicht gleich null sind
      */
     public JournalRecord record(ActionType actionType, ObjectType objectType,
             String objectId, String userId, String detail) {
@@ -113,10 +114,10 @@ public class Journal {
      * @param objectType Typ des Objekts
      * @param objectId ID des Objekts
      * @return alle Protokolleinträge mit dem spezifizierten Typ und der ID des Objekts
-     * @throws NullPointerException wenn es sich um ein existierte Objekt geht, aber die ID
-     *     <code>objectId</code> leer ist.
-     * @throws IllegalArgumentException wenn es sich um ein leere Objekt geht, aber die ID
-     *     <code>objectId</code> nicht leer ist.
+     * @throws NullPointerException wenn es sich um ein existiertes Objekt geht, aber die
+     *     <code>objectId</code> leer ist
+     * @throws IllegalArgumentException wenn es sich um kein Objekt geht, aber
+     *     <code>objectId</code> und <code>objectType</code> nicht gleich null sind
      */
     public List<JournalRecord> getJournal(ObjectType objectType, String objectId) {
         try {
