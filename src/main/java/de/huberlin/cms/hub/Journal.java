@@ -102,8 +102,7 @@ public class Journal {
                 throw new IllegalArgumentException("illegal id: record does not exist");
             }
             return new JournalRecord(results);
-        }
-        catch (SQLException e)                                                                                                                                                                                                                                                                                            {
+        } catch (SQLException e) {
             throw new IOError(e);
         }
     }
@@ -175,8 +174,7 @@ public class Journal {
                 journal.add(new JournalRecord(results));
             }
             return journal;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new IOError(e);
         }
     }
