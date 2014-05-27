@@ -15,7 +15,7 @@ CREATE TABLE journal_record (
     action_type VARCHAR(256) NOT NULL,
     object_type VARCHAR(256),
     object_id VARCHAR(256),
-    user_id VARCHAR(256) REFERENCES "user" (id),
+    user_id VARCHAR(256) REFERENCES "user",
     time TIMESTAMP NOT NULL,
     detail TEXT
 );

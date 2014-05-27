@@ -20,8 +20,8 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
- * Respräsentiert das Protokollbuch, welches die gesamten Prozessaktionen eines Dienstes
- * erfasst.
+ * Respräsentiert das Protokollbuch, welches die gesamten Prozessaktionen des 
+ * Bewerbungsdienstes erfasst.
  *
  * @author Phuong Anh Ha
  */
@@ -44,25 +44,22 @@ public class Journal {
      * Schreibt einen Protokolleintrag in das Protokollbuch.
      *
      * @param actionType Typ der ausgeführten Aktion
-     * @param objectType Typ des Objekts
-     * @param objectId ID des Objekts
-     * @param userId ID des Nutzers
-     * @param detail Beschreibung des Protokolleintrags
+     * @param objectType Typ des Objekts, das die Aktion ausführt
+     * @param objectId ID des Objekts, das die Aktion ausführt
+     * @param userId ID des Nutzers, der die Aktion ausführt
+     * @param detail Detailbeschreibung
      * @return Protokolleintrag
      * @throws NullPointerException wenn kein Aktionstyp <code>actionType</code>
      *     übergeben wurde
-     * @throws IllegalArgumentException wenn es sich bei dem Eintrag um kein Objekt 
-     *     handelt und wenn <code>objectId</code> oder <code>objectType</code> 
-     *     nicht null ist
+     * @throws IllegalArgumentException wenn es sich bei dem Eintrag um kein Objekt
+     *     handelt und wenn nur ein Argument <code>objectId</code> oder <code>objectType
+     *     </code> null ist
      */
     public JournalRecord record(ActionType actionType, ObjectType objectType,
             String objectId, String userId, String detail) {
-        if (actionType == null) {
-            throw new NullPointerException("illegal actionType: null");
-        }
         if ((objectType != null && objectId == null) ||
                 (objectType == null && objectId != null)) {
-            throw new IllegalArgumentException("illegal objectType: empty");
+            throw new IllegalArgumentException("illegal objectType, objectId: only one null");
         }
 
         try {
@@ -110,8 +107,8 @@ public class Journal {
     /**
      * Gibt alle Protokolleinträge für das spezifierte Objekt zurück.
      *
-     * @param objectType Typ des Objekts
-     * @param objectId ID des Objekts
+     * @param objectType Typ des Objekts, das die Aktion ausführt
+     * @param objectId ID des Objekts, das die Aktion ausführt
      * @return Protokoll für das spezifizierte Objekt
      * @throws NullPointerException wenn ein <code>objectType</code> übergeben wurde
      *     aber die dazugehörige <code>objectId</code> fehlt
@@ -152,12 +149,12 @@ public class Journal {
     /**
      * Gibt alle Protokolleinträge für die spezifizierte Nutzer-ID zurück.
      *
-     * @param userId ID des Nutzers
+     * @param userId ID des Nutzers, der die Aktion ausführt
      * @return Protokolleinträge des Nutzers
      */
     public List<JournalRecord> getJournal(String userId) {
         try {
-            List<JournalRecord> journal = new ArrayList <JournalRecord>();
+            List<JournalRecord> journal = new ArrayList<JournalRecord>();
             PreparedStatement statement;
 
             if (userId != null) {

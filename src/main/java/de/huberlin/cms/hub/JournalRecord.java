@@ -19,7 +19,6 @@ public class JournalRecord {
      * Typ der Aktion des Dienstes.
      */
     public enum ActionType {
-        /** Nutzer anlegen. */
         USER_CREATED
     };
 
@@ -27,7 +26,6 @@ public class JournalRecord {
      * Typ des Objekts des Dienstes.
      */
     public enum ObjectType {
-        /** Benutzer. */
         USER
     };
 
@@ -87,21 +85,21 @@ public class JournalRecord {
     }
 
     /**
-     * Typ des Objekts.
+     * Typ des Objekts, das die Aktion ausführt.
      */
     public ObjectType getObjectType() {
         return this.objectType;
     }
 
     /**
-     * ID des Objekts.
+     * ID des Objekts, das die Aktion ausführt.
      */
     public String getObjectId() {
         return this.objectId;
     }
 
     /**
-     * ID des Nutzers.
+     * ID des Nutzers, der die Aktion ausführt.
      */
     public String getUserId() {
         return this.userId;
@@ -115,7 +113,7 @@ public class JournalRecord {
     }
 
     /**
-     * Beschreibung des Protokolleintrags.
+     * Detailbeschreibung.
      */
     public String getDetail() {
         return this.detail;
