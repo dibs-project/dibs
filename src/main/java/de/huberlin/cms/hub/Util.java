@@ -6,9 +6,9 @@
 package de.huberlin.cms.hub;
 
 /**
+ * Utility
  *
  * @author Sven Pfaller
- *
  */
 public class Util {
     /** @see Enum#valueOf */
