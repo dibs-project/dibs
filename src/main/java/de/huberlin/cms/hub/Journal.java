@@ -52,7 +52,7 @@ public class Journal {
      * @throws NullPointerException wenn kein Aktiontyp <code>actionType</code>
      *     zu dem Beitrag hingewiesen wird
      * @throws IllegalArgumentException wenn der Beitrag um kein Objekt geht aber
-     *     code>objectId</code> und <code>objectType</code> nicht gleich null sind
+     *     <code>objectId</code> und <code>objectType</code> nicht gleich null sind
      */
     public JournalRecord record(ActionType actionType, ObjectType objectType,
             String objectId, String userId, String detail) {
