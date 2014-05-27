@@ -10,21 +10,21 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 /**
- * Eintrag im Protokollbuch, den eine Prozessaktion eines Dienstes aufschreibt.
+ * Eintrag im Protokollbuch, der eine Prozessaktion eines Dienstes erfasst.
  *
  * @author Phuong Anh Ha
  */
 public class JournalRecord {
     /**
-     * Typ der Aktion des Bewerbungsdienstes.
+     * Typ der Aktion des Dienstes.
      */
     public enum ActionType {
-        /** Nutzer erstellen. */
+        /** Nutzer anlegen. */
         USER_CREATED
     };
 
     /**
-     * Typ des Objekts des Bewerbungsdienstes.
+     * Typ des Objekts des Dienstes.
      */
     public enum ObjectType {
         /** Benutzer. */
@@ -56,8 +56,8 @@ public class JournalRecord {
     /**
      * Initialisiert den Protokolleintrag über den Datenbankcursor.
      *
-     * @param results Datenbankzeiger, der auf eine Zeile aus <code>journal_record</code>
-     * verweist
+     * @param results Datenbankcursor, der auf eine Zeile aus <code>journal_record</code>
+     *     verweist
      * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
      */
     JournalRecord(ResultSet results) throws SQLException {

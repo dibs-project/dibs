@@ -20,8 +20,8 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
- * Respräsentiert das Protokollbuch, welches die gesamte Prozessaktionen eines Dienstes
- * aufschreibt.
+ * Respräsentiert das Protokollbuch, welches die gesamten Prozessaktionen eines Dienstes
+ * erfasst.
  *
  * @author Phuong Anh Ha
  */
@@ -30,7 +30,7 @@ public class Journal {
     private Connection db;
 
     /**
-     * Initialisiert den Protokollbuch, dass es den Bewerbungsdienst protokolliert.
+     * Initialisiert das Protokollbuch, damit es den Bewerbungsdienst protokolliert.
      *
      * @param service Bewerbungsdienst
      * @see ApplicationService#getJournal()
@@ -41,18 +41,19 @@ public class Journal {
     }
 
     /**
-     * Schreibt einen Protokolleintrag ins Protokollbuch.
+     * Schreibt einen Protokolleintrag in das Protokollbuch.
      *
      * @param actionType Typ der ausgeführten Aktion
      * @param objectType Typ des Objekts
      * @param objectId ID des Objekts
      * @param userId ID des Nutzers
      * @param detail Beschreibung des Protokolleintrags
-     * @return den Protokolleintrag
-     * @throws NullPointerException wenn kein Aktiontyp <code>actionType</code>
-     *     zu dem Beitrag hingewiesen wird
-     * @throws IllegalArgumentException wenn der Beitrag um kein Objekt geht aber
-     *     <code>objectId</code> und <code>objectType</code> nicht gleich null sind
+     * @return Protokolleintrag
+     * @throws NullPointerException wenn kein Aktionstyp <code>actionType</code>
+     *     übergeben wurde
+     * @throws IllegalArgumentException wenn es sich bei dem Eintrag um kein Objekt 
+     *     handelt und wenn <code>objectId</code> oder <code>objectType</code> 
+     *     nicht null ist
      */
     public JournalRecord record(ActionType actionType, ObjectType objectType,
             String objectId, String userId, String detail) {
@@ -87,8 +88,8 @@ public class Journal {
      * Gibt den Protokolleintrag mit der spezifizierten ID zurück.
      *
      * @param id ID des Protokolleintrags
-     * @return den Protokolleintrag mit der spezifizierten ID
-     * @throws IllegalArgumentException wenn kein Protokollsbeitrag mit der spezifizierten
+     * @return Protokolleintrag mit der spezifizierten ID
+     * @throws IllegalArgumentException wenn kein Protokolleintrag mit der spezifizierten
      *     ID existiert
      */
     public JournalRecord getRecord(String id) {
@@ -108,16 +109,15 @@ public class Journal {
     }
 
     /**
-     * Gibt alle Protokolleinträge mit dem spezifizierten Typ und der ID des Objektes
-     * zurück.
+     * Gibt alle Protokolleinträge für das spezifierte Objekt zurück.
      *
      * @param objectType Typ des Objekts
      * @param objectId ID des Objekts
-     * @return alle Protokolleinträge mit dem spezifizierten Typ und der ID des Objekts
-     * @throws NullPointerException wenn es sich um ein existiertes Objekt geht, aber die
-     *     <code>objectId</code> leer ist
-     * @throws IllegalArgumentException wenn es sich um kein Objekt geht, aber
-     *     <code>objectId</code> und <code>objectType</code> nicht gleich null sind
+     * @return Protokoll für das spezifizierte Objekt
+     * @throws NullPointerException wenn ein <code>objectType</code> übergeben wurde
+     *     aber die dazugehörige <code>objectId</code> fehlt
+     * @throws IllegalArgumentException wenn eine <code>objectId</code> übergeben wurde
+     *     aber der dazugehörige <code>objectType</code> fehlt
      */
     public List<JournalRecord> getJournal(ObjectType objectType, String objectId) {
         try {
@@ -151,10 +151,10 @@ public class Journal {
     }
 
     /**
-     * Gibt alle Protokolleinträge mit der Nutzer-ID zurück.
+     * Gibt alle Protokolleinträge für die spezifizierte Nutzer-ID zurück.
      *
      * @param userId ID des Nutzers
-     * @return alle Protokolleinträge, die von dem Nutzer bearbeitet wurden
+     * @return Protokolleinträge des Nutzers
      */
     public List<JournalRecord> getJournal(String userId) {
         try {
