@@ -1,49 +1,114 @@
 /*
  * HUB
- * Copyright (C) 2014  Humboldt-Universität zu Berlin
+ * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
 package de.huberlin.cms.hub;
 
-import java.util.logging.Logger; // TODO
+import java.io.IOError;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Random;
+import java.util.logging.Logger;
 
 /**
- * Gewöhnliche Katze. Dient dazu unseren Code-Stil und unsere Konventionen zu
- * demonstrieren.
+ * Gewöhnliche Katze. Demonstriert den HUB-Code-Stil, -Konventionen und häufig verwendete
+ * Muster.
  * <p>
- * Anmerkung: Beachte die Sortierung der Attribute / Methoden.
+ * Beachte auch die Sortierung der Attribute und Methoden.
+ * <p>
+ * Cat ist ein Datenbankobjekt und eine dazugehörige Tabelle hätte folgende Struktur:
+ * <pre>
+ * CREATE TABLE cat (
+ *     id VARCHAR(256) PRIMARY KEY,
+ *     name VARCHAR(256) NOT NULL,
+ *     mood INTEGER NOT NULL
+ * );
+ * </pre>
  *
- * @author pfallers
+ * @author Sven Pfaller
  */
 public class Cat {
-    public final static int TAIL_COUNT = 1;
+    public final static String FAVORITE_FOOD = "Cheezburger";
 
-    private static Logger log;// = LoggerFactory.getLogger(Cat.class);
+    private static Logger logger = Logger.getLogger("de.huberlin.cms.hub");
 
-    public String name;
+    private String id;
+    private String name;
+    private int mood;
+    private ApplicationService service;
 
-    public Cat(String name) {
+    /**
+     * Gibt eine zufällige Speise zurück.
+     *
+     * @return zufällige Speise
+     */
+    public static String getRandomFood() {
+        return new String[]{"Cheezburger", "Mouse"}[new Random().nextInt(2)];
+    }
+
+    Cat(String id, String name, int mood, ApplicationService service) {
+        this.id = id;
         this.name = name;
+        this.mood = mood;
+        this.service = service;
+    }
+
+    Cat(ResultSet results, ApplicationService service) throws SQLException {
+        // initialisiert die Cat über den Datenbankcursor
+        this(results.getString("id"), results.getString("name"),
+            results.getInt("mood"), service);
     }
 
     /**
-     * Bewegt die Katze zu einem spezifizierten Ort.
+     * Füttert die Cat.
      *
-     * @param place
-     * @throws IllegalArgumentException
+     * @param food Name der Speise (z.B. Cheezburger)
+     * @throws IllegalArgumentException wenn <code>food</code> leer ist
      */
-    public void move(String place) throws IllegalArgumentException {
+    public void feed(String food) {
+        if (food.isEmpty()) {
+            throw new IllegalArgumentException("illegal food: empty");
+        }
+
+        this.mood += 1;
+        try {
+            PreparedStatement statement = this.service.getDb().prepareStatement(
+                "UPDATE cat SET mood = mood + 1 WHERE id = ?");
+            statement.setString(1, this.id);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+
+        // nach dem Essen hat die Cat Energie zum Nachdenken
         think();
     }
 
     /**
-     * (Ruf-) Name der Katze.
+     * Eindeutige ID.
+     */
+    public String getId() {
+        return this.id;
+    }
+
+    /**
+     * (Ruf-) Name der Cat.
      */
     public String getName() {
-        return name;
+        return this.name;
+    }
+
+    /**
+     * Stimmung, wobei positive Werte gute und negative Werte schlechte Laune bedeuten.
+     */
+    public double getMood() {
+        return this.mood;
     }
 
     private String think() {
-        return "Mouse";
+        logger.fine("running cat AI");
+        return Cat.FAVORITE_FOOD;
     }
 }
