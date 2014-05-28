@@ -149,7 +149,7 @@ public class Journal {
     /**
      * Gibt alle Protokolleinträge für die spezifizierte Nutzer-ID zurück.
      *
-     * @param userId ID des Nutzers, der die Aktion ausführt
+     * @param userId ID des Nutzers
      * @return Protokolleinträge des Nutzers
      */
     public List<JournalRecord> getJournal(String userId) {
