@@ -18,13 +18,16 @@ public class User {
     private String name;
     private String email;
 
-    /**
-     * Initialisiert den User.
-     */
     User(String id, String name, String email) {
         this.id = id;
         this.name = name;
         this.email = email;
+    }
+
+    User(ResultSet results) throws SQLException {
+        // initialisiert den User über den Datenbankcursor
+        this(results.getString("id"), results.getString("name"),
+            results.getString("email"));
     }
 
     /**
@@ -46,16 +49,5 @@ public class User {
      */
     public String getEmail() {
         return this.email;
-    }
-
-    /**
-     * Initialisiert den User via Datenbankcursor.
-     *
-     * @param results Datenbankcursor, der auf eine Zeile aus <code>user</code> verweist
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
-     */
-    User(ResultSet results) throws SQLException {
-        this(results.getString("id"), results.getString("name"),
-            results.getString("email"));
     }
 }
