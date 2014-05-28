@@ -23,8 +23,8 @@ import java.util.Properties;
  * @author Sven Pfaller
  */
 public class ApplicationService {
-    protected Connection db;
-    protected Properties config;
+    private Properties config;
+    private Connection db;
 
     /**
      * Stellt eine Verbindung zur Datenbank her.
@@ -48,7 +48,6 @@ public class ApplicationService {
         String user = config.getProperty("db_user", "");
         String password = config.getProperty("db_password", "");
         Connection db = DriverManager.getConnection(url, user, password);
-        db.setAutoCommit(false);
         return db;
     }
 
@@ -80,10 +79,9 @@ public class ApplicationService {
     public void setSemester(String semester) {
         try {
             PreparedStatement statement =
-                db.prepareStatement("UPDATE dosv.settings SET semester = ?");
+                db.prepareStatement("UPDATE settings SET semester = ?");
             statement.setString(1, semester);
             statement.executeUpdate();
-            db.commit();
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -118,8 +116,7 @@ public class ApplicationService {
      */
     public Settings getSettings() {
         try {
-            PreparedStatement statement =
-                db.prepareStatement("SELECT * FROM dosv.settings");
+            PreparedStatement statement = db.prepareStatement("SELECT * FROM settings");
             ResultSet results = statement.executeQuery();
             results.next();
             return new Settings(results);
