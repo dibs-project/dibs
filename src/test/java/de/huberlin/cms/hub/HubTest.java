@@ -30,7 +30,7 @@ import org.junit.rules.ExpectedException;
  *
  * @author Sven Pfaller
  */
-public class HubTest {
+public abstract class HubTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 

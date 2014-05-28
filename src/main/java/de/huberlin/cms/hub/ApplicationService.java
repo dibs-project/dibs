@@ -151,7 +151,7 @@ public class ApplicationService {
     /**
      * Stellt das aktuelle Semester für das Bewerbungssystem ein.
      *
-     * @param semester Neues aktuelle Semester.
+     * @param semester Neues aktuelles Semester.
      * @see Settings#getSemester()
      */
     public void setSemester(String semester) {

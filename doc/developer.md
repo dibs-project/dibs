@@ -5,7 +5,7 @@ Entwicklungsumgebung einrichten
 -------------------------------
 
 Um die Testumgebung zu konfigurieren, kopiere die Datei `test.default.properties` nach
-`test.properties` und passe sie deinen Bürfnissen an.
+`test.properties` und passe sie deinen Bedürfnissen an.
 
 Zum Testen benötigt HUB eine PostgreSQL-Datenbank. Standardmäßig wird angenommen, dass
 eine lokale Datenbank mit dem Namen "hub_test" existiert. In `README.md` ist beschrieben,
