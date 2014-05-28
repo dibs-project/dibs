@@ -8,8 +8,6 @@ package de.huberlin.cms.hub;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
 import org.junit.Before;
@@ -63,14 +61,14 @@ public class JournalTest extends HubTest {
     }
 
     @Test
-    public void testGetJournalObjectNullObjectId() {
+    public void testGetJournalObjectNonNullObjectId() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("objectId");
         journal.getJournal(null, "foo");
     }
 
     @Test
-    public void testGetJournalObjectNonNullObjectId() {
+    public void testGetJournalObjectNullObjectId() {
         this.exception.expect(NullPointerException.class);
         this.exception.expectMessage("objectId");
         journal.getJournal(ObjectType.USER, null);

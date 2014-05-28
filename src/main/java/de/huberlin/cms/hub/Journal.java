@@ -20,7 +20,7 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
- * Respräsentiert das Protokollbuch, welches die gesamten Prozessaktionen des 
+ * Respräsentiert das Protokollbuch, welches die gesamten Prozessaktionen des
  * Bewerbungsdienstes erfasst.
  *
  * @author Phuong Anh Ha
@@ -107,8 +107,8 @@ public class Journal {
     /**
      * Gibt alle Protokolleinträge für das spezifierte Objekt zurück.
      *
-     * @param objectType Typ des Objekts, das die Aktion ausführt
-     * @param objectId ID des Objekts, das die Aktion ausführt
+     * @param objectType Typ des Objekts
+     * @param objectId ID des Objekts
      * @return Protokoll für das spezifizierte Objekt
      * @throws NullPointerException wenn ein <code>objectType</code> übergeben wurde
      *     aber die dazugehörige <code>objectId</code> fehlt
