@@ -86,6 +86,7 @@ public abstract class HubTest {
             this.db.setAutoCommit(false);
             PreparedStatement statement;
 
+            // TODO: Tabellen automatisch aus hub.sql lesen
             String[] tables = {"user", "settings"};
             for (String table : tables) {
                 statement = this.db.prepareStatement(
