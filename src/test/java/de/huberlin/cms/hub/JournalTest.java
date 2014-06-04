@@ -34,12 +34,6 @@ public class JournalTest extends HubTest {
     }
 
     @Test
-    public void testRecordNullActionType() {
-        this.exception.expect(NullPointerException.class);
-        journal.record(null, null, null, null, null);
-    }
-
-    @Test
     public void testGetRecord() {
         JournalRecord record = journal.record(ActionType.USER_CREATED, null, null, null, null);
         JournalRecord testRecord = journal.getRecord(record.getId());

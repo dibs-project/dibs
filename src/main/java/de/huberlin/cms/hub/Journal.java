@@ -49,8 +49,6 @@ public class Journal {
      * @param userId ID des Nutzers, der die Aktion ausführt
      * @param detail Detailbeschreibung
      * @return Protokolleintrag
-     * @throws NullPointerException wenn kein Aktionstyp <code>actionType</code>
-     *     übergeben wurde
      * @throws IllegalArgumentException wenn es sich bei dem Eintrag um kein Objekt
      *     handelt und wenn nur ein Argument <code>objectId</code> oder <code>objectType
      *     </code> null ist
