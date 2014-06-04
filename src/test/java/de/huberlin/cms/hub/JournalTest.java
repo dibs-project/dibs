@@ -30,7 +30,7 @@ public class JournalTest extends HubTest {
     @Test
     public void testRecord() {
         JournalRecord record = journal.record(ActionType.USER_CREATED, null, null, null, null);
-        assertTrue(record.getActionType().equals(ActionType.USER_CREATED));
+        assertEquals(ActionType.USER_CREATED, record.getActionType());
     }
 
     @Test
