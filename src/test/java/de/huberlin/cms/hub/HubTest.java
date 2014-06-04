@@ -30,7 +30,7 @@ import org.junit.rules.ExpectedException;
  *
  * @author Sven Pfaller
  */
-public class HubTest {
+public abstract class HubTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -86,6 +86,7 @@ public class HubTest {
             this.db.setAutoCommit(false);
             PreparedStatement statement;
 
+            // TODO: Tabellen automatisch aus hub.sql lesen
             String[] tables = {"user", "settings", "journal_record"};
             for (String table : tables) {
                 statement = this.db.prepareStatement(
