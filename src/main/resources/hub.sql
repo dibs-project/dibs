@@ -10,4 +10,10 @@ CREATE TABLE settings (
     dosv_applications_update_time TIMESTAMP
 );
 
+CREATE TABLE course (
+    id VARCHAR(256) PRIMARY KEY,
+    name VARCHAR(256) NOT NULL,
+    capacity INT NOT NULL
+);
+
 INSERT INTO settings (semester) VALUES ('2014WS');

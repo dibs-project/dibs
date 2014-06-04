@@ -202,4 +202,51 @@ public class ApplicationService {
             throw new IOError(e);
         }
     }
+
+    /**
+     * Legt neuen Studiengang ein.
+     * @param name Name des Studiengangs
+     * @param capacity Kapazität des Studiengangs
+     * @param user Benutzer, der den Studiengang einlegt
+     * @return angelegter Studiengang
+     */
+    public Course createCourse(String name, int capacity, User user) {
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("illegal name: empty");
+        }
+
+        try {
+            // TODO: besseres Format für zufällige IDs
+            String id = Integer.toString(new Random().nextInt());
+            PreparedStatement statement =
+                db.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
+            statement.setString(1, id);
+            statement.setString(2, name);
+            statement.setInt(3, capacity);
+            statement.executeUpdate();
+            return this.getCourse(id);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Gibt den Studiengang mit spezifizierter ID zurück.
+     * @param id ID des Studiengangs
+     * @return Studiengang mit spezifizierter ID
+     */
+    public Course getCourse(String id) {
+        try {
+            PreparedStatement statement =
+                this.db.prepareStatement("SELECT * FROM course WHERE id = ?");
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException("illegal id: course does not exist");
+            }
+            return new Course(results, this);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
 }
