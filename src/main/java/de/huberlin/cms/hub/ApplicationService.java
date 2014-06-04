@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import de.huberlin.cms.hub.JournalRecord.ActionType;
+
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
  * <p>
@@ -28,6 +30,7 @@ import java.util.Random;
 public class ApplicationService {
     private Properties config;
     private Connection db;
+    private Journal journal;
 
     /**
      * Stellt eine Verbindung zur Datenbank her.
@@ -71,6 +74,7 @@ public class ApplicationService {
         defaults.setProperty("dosv_password", "");
         this.config = new Properties(defaults);
         this.config.putAll(config);
+        this.journal = new Journal(this);
     }
 
     /**
@@ -91,6 +95,7 @@ public class ApplicationService {
         }
 
         try {
+            this.db.setAutoCommit(false);
             // TODO: besseres Format für zufällige IDs
             String id = Integer.toString(new Random().nextInt());
             PreparedStatement statement =
@@ -99,6 +104,9 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setString(3, email);
             statement.executeUpdate();
+            journal.record(ActionType.USER_CREATED, null, null, null, id);
+            this.db.commit();
+            this.db.setAutoCommit(true);
             return this.getUser(id);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -108,7 +116,7 @@ public class ApplicationService {
     /**
      * Gibt den Benutzer mit der spezifizierten ID zurück.
      *
-     * @param id ID des Benutzer
+     * @param id ID des Benutzers
      * @return Benutzer mit der spezifizierten ID
      * @throws IllegalArgumentException wenn kein Benutzer mit der spezifizierten ID
      *     existiert
@@ -204,11 +212,11 @@ public class ApplicationService {
     }
 
     /**
-     * Legt neuen Studiengang ein.
-     * @param name Name des Studiengangs
-     * @param capacity Kapazität des Studiengangs
-     * @param user Benutzer, der den Studiengang einlegt
-     * @return angelegter Studiengang
+     * Legt neuen Studienangebot ein.
+     * @param name Name des Studienangebots
+     * @param capacity Kapazität des Studienangebots
+     * @param user Benutzer, der den Studienangebot einlegt
+     * @return angelegter Studienangebot
      */
     public Course createCourse(String name, int capacity, User user) {
         if (name.isEmpty()) {
@@ -216,6 +224,7 @@ public class ApplicationService {
         }
 
         try {
+            this.db.setAutoCommit(false);
             // TODO: besseres Format für zufällige IDs
             String id = Integer.toString(new Random().nextInt());
             PreparedStatement statement =
@@ -224,6 +233,9 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setInt(3, capacity);
             statement.executeUpdate();
+            journal.record(ActionType.USER_CREATED, null, null, null, id);
+            this.db.commit();
+            this.db.setAutoCommit(true);
             return this.getCourse(id);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -231,9 +243,9 @@ public class ApplicationService {
     }
 
     /**
-     * Gibt den Studiengang mit spezifizierter ID zurück.
-     * @param id ID des Studiengangs
-     * @return Studiengang mit spezifizierter ID
+     * Gibt den Studienangebot mit spezifizierter ID zurück.
+     * @param id ID des Studienangebots
+     * @return Studienangebot mit spezifizierter ID
      */
     public Course getCourse(String id) {
         try {
@@ -248,5 +260,11 @@ public class ApplicationService {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+    }
+ /**
+     * Das Protokollbuch des Bewerbungsdienstes.
+     */
+    public Journal getJournal() {
+        return new Journal(this);
     }
 }

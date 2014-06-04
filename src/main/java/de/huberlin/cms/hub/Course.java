@@ -9,8 +9,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Studiengang des Bewerbungsdienst
- * @author Phuong Anh Ha 
+ * Studienangebot des Bewerbungsdienst
+ *
+ * @author Phuong Anh Ha
  *
  */
 public class Course {
@@ -20,7 +21,7 @@ public class Course {
     private ApplicationService service;
 
     /**
-     * Initialisiert den Studiengang.
+     * Initialisiert den Studienangebot.
      */
     Course(String id, String name, int capacity, ApplicationService service) {
         this.id = id;
@@ -49,14 +50,14 @@ public class Course {
     }
 
     /**
-     * Name des Studiengangs.
+     * Name des Studienangebots.
      */
     public String getName() {
         return this.name;
     }
 
     /**
-     * Kapazität des Studiengangs.
+     * Kapazität des Studienangebots.
      */
     public int capacity() {
         return this.capacity;
