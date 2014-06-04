@@ -49,9 +49,8 @@ public class Journal {
      * @param userId ID des Nutzers, der die Aktion ausführt
      * @param detail Detailbeschreibung
      * @return Protokolleintrag
-     * @throws IllegalArgumentException wenn es sich um kein Objekt
-     *     handelt aber ein Argument <code>objectId</code> oder <code>objectType
-     *     </code> nicht null ist
+     * @throws IllegalArgumentException wenn nur ein Argument <code>objectType</code> oder
+     *     <code>objectId</code> null ist
      */
     public JournalRecord record(ActionType actionType, ObjectType objectType,
             String objectId, String userId, String detail) {
