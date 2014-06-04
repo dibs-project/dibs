@@ -87,10 +87,10 @@ public abstract class HubTest {
             PreparedStatement statement;
 
             // TODO: Tabellen automatisch aus hub.sql lesen
-            String[] tables = {"user", "settings"};
+            String[] tables = {"user", "settings", "journal_record"};
             for (String table : tables) {
                 statement = this.db.prepareStatement(
-                    String.format("DROP TABLE IF EXISTS \"%s\"", table));
+                    String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
                 statement.executeUpdate();
             }
 

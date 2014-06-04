@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import de.huberlin.cms.hub.JournalRecord.ActionType;
+
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
  * <p>
@@ -28,6 +30,7 @@ import java.util.Random;
 public class ApplicationService {
     private Properties config;
     private Connection db;
+    private Journal journal;
 
     /**
      * Stellt eine Verbindung zur Datenbank her.
@@ -71,6 +74,7 @@ public class ApplicationService {
         defaults.setProperty("dosv_password", "");
         this.config = new Properties(defaults);
         this.config.putAll(config);
+        this.journal = new Journal(this);
     }
 
     /**
@@ -91,6 +95,7 @@ public class ApplicationService {
         }
 
         try {
+            this.db.setAutoCommit(false);
             // TODO: besseres Format für zufällige IDs
             String id = Integer.toString(new Random().nextInt());
             PreparedStatement statement =
@@ -99,6 +104,9 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setString(3, email);
             statement.executeUpdate();
+            journal.record(ActionType.USER_CREATED, null, null, null, id);
+            this.db.commit();
+            this.db.setAutoCommit(true);
             return this.getUser(id);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -108,7 +116,7 @@ public class ApplicationService {
     /**
      * Gibt den Benutzer mit der spezifizierten ID zurück.
      *
-     * @param id ID des Benutzer
+     * @param id ID des Benutzers
      * @return Benutzer mit der spezifizierten ID
      * @throws IllegalArgumentException wenn kein Benutzer mit der spezifizierten ID
      *     existiert
@@ -201,5 +209,12 @@ public class ApplicationService {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+    }
+
+    /**
+     * Das Protokollbuch des Bewerbungsdienstes.
+     */
+    public Journal getJournal() {
+        return new Journal(this);
     }
 }
