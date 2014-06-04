@@ -17,11 +17,13 @@ import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 
 /**
  * Basisklasse für HUB-Tests. Übernimmt die Initialisierung (und das anschließende
- * Aufräumen) der Testumgebung. Für Tests werden eine Datenbankverbindung und das
- * Bewerbungssystem bereitgestellt.
+ * Aufräumen) der Testumgebung. Für Tests werden eine Datenbankverbindung, das
+ * Bewerbungssystem und ein allgemeiner Benutzer bereitgestellt.
  * <p>
  * Die Konfiguration der Testumgebung wird aus der Datei <code>test.properties</code>
  * gelesen.
@@ -29,6 +31,9 @@ import org.junit.Before;
  * @author Sven Pfaller
  */
 public abstract class HubTest {
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
     /**
      * Konfiguration der Testumgebung.
      *
@@ -46,6 +51,11 @@ public abstract class HubTest {
      */
     protected ApplicationService service;
 
+    /**
+     * Allgemeiner Benutzer.
+     */
+    protected User user;
+
     @Before
     public void commonBefore() throws IOException, SQLException {
         this.config = new Properties();
@@ -60,6 +70,7 @@ public abstract class HubTest {
         this.initDatabase();
 
         this.service = new ApplicationService(this.db, this.config);
+        this.user = this.service.createUser("Jen", "barber@example.org");
     }
 
     @After
@@ -73,9 +84,15 @@ public abstract class HubTest {
         try {
 
             this.db.setAutoCommit(false);
-            PreparedStatement statement =
-                this.db.prepareStatement("DROP TABLE IF EXISTS settings");
-            statement.executeUpdate();
+            PreparedStatement statement;
+
+            // TODO: Tabellen automatisch aus hub.sql lesen
+            String[] tables = {"user", "settings"};
+            for (String table : tables) {
+                statement = this.db.prepareStatement(
+                    String.format("DROP TABLE IF EXISTS \"%s\"", table));
+                statement.executeUpdate();
+            }
 
             InputStreamReader reader =
                 new InputStreamReader(this.getClass().getResourceAsStream("/hub.sql"));
