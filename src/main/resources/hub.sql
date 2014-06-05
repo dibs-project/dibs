@@ -13,7 +13,7 @@ CREATE TABLE settings (
 CREATE TABLE course (
     id VARCHAR(256) PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
-    capacity INT NOT NULL
+    capacity INT
 );
 
 CREATE TABLE journal_record (

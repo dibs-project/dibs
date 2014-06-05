@@ -69,7 +69,7 @@ public class Course {
     /**
      * Kapazität des Studiengangs.
      */
-    public int capacity() {
+    public int getCapacity() {
         return this.capacity;
     }
 }
