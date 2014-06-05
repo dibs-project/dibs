@@ -92,7 +92,7 @@ public class Course {
             if (!results.next()) {
                 throw new IllegalArgumentException("illegal id: allocation_rule does not exist");
             }
-            return new AllocationRule(results, this);
+            return new AllocationRule(results, service);
         } catch (SQLException e) {
             throw new IOError(e);
         }
