@@ -217,8 +217,7 @@ public class ApplicationService {
      * @param capacity Kapazität des Studiengangs
      * @param user Benutzer, der den Studiengang anlegt
      * @return angelegter Studiengang
-     * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
-     *     <code>capacity</code> negativ ist
+     * @throws IllegalArgumentException wenn <code>name</code> leer ist
      * @throws NumberFormatException wenn <code>capacity</code> negativ ist
      */
     public Course createCourse(String name, int capacity, User user) {
@@ -231,7 +230,6 @@ public class ApplicationService {
 
         try {
             this.db.setAutoCommit(false);
-            // TODO: besseres Format für zufällige IDs
             String id = Integer.toString(new Random().nextInt());
             PreparedStatement statement =
                 db.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
@@ -249,9 +247,11 @@ public class ApplicationService {
     }
 
     /**
-     * Gibt den Studiengang mit spezifizierter ID zurück.
+     * Gibt den Studiengang mit der spezifizierten ID zurück.
      * @param id ID des Studiengangs
-     * @return Studiengang mit spezifizierter ID
+     * @return Studiengang mit der spezifizierten ID
+     * @throws IllegalArgumentException wenn kein Studiengang mit der spezifizierten ID
+     *     existiert
      */
     public Course getCourse(String id) {
         try {
