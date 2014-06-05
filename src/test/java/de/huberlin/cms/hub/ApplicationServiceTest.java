@@ -9,12 +9,21 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Sven Pfaller
+ * @author Phuong Anh Ha
  */
 public class ApplicationServiceTest extends HubTest {
+    private Course course;
+
+    @Before
+    public void before() {
+        this.course = this.service.createCourse("Informatik", 500, this.user);
+    }
+
     @Test
     public void testCreateUser() {
         String email = "moss@example.org";
@@ -58,5 +67,32 @@ public class ApplicationServiceTest extends HubTest {
     @Test
     public void testGetSettings() {
         service.getSettings();
+    }
+
+    @Test
+    public void testCreateCourse() {
+        String name = "Jura";
+        Course course = this.service.createCourse(name, 200, this.user);
+        assertEquals(name, course.getName());
+    }
+
+    @Test
+    public void testCreateCourseEmptyName() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("name");
+        this.service.createCourse("", -3, null);
+    }
+
+    @Test
+    public void testGetCourse() {
+        Course testCourse = this.service.getCourse(this.course.getId());
+        assertEquals(this.course.getName(), testCourse.getName());
+    }
+
+    @Test
+    public void testGetCourseNonExisting() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("id");
+        this.service.getCourse("foo");
     }
 }

@@ -212,15 +212,21 @@ public class ApplicationService {
     }
 
     /**
-     * Legt neuen Studienangebot ein.
-     * @param name Name des Studienangebots
-     * @param capacity Kapazität des Studienangebots
-     * @param user Benutzer, der den Studienangebot einlegt
-     * @return angelegter Studienangebot
+     * Legt einen neuen Studiengang an.
+     * @param name Name des Studiengangs
+     * @param capacity Kapazität des Studiengangs
+     * @param user Benutzer, der den Studiengang anlegt
+     * @return angelegter Studiengang
+     * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
+     *     <code>capacity</code> negativ ist
+     * @throws NumberFormatException wenn <code>capacity</code> negativ ist
      */
     public Course createCourse(String name, int capacity, User user) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
+        }
+        if (capacity<0) {
+            throw new NumberFormatException("illegal capacity: negative number");
         }
 
         try {
@@ -233,7 +239,7 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setInt(3, capacity);
             statement.executeUpdate();
-            journal.record(ActionType.USER_CREATED, null, null, null, id);
+            journal.record(ActionType.COURSE_CREATED, null, null, null, user.getId());
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getCourse(id);
@@ -243,9 +249,9 @@ public class ApplicationService {
     }
 
     /**
-     * Gibt den Studienangebot mit spezifizierter ID zurück.
-     * @param id ID des Studienangebots
-     * @return Studienangebot mit spezifizierter ID
+     * Gibt den Studiengang mit spezifizierter ID zurück.
+     * @param id ID des Studiengangs
+     * @return Studiengang mit spezifizierter ID
      */
     public Course getCourse(String id) {
         try {
@@ -261,7 +267,8 @@ public class ApplicationService {
             throw new IOError(e);
         }
     }
- /**
+
+    /**
      * Das Protokollbuch des Bewerbungsdienstes.
      */
     public Journal getJournal() {
