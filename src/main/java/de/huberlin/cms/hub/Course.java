@@ -65,7 +65,7 @@ public class Course {
             this.db.setAutoCommit(false);
             String id = Integer.toString(new Random().nextInt());
             PreparedStatement statement =
-                this.db.prepareStatement("INSERT INTO allocation_value VALUES(?, ?)");
+                this.db.prepareStatement("INSERT INTO allocation_rule VALUES(?, ?)");
             statement.setString(1, id);
             statement.setString(2, name);
             statement.executeUpdate();
