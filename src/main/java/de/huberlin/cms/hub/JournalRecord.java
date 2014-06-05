@@ -20,7 +20,8 @@ public class JournalRecord {
      */
     public enum ActionType {
         USER_CREATED,
-        COURSE_CREATED
+        COURSE_CREATED,
+        ALLOCATION_RULE_CREATED
     };
 
     /**
@@ -28,7 +29,8 @@ public class JournalRecord {
      */
     public enum ObjectType {
         USER,
-        COURSE
+        COURSE,
+        ALLOCATION_RULE
     };
 
     private String id;

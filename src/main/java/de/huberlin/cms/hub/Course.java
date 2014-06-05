@@ -6,10 +6,14 @@
 package de.huberlin.cms.hub;
 
 import java.io.IOError;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Random;
+
+import de.huberlin.cms.hub.JournalRecord.ActionType;
 
 /**
  * Studiengang.
@@ -21,6 +25,7 @@ public class Course {
     private String name;
     private int capacity;
     private ApplicationService service;
+    private Connection db;
 
     /**
      * Initialisiert den Studiengang.
@@ -30,6 +35,7 @@ public class Course {
         this.name = name;
         this.capacity = capacity;
         this.service = service;
+        this.db = this.service.getDb();
     }
 
     /**
@@ -44,10 +50,39 @@ public class Course {
             results.getInt("capacity"), service);
     }
 
+    /**
+     * Legt ein neues Vergabeschema an.
+     * @param name name des Vergabeschemas
+     * @param user Benutzer, der das Vergabeschema anlegt
+     * @return angelegtes Vergabeschema
+     */
     public AllocationRule createAllocationRule(String name, User user) {
-        return new AllocationRule(name);
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("illegal name: empty");
+        }
+
+        try {
+            this.db.setAutoCommit(false);
+            String id = Integer.toString(new Random().nextInt());
+            PreparedStatement statement =
+                this.db.prepareStatement("INSERT INTO allocation_value VALUES(?, ?)");
+            statement.setString(1, id);
+            statement.setString(2, name);
+            statement.executeUpdate();
+            this.service.getJournal().record(ActionType.USER_CREATED, null, null, null, id);
+            this.db.commit();
+            this.db.setAutoCommit(true);
+            return this.getAllocationRule(id);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
+    /**
+     * Gibt das Vergabeschema mit der identifizierten ID
+     * @param id ID des Vergabeschemas
+     * @return
+     */
     public AllocationRule getAllocationRule(String id) {
         try {
             PreparedStatement statement =
