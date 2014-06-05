@@ -23,7 +23,6 @@ import java.sql.SQLException;
  * </pre>
  *
  * @author Phuong Anh Ha
- *
  */
 public class Course {
     private String id;
