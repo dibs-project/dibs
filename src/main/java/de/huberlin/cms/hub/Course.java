@@ -9,18 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Studiengang
- *
- * <p>
- * Studiengang ist ein Datenbankobjekt und eine dazugehörige Tabelle hätte folgende
- * Struktur:
- * <pre>
- * CREATE TABLE course (
- *     id VARCHAR(256) PRIMARY KEY,
- *     name VARCHAR(256) NOT NULL,
- *     capacity INT NOT NULL
- * );
- * </pre>
+ * Studiengang.
  *
  * @author Phuong Anh Ha
  */

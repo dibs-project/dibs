@@ -213,19 +213,20 @@ public class ApplicationService {
 
     /**
      * Legt einen neuen Studiengang an.
+     *
      * @param name Name des Studiengangs
      * @param capacity Kapazität des Studiengangs
      * @param user Benutzer, der den Studiengang anlegt
      * @return angelegter Studiengang
-     * @throws IllegalArgumentException wenn <code>name</code> leer ist
-     * @throws NumberFormatException wenn <code>capacity</code> negativ ist
+     * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
+     *     <code>capacity</code> negativ ist
      */
     public Course createCourse(String name, int capacity, User user) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
         if (capacity < 0) {
-            throw new NumberFormatException("illegal capacity: negative number");
+            throw new IllegalArgumentException("illegal capacity: negative number");
         }
 
         try {
@@ -237,7 +238,7 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setInt(3, capacity);
             statement.executeUpdate();
-            journal.record(ActionType.COURSE_CREATED, null, null, null, user.getId());
+            journal.record(ActionType.COURSE_CREATED, null, null, user.getId(), name);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getCourse(id);
@@ -248,6 +249,7 @@ public class ApplicationService {
 
     /**
      * Gibt den Studiengang mit der spezifizierten ID zurück.
+     *
      * @param id ID des Studiengangs
      * @return Studiengang mit der spezifizierten ID
      * @throws IllegalArgumentException wenn kein Studiengang mit der spezifizierten ID
