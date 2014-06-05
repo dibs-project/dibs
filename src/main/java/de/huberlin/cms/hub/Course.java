@@ -23,7 +23,7 @@ public class Course {
     /**
      * Initialisiert den Studiengang.
      */
-    Course(String id, String name, int capacity, ApplicationService service) {
+    public Course(String id, String name, int capacity, ApplicationService service) {
         this.id = id;
         this.name = name;
         this.capacity = capacity;
