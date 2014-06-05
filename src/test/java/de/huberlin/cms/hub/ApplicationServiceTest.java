@@ -85,7 +85,7 @@ public class ApplicationServiceTest extends HubTest {
 
     @Test
     public void testCreateCourseNegativCapacity() {
-        this.exception.expect(NumberFormatException.class);
+        this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("capacity");
         this.service.createCourse("Informatik", -3, null);
     }
