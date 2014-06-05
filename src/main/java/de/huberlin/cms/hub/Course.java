@@ -9,7 +9,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Studiengang des Bewerbungsdienst
+ * Studiengang
+ *
+ * <p>
+ * Studiengang ist ein Datenbankobjekt und eine dazugehörige Tabelle hätte folgende
+ * Struktur:
+ * <pre>
+ * CREATE TABLE course (
+ *     id VARCHAR(256) PRIMARY KEY,
+ *     name VARCHAR(256) NOT NULL,
+ *     capacity INT NOT NULL
+ * );
+ * </pre>
  *
  * @author Phuong Anh Ha
  *
@@ -31,7 +42,7 @@ public class Course {
     }
 
     /**
-     * Initialisiert den Course via Datenbankcursor.
+     * Initialisiert den Studiengang via Datenbankcursor.
      *
      * @param results Datenbankcursor, der auf eine Zeile aus <code>course</code> verweist
      * @param service Bewerbungdienst

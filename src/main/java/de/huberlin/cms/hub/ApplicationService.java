@@ -224,7 +224,7 @@ public class ApplicationService {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
-        if (capacity<0) {
+        if (capacity < 0) {
             throw new NumberFormatException("illegal capacity: negative number");
         }
 
