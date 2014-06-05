@@ -5,8 +5,11 @@
 
 package de.huberlin.cms.hub;
 
+import java.io.IOError;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Studiengang
@@ -52,6 +55,25 @@ public class Course {
             results.getInt("capacity"), service);
     }
 
+    public AllocationRule createAllocationRule(String name, User user) {
+        return new AllocationRule(name);
+    }
+
+    public AllocationRule getAllocationRule(String id) {
+        try {
+            PreparedStatement statement =
+                service.getDb().prepareStatement("SELECT * FROM allocation_rule WHERE id = ?");
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException("illegal id: allocation_rule does not exist");
+            }
+            return new AllocationRule(results, this);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+    
     /**
      * Eindeutige ID.
      */
