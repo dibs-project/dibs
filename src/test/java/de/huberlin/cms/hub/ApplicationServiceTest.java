@@ -25,6 +25,46 @@ public class ApplicationServiceTest extends HubTest {
     }
 
     @Test
+    public void testCreateCourse() {
+        String name = "Jura";
+        Course course = this.service.createCourse(name, 200, this.user);
+        assertEquals(name, course.getName());
+    }
+
+    @Test
+    public void testCreateCourseEmptyName() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("name");
+        this.service.createCourse("", 200, this.user);
+    }
+
+    @Test
+    public void testCreateCourseNegativeCapacity() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("capacity");
+        this.service.createCourse("Informatik", -3, this.user);
+    }
+
+    @Test
+    public void testGetCourse() {
+        Course testCourse = this.service.getCourse(this.course.getId());
+        assertEquals(this.course.getId(), testCourse.getId());
+    }
+
+    @Test
+    public void testGetCourseNonExisting() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("id");
+        this.service.getCourse("foo");
+    }
+
+    @Test
+    public void testGetCourses() {
+        List<Course> courses = this.service.getCourses();
+        assertEquals(this.course.getId(), courses.get(0).getId());
+    }
+
+    @Test
     public void testCreateUser() {
         String email = "moss@example.org";
         User user = this.service.createUser("Maurice", email);
@@ -69,43 +109,4 @@ public class ApplicationServiceTest extends HubTest {
         service.getSettings();
     }
 
-    @Test
-    public void testCreateCourse() {
-        String name = "Jura";
-        Course course = this.service.createCourse(name, 200, this.user);
-        assertEquals(name, course.getName());
-    }
-
-    @Test
-    public void testCreateCourseEmptyName() {
-        this.exception.expect(IllegalArgumentException.class);
-        this.exception.expectMessage("name");
-        this.service.createCourse("", 200, this.user);
-    }
-
-    @Test
-    public void testCreateCourseNegativeCapacity() {
-        this.exception.expect(IllegalArgumentException.class);
-        this.exception.expectMessage("capacity");
-        this.service.createCourse("Informatik", -3, this.user);
-    }
-
-    @Test
-    public void testGetCourse() {
-        Course testCourse = this.service.getCourse(this.course.getId());
-        assertEquals(this.course.getId(), testCourse.getId());
-    }
-
-    @Test
-    public void testGetCourses() {
-        List<Course> courses = this.service.getCourses();
-        assertEquals(this.course.getId(), courses.get(0).getId());
-    }
-
-    @Test
-    public void testGetCourseNonExisting() {
-        this.exception.expect(IllegalArgumentException.class);
-        this.exception.expectMessage("id");
-        this.service.getCourse("foo");
-    }
 }
