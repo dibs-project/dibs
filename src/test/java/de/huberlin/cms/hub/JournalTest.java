@@ -6,8 +6,6 @@
 package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.util.List;
 
 import org.junit.Before;
@@ -50,7 +48,7 @@ public class JournalTest extends HubTest {
     @Test
     public void testGetJournalUser() {
         journal.record(ActionType.USER_CREATED, null, null, this.user.getId(), null);
-        List<JournalRecord> records = journal.getJournal(this.user.getId());
+        List<JournalRecord> records = journal.getRecords(this.user.getId());
         assertEquals(this.user.getId(), records.get(0).getUserId());
     }
 
@@ -58,13 +56,13 @@ public class JournalTest extends HubTest {
     public void testGetJournalObjectNonNullObjectId() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("objectId");
-        journal.getJournal(null, "foo");
+        journal.getRecords(null, "foo");
     }
 
     @Test
     public void testGetJournalObjectNullObjectId() {
         this.exception.expect(NullPointerException.class);
         this.exception.expectMessage("objectId");
-        journal.getJournal(ObjectType.USER, null);
+        journal.getRecords(ObjectType.USER, null);
     }
 }

@@ -40,7 +40,7 @@ public class JournalRecord {
     /**
      * Initialisiert den Protokolleintrag.
      */
-    public JournalRecord(String id, ActionType actionType, ObjectType objectType,
+    JournalRecord(String id, ActionType actionType, ObjectType objectType,
             String objectId, String userId, Timestamp time, String detail) {
         this.id = id;
         this.actionType = actionType;

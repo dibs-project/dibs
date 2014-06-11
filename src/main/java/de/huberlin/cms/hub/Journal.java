@@ -112,7 +112,7 @@ public class Journal {
      * @throws IllegalArgumentException wenn eine <code>objectId</code> übergeben wurde
      *     aber der dazugehörige <code>objectType</code> fehlt
      */
-    public List<JournalRecord> getJournal(ObjectType objectType, String objectId) {
+    public List<JournalRecord> getRecords(ObjectType objectType, String objectId) {
         try {
             List<JournalRecord> journal = new ArrayList<JournalRecord>();
             PreparedStatement statement = null;
@@ -149,7 +149,7 @@ public class Journal {
      * @param userId ID des Nutzers
      * @return Protokolleinträge des Nutzers
      */
-    public List<JournalRecord> getJournal(String userId) {
+    public List<JournalRecord> getRecords(String userId) {
         try {
             List<JournalRecord> journal = new ArrayList<JournalRecord>();
             PreparedStatement statement;
