@@ -26,10 +26,7 @@ public class Course {
     private ApplicationService service;
     private Connection db;
 
-    /**
-     * Initialisiert den Studiengang.
-     */
-    public Course(String id, String name, int capacity, ApplicationService service) {
+    Course(String id, String name, int capacity, ApplicationService service) {
         this.id = id;
         this.name = name;
         this.capacity = capacity;
@@ -37,13 +34,6 @@ public class Course {
         this.db = this.service.getDb();
     }
 
-    /**
-     * Initialisiert den Studiengang via Datenbankcursor.
-     *
-     * @param results Datenbankcursor, der auf eine Zeile aus <code>course</code> verweist
-     * @param service Bewerbungdienst
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
-     */
     Course(ResultSet results, ApplicationService service) throws SQLException {
         this(results.getString("id"), results.getString("name"),
             results.getInt("capacity"), service);
