@@ -247,7 +247,7 @@ public class ApplicationService {
         }
     }
 
-    /**
+     /**
      * Gibt den Studiengang mit der spezifizierten ID zurück.
      *
      * @param id ID des Studiengangs
@@ -265,6 +265,26 @@ public class ApplicationService {
                 throw new IllegalArgumentException("illegal id: course does not exist");
             }
             return new Course(results, this);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Gibt eine Liste aller Studiengänge zurück.
+     *
+     * @return Liste aller Studiengänge
+     */
+    public List<Course> getCourses() {
+        try {
+            ArrayList<Course> courses = new ArrayList<Course>();
+            PreparedStatement statement =
+                this.db.prepareStatement("SELECT * FROM course");
+            ResultSet results = statement.executeQuery();
+            while (results.next()) {
+                courses.add(new Course(results, this));
+            }
+            return courses;
         } catch (SQLException e) {
             throw new IOError(e);
         }
