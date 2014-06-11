@@ -97,6 +97,12 @@ public class ApplicationServiceTest extends HubTest {
     }
 
     @Test
+    public void testGetCourses() {
+        List<Course> courses = this.service.getCourses();
+        assertEquals(this.course.getId(), courses.get(0).getId());
+    }
+
+    @Test
     public void testGetCourseNonExisting() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("id");
