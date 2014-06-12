@@ -95,7 +95,7 @@ public class Journal {
             if (!results.next()) {
                 throw new IllegalArgumentException("illegal id: record does not exist");
             }
-            return new JournalRecord(results);
+            return new JournalRecord(results, this.service);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -135,7 +135,7 @@ public class Journal {
 
             ResultSet results = statement.executeQuery();
             while (results.next()) {
-                journal.add(new JournalRecord(results));
+                journal.add(new JournalRecord(results, this.service));
             }
             return journal;
         } catch (SQLException e) {
@@ -165,7 +165,7 @@ public class Journal {
 
             ResultSet results = statement.executeQuery();
             while (results.next()) {
-                journal.add(new JournalRecord(results));
+                journal.add(new JournalRecord(results, this.service));
             }
             return journal;
         } catch (SQLException e) {

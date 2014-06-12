@@ -14,7 +14,7 @@ import java.sql.Timestamp;
  *
  * @author Phuong Anh Ha
  */
-public class JournalRecord {
+public class JournalRecord extends HubObject {
     /**
      * Typ der Aktion des Dienstes.
      */
@@ -29,7 +29,6 @@ public class JournalRecord {
         USER
     };
 
-    private String id;
     private ActionType actionType;
     private ObjectType objectType;
     private String objectId;
@@ -37,12 +36,10 @@ public class JournalRecord {
     private Timestamp time;
     private String detail;
 
-    /**
-     * Initialisiert den Protokolleintrag.
-     */
-    public JournalRecord(String id, ActionType actionType, ObjectType objectType,
-            String objectId, String userId, Timestamp time, String detail) {
-        this.id = id;
+    JournalRecord(String id, ActionType actionType, ObjectType objectType,
+            String objectId, String userId, Timestamp time, String detail,
+            ApplicationService service) {
+        super(id, service);
         this.actionType = actionType;
         this.objectType = objectType;
         this.objectId = objectId;
@@ -51,14 +48,8 @@ public class JournalRecord {
         this.detail = detail;
     }
 
-    /**
-     * Initialisiert den Protokolleintrag über den Datenbankcursor.
-     *
-     * @param results Datenbankcursor, der auf eine Zeile aus <code>journal_record</code>
-     *     verweist
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
-     */
-    JournalRecord(ResultSet results) throws SQLException {
+    JournalRecord(ResultSet results, ApplicationService service) throws SQLException {
+        // initialisiert den Eintrag über den Datenbankcursor
         this(
             results.getString("id"),
             ActionType.valueOf(results.getString("action_type")),
@@ -66,15 +57,9 @@ public class JournalRecord {
             results.getString("object_id"),
             results.getString("user_id"),
             results.getTimestamp("time"),
-            results.getString("detail")
+            results.getString("detail"),
+            service
         );
-    }
-
-    /**
-     * ID des Protokolleintrags.
-     */
-    public String getId() {
-        return this.id;
     }
 
     /**
