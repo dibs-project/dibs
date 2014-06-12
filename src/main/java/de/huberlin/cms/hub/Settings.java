@@ -14,19 +14,24 @@ import java.util.Date;
  *
  * @author Sven Pfaller
  */
-public class Settings {
+public class Settings extends HubObject {
     private String semester;
     private Date dosvApplicantsUpdateTime;
     private Date dosvApplicationsUpdateTime;
 
-    /**
-     * Initialisiert die Settings.
-     */
-    public Settings(String semester, Date dosvApplicantsUpdateTime,
-            Date dosvApplicationsUpdateTime) {
+    Settings(String id, String semester, Date dosvApplicantsUpdateTime,
+            Date dosvApplicationsUpdateTime, ApplicationService service) {
+        super(id, service);
         this.semester = semester;
         this.dosvApplicantsUpdateTime = dosvApplicantsUpdateTime;
         this.dosvApplicationsUpdateTime = dosvApplicationsUpdateTime;
+    }
+
+    Settings(ResultSet results, ApplicationService service) throws SQLException {
+        // initialisiert die Einstellungen über den Datenbankcursor
+        this(results.getString("id"), results.getString("semester"),
+            results.getTimestamp("dosv_applicants_update_time"),
+            results.getTimestamp("dosv_applications_update_time"), service);
     }
 
     /**
@@ -50,18 +55,5 @@ public class Settings {
      */
     public Date getDosvApplicationsUpdateTime() {
         return this.dosvApplicationsUpdateTime;
-    }
-
-    /**
-     * Initialisiert die Settings via Datenbankcursor.
-     *
-     * @param results Datenbankcursor, der auf eine Zeile aus <code>settings</code>
-     *     verweist
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
-     */
-    Settings(ResultSet results) throws SQLException {
-        this(results.getString("semester"),
-            results.getTimestamp("dosv_applicants_update_time"),
-            results.getTimestamp("dosv_applications_update_time"));
     }
 }
