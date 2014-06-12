@@ -21,12 +21,12 @@ public class ApplicationServiceTest extends HubTest {
 
     @Before
     public void before() {
-        this.course = this.service.createCourse("Informatik", 500, this.user);
+        this.course = this.service.createCourse("Informatics", 500, this.user);
     }
 
     @Test
     public void testCreateCourse() {
-        String name = "Jura";
+        String name = "Computer Science";
         Course course = this.service.createCourse(name, 200, this.user);
         assertEquals(name, course.getName());
     }
@@ -42,7 +42,7 @@ public class ApplicationServiceTest extends HubTest {
     public void testCreateCourseNegativeCapacity() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("capacity");
-        this.service.createCourse("Informatik", -3, this.user);
+        this.service.createCourse("Computer Science", -3, this.user);
     }
 
     @Test
