@@ -80,20 +80,26 @@ public class ApplicationServiceTest extends HubTest {
     public void testCreateCourseEmptyName() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("name");
-        this.service.createCourse("", -3, null);
+        this.service.createCourse("", 200, this.user);
     }
 
     @Test
-    public void testCreateCourseNegativCapacity() {
+    public void testCreateCourseNegativeCapacity() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("capacity");
-        this.service.createCourse("Informatik", -3, null);
+        this.service.createCourse("Informatik", -3, this.user);
     }
 
     @Test
     public void testGetCourse() {
         Course testCourse = this.service.getCourse(this.course.getId());
-        assertEquals(this.course.getName(), testCourse.getName());
+        assertEquals(this.course.getId(), testCourse.getId());
+    }
+
+    @Test
+    public void testGetCourses() {
+        List<Course> courses = this.service.getCourses();
+        assertEquals(this.course.getId(), courses.get(0).getId());
     }
 
     @Test
