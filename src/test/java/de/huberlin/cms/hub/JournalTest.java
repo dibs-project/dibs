@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,15 +29,16 @@ public class JournalTest extends HubTest {
 
     @Test
     public void testRecord() {
-        JournalRecord record = journal.record(ActionType.USER_CREATED, null, null, null, null);
+        JournalRecord record =
+            journal.record(ActionType.USER_CREATED, null, null, null, null);
         assertEquals(ActionType.USER_CREATED, record.getActionType());
     }
 
     @Test
     public void testGetRecord() {
-        JournalRecord record = journal.record(ActionType.USER_CREATED, null, null, null, null);
-        JournalRecord testRecord = journal.getRecord(record.getId());
-        assertEquals(record.getId(), testRecord.getId());
+        JournalRecord record =
+            journal.record(ActionType.USER_CREATED, null, null, null, null);
+        assertEquals(record, journal.getRecord(record.getId()));
     }
 
     @Test
@@ -48,9 +50,13 @@ public class JournalTest extends HubTest {
 
     @Test
     public void testGetJournalUser() {
-        journal.record(ActionType.USER_CREATED, null, null, this.user.getId(), null);
+        JournalRecord record =
+            journal.record(ActionType.USER_CREATED, null, null, this.user.getId(), null);
         List<JournalRecord> records = journal.getJournal(this.user.getId());
-        assertEquals(this.user.getId(), records.get(0).getUserId());
+        Assert.assertTrue(records.contains(record));
+        for (JournalRecord r : records) {
+            assertEquals(this.user.getId(), r.getUserId());
+        }
     }
 
     @Test
