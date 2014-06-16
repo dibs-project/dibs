@@ -21,6 +21,6 @@ public class QualificationCriterion extends Criterion  {
     public Criterion evaluate(Application application, Information information)
     {
         if (information.getGrade())
-        return this.grade;
+            return this.grade;
     };
 }
