@@ -29,13 +29,7 @@ public class Journal {
     private ApplicationService service;
     private Connection db;
 
-    /**
-     * Initialisiert das Protokollbuch, damit es den Bewerbungsdienst protokolliert.
-     *
-     * @param service Bewerbungsdienst
-     * @see ApplicationService#getJournal()
-     */
-    public Journal(ApplicationService service) {
+    Journal(ApplicationService service) {
         this.service = service;
         this.db = service.getDb();
     }
