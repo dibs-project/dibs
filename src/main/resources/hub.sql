@@ -20,4 +20,10 @@ CREATE TABLE journal_record (
     detail TEXT
 );
 
+CREATE TABLE application (
+    id VARCHAR(256) PRIMARY KEY,
+    status VARCHAR(256) NOT NULL,
+    user_id VARCHAR(256) REFERENCES "user"
+);
+
 INSERT INTO settings (semester) VALUES ('2014WS');
