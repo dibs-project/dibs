@@ -31,7 +31,7 @@ public abstract class Criterion {
     };
 
     /**
-     * Name, des Kriteriums.
+     * Name des Kriteriums.
      */
     public String getName() {
         return this.name;
