@@ -17,10 +17,24 @@ public class Application {
         RECEIVED("received"), VALID("valid"), REJECTED("rejected"),
         WITHDRAWN("withdrawn"), ADMITTED("admitted"), ACCEPTED("accepted");
 
-        private final String name;
+        private final String value;
 
-        Status(String name) {
-            this.name = name;
+        Status(String value) {
+            this.value = value;
+        }
+
+        public String toValue() {
+            return value;
+        }
+
+        public static Status fromValue(String value) {
+            for (Status status : Status.values()) {
+                if (status.value.equals(value)) {
+                    return status;
+                }
+            }
+            throw new IllegalArgumentException("Value " + value
+                + "does not exist in Enum Status");
         }
     }
 
@@ -35,7 +49,7 @@ public class Application {
     }
 
     Application(ResultSet results) throws SQLException {
-        this(results.getString("id"), Status.valueOf(results.getString("status")),
+        this(results.getString("id"), Status.fromValue(results.getString("status")),
             results.getString("userId"));
     }
 
