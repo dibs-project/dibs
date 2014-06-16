@@ -37,10 +37,7 @@ public class JournalRecord {
     private Timestamp time;
     private String detail;
 
-    /**
-     * Initialisiert den Protokolleintrag.
-     */
-    public JournalRecord(String id, ActionType actionType, ObjectType objectType,
+    JournalRecord(String id, ActionType actionType, ObjectType objectType,
             String objectId, String userId, Timestamp time, String detail) {
         this.id = id;
         this.actionType = actionType;
@@ -51,13 +48,6 @@ public class JournalRecord {
         this.detail = detail;
     }
 
-    /**
-     * Initialisiert den Protokolleintrag über den Datenbankcursor.
-     *
-     * @param results Datenbankcursor, der auf eine Zeile aus <code>journal_record</code>
-     *     verweist
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
-     */
     JournalRecord(ResultSet results) throws SQLException {
         this(
             results.getString("id"),
