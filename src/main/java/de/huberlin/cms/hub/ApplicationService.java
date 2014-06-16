@@ -85,13 +85,13 @@ public class ApplicationService {
      * @param user Benutzer, der den Studiengang anlegt
      * @return angelegter Studiengang
      * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
-     *     <code>capacity</code> negativ ist
+     *     <code>capacity</code> kleiner oder gleich Null ist
      */
     public Course createCourse(String name, int capacity, User user) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
-        if (capacity < 0) {
+        if (capacity <= 0) {
             throw new IllegalArgumentException("illegal capacity: negative number");
         }
 
