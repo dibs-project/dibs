@@ -130,7 +130,7 @@ public class ApplicationService {
             if (!results.next()) {
                 throw new IllegalArgumentException("illegal id: user does not exist");
             }
-            return new User(results);
+            return new User(results, this);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -148,7 +148,7 @@ public class ApplicationService {
                 this.db.prepareStatement("SELECT * FROM \"user\"");
             ResultSet results = statement.executeQuery();
             while (results.next()) {
-                users.add(new User(results));
+                users.add(new User(results, this));
             }
             return users;
         } catch (SQLException e) {
@@ -205,7 +205,7 @@ public class ApplicationService {
             PreparedStatement statement = db.prepareStatement("SELECT * FROM settings");
             ResultSet results = statement.executeQuery();
             results.next();
-            return new Settings(results);
+            return new Settings(results, this);
         } catch (SQLException e) {
             throw new IOError(e);
         }
