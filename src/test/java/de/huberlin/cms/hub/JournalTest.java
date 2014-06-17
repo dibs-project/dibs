@@ -6,10 +6,10 @@
 package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,7 +53,7 @@ public class JournalTest extends HubTest {
         JournalRecord record =
             journal.record(ActionType.USER_CREATED, null, null, this.user.getId(), null);
         List<JournalRecord> records = journal.getRecords(this.user.getId());
-        Assert.assertTrue(records.contains(record));
+        assertTrue(records.contains(record));
         for (JournalRecord r : records) {
             assertEquals(this.user.getId(), r.getUserId());
         }
