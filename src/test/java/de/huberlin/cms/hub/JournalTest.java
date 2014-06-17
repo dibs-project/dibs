@@ -49,10 +49,10 @@ public class JournalTest extends HubTest {
     }
 
     @Test
-    public void testGetJournalUser() {
+    public void testGetRecordsUser() {
         JournalRecord record =
             journal.record(ActionType.USER_CREATED, null, null, this.user.getId(), null);
-        List<JournalRecord> records = journal.getJournal(this.user.getId());
+        List<JournalRecord> records = journal.getRecords(this.user.getId());
         Assert.assertTrue(records.contains(record));
         for (JournalRecord r : records) {
             assertEquals(this.user.getId(), r.getUserId());
@@ -60,16 +60,16 @@ public class JournalTest extends HubTest {
     }
 
     @Test
-    public void testGetJournalObjectNonNullObjectId() {
+    public void testGetRecordsObjectNonNullObjectId() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("objectId");
-        journal.getJournal(null, "foo");
+        journal.getRecords(null, "foo");
     }
 
     @Test
-    public void testGetJournalObjectNullObjectId() {
+    public void testGetRecordsObjectNullObjectId() {
         this.exception.expect(NullPointerException.class);
         this.exception.expectMessage("objectId");
-        journal.getJournal(ObjectType.USER, null);
+        journal.getRecords(ObjectType.USER, null);
     }
 }
