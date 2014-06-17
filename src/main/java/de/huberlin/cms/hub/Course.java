@@ -83,11 +83,13 @@ public class Course {
     public AllocationRule getAllocationRule(String id) {
         try {
             PreparedStatement statement =
-                service.getDb().prepareStatement("SELECT * FROM allocation_rule WHERE id = ?");
+                service.getDb().prepareStatement("SELECT * FROM allocation_rule WHERE id "
+                    + "= ?");
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException("illegal id: allocation_rule does not exist");
+                throw new IllegalArgumentException("illegal id: allocation_rule does not "
+                    + "exist");
             }
             return new AllocationRule(results, service);
         } catch (SQLException e) {
