@@ -1,6 +1,5 @@
 /**
- * HUB
- * Copyright (C) 2014 Humboldt-Universität zu Berlin
+ * HUB Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
 package de.huberlin.cms.hub;
@@ -13,7 +12,7 @@ import java.sql.SQLException;
  *
  * @author Markus Michler
  */
-public class Application {
+public class Application extends HubObject {
 
     /**
      * Bewerbungsstatus
@@ -47,15 +46,15 @@ public class Application {
     private Status status;
     private String userId;
 
-    Application(String id, Status status, String userId) {
-        this.id = id;
+    Application(String id, ApplicationService service, Status status, String userId) {
+        super(id, service);
         this.status = status;
         this.userId = userId;
     }
 
-    Application(ResultSet results) throws SQLException {
-        this(results.getString("id"), Status.fromValue(results.getString("status")),
-            results.getString("userId"));
+    Application(ResultSet results, ApplicationService service) throws SQLException {
+        this(results.getString("id"), service, Status.fromValue(results
+            .getString("status")), results.getString("userId"));
     }
 
     /**

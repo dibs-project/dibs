@@ -29,15 +29,16 @@ public class JournalTest extends HubTest {
 
     @Test
     public void testRecord() {
-        JournalRecord record = journal.record(ActionType.USER_CREATED, null, null, null, null);
+        JournalRecord record =
+            journal.record(ActionType.USER_CREATED, null, null, null, null);
         assertEquals(ActionType.USER_CREATED, record.getActionType());
     }
 
     @Test
     public void testGetRecord() {
-        JournalRecord record = journal.record(ActionType.USER_CREATED, null, null, null, null);
-        JournalRecord testRecord = journal.getRecord(record.getId());
-        assertEquals(record.getId(), testRecord.getId());
+        JournalRecord record =
+            journal.record(ActionType.USER_CREATED, null, null, null, null);
+        assertEquals(record, journal.getRecord(record.getId()));
     }
 
     @Test
@@ -48,23 +49,27 @@ public class JournalTest extends HubTest {
     }
 
     @Test
-    public void testGetJournalUser() {
-        journal.record(ActionType.USER_CREATED, null, null, this.user.getId(), null);
-        List<JournalRecord> records = journal.getJournal(this.user.getId());
-        assertEquals(this.user.getId(), records.get(0).getUserId());
+    public void testGetRecordsUser() {
+        JournalRecord record =
+            journal.record(ActionType.USER_CREATED, null, null, this.user.getId(), null);
+        List<JournalRecord> records = journal.getRecords(this.user.getId());
+        assertTrue(records.contains(record));
+        for (JournalRecord r : records) {
+            assertEquals(this.user.getId(), r.getUserId());
+        }
     }
 
     @Test
-    public void testGetJournalObjectNonNullObjectId() {
+    public void testGetRecordsObjectNonNullObjectId() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("objectId");
-        journal.getJournal(null, "foo");
+        journal.getRecords(null, "foo");
     }
 
     @Test
-    public void testGetJournalObjectNullObjectId() {
+    public void testGetRecordsObjectNullObjectId() {
         this.exception.expect(NullPointerException.class);
         this.exception.expectMessage("objectId");
-        journal.getJournal(ObjectType.USER, null);
+        journal.getRecords(ObjectType.USER, null);
     }
 }

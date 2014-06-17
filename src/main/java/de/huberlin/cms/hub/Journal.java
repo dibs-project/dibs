@@ -29,13 +29,7 @@ public class Journal {
     private ApplicationService service;
     private Connection db;
 
-    /**
-     * Initialisiert das Protokollbuch, damit es den Bewerbungsdienst protokolliert.
-     *
-     * @param service Bewerbungsdienst
-     * @see ApplicationService#getJournal()
-     */
-    public Journal(ApplicationService service) {
+    Journal(ApplicationService service) {
         this.service = service;
         this.db = service.getDb();
     }
@@ -95,7 +89,7 @@ public class Journal {
             if (!results.next()) {
                 throw new IllegalArgumentException("illegal id: record does not exist");
             }
-            return new JournalRecord(results);
+            return new JournalRecord(results, this.service);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -112,7 +106,7 @@ public class Journal {
      * @throws IllegalArgumentException wenn eine <code>objectId</code> übergeben wurde
      *     aber der dazugehörige <code>objectType</code> fehlt
      */
-    public List<JournalRecord> getJournal(ObjectType objectType, String objectId) {
+    public List<JournalRecord> getRecords(ObjectType objectType, String objectId) {
         try {
             List<JournalRecord> journal = new ArrayList<JournalRecord>();
             PreparedStatement statement = null;
@@ -135,7 +129,7 @@ public class Journal {
 
             ResultSet results = statement.executeQuery();
             while (results.next()) {
-                journal.add(new JournalRecord(results));
+                journal.add(new JournalRecord(results, this.service));
             }
             return journal;
         } catch (SQLException e) {
@@ -149,7 +143,7 @@ public class Journal {
      * @param userId ID des Nutzers
      * @return Protokolleinträge des Nutzers
      */
-    public List<JournalRecord> getJournal(String userId) {
+    public List<JournalRecord> getRecords(String userId) {
         try {
             List<JournalRecord> journal = new ArrayList<JournalRecord>();
             PreparedStatement statement;
@@ -165,7 +159,7 @@ public class Journal {
 
             ResultSet results = statement.executeQuery();
             while (results.next()) {
-                journal.add(new JournalRecord(results));
+                journal.add(new JournalRecord(results, this.service));
             }
             return journal;
         } catch (SQLException e) {
