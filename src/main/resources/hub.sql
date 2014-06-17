@@ -5,6 +5,7 @@ CREATE TABLE "user" (
 );
 
 CREATE TABLE settings (
+    id VARCHAR(256) PRIMARY KEY,
     semester VARCHAR(6),
     dosv_applicants_update_time TIMESTAMP,
     dosv_applications_update_time TIMESTAMP
@@ -26,4 +27,5 @@ CREATE TABLE application (
     user_id VARCHAR(256) REFERENCES "user"
 );
 
-INSERT INTO settings (semester) VALUES ('2014WS');
+INSERT INTO settings (id, semester) VALUES ('settings', '2014WS');
+
