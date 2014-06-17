@@ -92,7 +92,7 @@ public class ApplicationService {
             throw new IllegalArgumentException("illegal name: empty");
         }
         if (capacity <= 0) {
-            throw new IllegalArgumentException("illegal capacity: not positive number");
+            throw new IllegalArgumentException("illegal capacity: nonpositive number");
         }
 
         try {
