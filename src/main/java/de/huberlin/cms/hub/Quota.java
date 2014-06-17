@@ -6,7 +6,7 @@ package de.huberlin.cms.hub;
  */
 public class Quota /* extends HubObject */{
     private String name;
-    private Double value;
+    private Double percentage;
 
     /* private List<Criterion> rankingCriteria; */
     /* private List<Criterion> inclusionCriteria; */
@@ -14,7 +14,7 @@ public class Quota /* extends HubObject */{
     Quota(String id, ApplicationService service, String name, Double value /*,List<Criterion> rankingCriteria, List<Criterion> inclusionCriteria*/) {
         /* super(id, service); */
         this.name = name;
-        this.value = value;
+        this.percentage = value;
         /* this.rankingCriteria = rankingCriteria; 
         this.inclusionCriteria = inclusionCriteria;*/
     }
@@ -31,8 +31,8 @@ public class Quota /* extends HubObject */{
     /**
      *
      */
-    public Double getValue() {
-        return value;
+    public Double getPercentage() {
+        return percentage;
     }
 
 }
