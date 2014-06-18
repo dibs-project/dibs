@@ -6,7 +6,6 @@
 package de.huberlin.cms.hub;
 
 import java.io.IOError;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,14 +23,11 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
 public class Course extends HubObject {
     private String name;
     private int capacity;
-    private ApplicationService service;
-    private Connection db;
 
     Course(String id, String name, int capacity, ApplicationService service) {
         super(id, service);
         this.name = name;
         this.capacity = capacity;
-        this.service = service;
     }
 
     Course(ResultSet results, ApplicationService service) throws SQLException {
@@ -54,17 +50,18 @@ public class Course extends HubObject {
         }
 
         try {
-            this.db.setAutoCommit(false);
+            this.getService().getDb().setAutoCommit(false);
             String id = Integer.toString(new Random().nextInt());
             PreparedStatement statement =
-                this.db.prepareStatement("INSERT INTO allocation_rule VALUES(?, ?)");
+                this.service.getDb().prepareStatement("INSERT INTO allocation_rule "
+                    + "VALUES(?, ?)");
             statement.setString(1, id);
             statement.setString(2, name);
             statement.executeUpdate();
             this.service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED, null,
                 null, user.getId(), name);
-            this.db.commit();
-            this.db.setAutoCommit(true);
+            this.getService().getDb().commit();
+            this.getService().getDb().setAutoCommit(true);
             return this.getAllocationRule(id);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -82,8 +79,8 @@ public class Course extends HubObject {
     public AllocationRule getAllocationRule(String id) {
         try {
             PreparedStatement statement =
-                service.getDb().prepareStatement("SELECT * FROM allocation_rule WHERE id "
-                    + "= ?");
+                this.service.getDb().prepareStatement("SELECT * FROM allocation_rule "
+                    + "WHERE id = ?");
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
@@ -105,7 +102,7 @@ public class Course extends HubObject {
         try {
             ArrayList<AllocationRule> allocations = new ArrayList<AllocationRule>();
             PreparedStatement statement =
-                this.db.prepareStatement("SELECT * FROM allocation_rule");
+                this.service.getDb().prepareStatement("SELECT * FROM allocation_rule");
             ResultSet results = statement.executeQuery();
             while (results.next()) {
                 allocations.add(new AllocationRule(results, this.service));
@@ -114,13 +111,6 @@ public class Course extends HubObject {
         } catch (SQLException e) {
             throw new IOError(e);
         }
-    }
-
-    /**
-     * Eindeutige ID.
-     */
-    public String getId() {
-        return this.id;
     }
 
     /**
