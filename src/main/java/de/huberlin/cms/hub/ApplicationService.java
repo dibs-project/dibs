@@ -219,7 +219,7 @@ public class ApplicationService {
      * @param user Benutzer, der den Studiengang anlegt
      * @return angelegter Studiengang
      * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
-     *     <code>capacity</code> nichtpositive Zahl ist
+     *     <code>capacity</code> nicht positiv ist
      */
     public Course createCourse(String name, int capacity, User user) {
         if (name.isEmpty()) {
