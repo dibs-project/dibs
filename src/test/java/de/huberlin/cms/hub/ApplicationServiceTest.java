@@ -86,8 +86,7 @@ public class ApplicationServiceTest extends HubTest {
 
     @Test
     public void testGetCourse() {
-        Course testCourse = this.service.getCourse(this.course.getId());
-        assertEquals(this.course.getId(), testCourse.getId());
+        assertEquals(this.course, this.service.getCourse(this.course.getId()));
     }
 
     @Test
