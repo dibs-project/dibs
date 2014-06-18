@@ -46,7 +46,7 @@ public class Application extends HubObject {
      * <li><code>rejected</code>: vom Verfahren ausgeschlossen
      * <li><code>withdrawn</code>: zurückgezogen
      * <li><code>admitted</code>: Zulassungsangebot ausgesprochen
-     * <li><code>accepted</code>: Zulassungsangebot angeommen, zugelassen
+     * <li><code>accepted</code>: Zulassungsangebot angenommen, zugelassen
      * </ul>
      */
     public String getStatus() {
