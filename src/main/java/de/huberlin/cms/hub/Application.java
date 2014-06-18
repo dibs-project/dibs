@@ -14,38 +14,18 @@ import java.sql.SQLException;
  */
 public class Application extends HubObject {
 
-    /**
-     * Bewerbungsstatus
-     */
-    public enum Status {
-        RECEIVED("received"), VALID("valid"), REJECTED("rejected"),
-        WITHDRAWN("withdrawn"), ADMITTED("admitted"), ACCEPTED("accepted");
+    // Konstanten für den Bewerbungsstatus
+    public static final String RECEIVED = "received";
+    public static final String VALID = "valid";
+    public static final String REJECTED = "rejected";
+    public static final String WITHDRAWN = "withdrawn";
+    public static final String ADMITTED = "admitted";
+    public static final String ACCEPTED = "accepted";
 
-        private final String value;
-
-        Status(String value) {
-            this.value = value;
-        }
-
-        public String toValue() {
-            return value;
-        }
-
-        public static Status fromValue(String value) {
-            for (Status status : Status.values()) {
-                if (status.value.equals(value)) {
-                    return status;
-                }
-            }
-            throw new IllegalArgumentException("Value " + value
-                + "does not exist in Enum " + Status.class);
-        }
-    }
-
-    private Status status;
+    private String status;
     private String userId;
 
-    Application(String id, ApplicationService service, Status status, String userId) {
+    Application(String id, ApplicationService service, String status, String userId) {
         super(id, service);
         this.status = status;
         this.userId = userId;
@@ -53,14 +33,23 @@ public class Application extends HubObject {
 
     Application(ResultSet results, ApplicationService service) throws SQLException {
         // initialisiert den Benutzer über den Datenbankcursor
-        this(results.getString("id"), service, Status.fromValue(results
-            .getString("status")), results.getString("userId"));
+        this(results.getString("id"), service, results.getString("status"), results
+            .getString("userId"));
     }
 
     /**
-     * Status der Bewerbung
+     * Status der Bewerbung</br>
+     * Konstanten:
+     * <ul>
+     * <li><code>received</code>: eingegangen
+     * <li><code>valid</code>: gültig, nimmt am Verfahren teil
+     * <li><code>rejected</code>: vom Verfahren ausgeschlossen
+     * <li><code>withdrawn</code>: zurückgezogen
+     * <li><code>admitted</code>: Zulassungsangebot ausgesprochen
+     * <li><code>accepted</code>: Zulassungsangebot angeommen, zugelassen
+     * </ul>
      */
-    public Status getStatus() {
+    public String getStatus() {
         return status;
     }
 
