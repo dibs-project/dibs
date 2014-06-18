@@ -38,11 +38,10 @@ public class Application extends HubObject {
                 }
             }
             throw new IllegalArgumentException("Value " + value
-                + "does not exist in Enum Status");
+                + "does not exist in Enum " + Status.class);
         }
     }
 
-    private String id;
     private Status status;
     private String userId;
 
@@ -53,15 +52,9 @@ public class Application extends HubObject {
     }
 
     Application(ResultSet results, ApplicationService service) throws SQLException {
+        // initialisiert den Benutzer über den Datenbankcursor
         this(results.getString("id"), service, Status.fromValue(results
             .getString("status")), results.getString("userId"));
-    }
-
-    /**
-     * Eindeutige ID
-     */
-    public String getId() {
-        return this.id;
     }
 
     /**
