@@ -15,7 +15,7 @@ public class CourseTest extends HubTest {
 
     @Before
     public void before() {
-        this.course = super.service.createCourse("Informatik", 500, this.user);
+        this.course = this.service.createCourse("Computer Science", 500, this.user);
         this.allocation = this.course.createAllocationRule("Standard", user);
     }
 
@@ -36,8 +36,8 @@ public class CourseTest extends HubTest {
 
     @Test
     public void testGetAllocationRule() {
-        AllocationRule testAllocation = course.getAllocationRule(allocation.getId());
-        assertEquals(allocation.getId(), testAllocation.getId());
+        assertEquals(this.allocation,
+            this.course.getAllocationRule(this.allocation.getId()));
     }
 
     @Test
