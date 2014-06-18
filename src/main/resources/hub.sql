@@ -5,6 +5,7 @@ CREATE TABLE "user" (
 );
 
 CREATE TABLE settings (
+    id VARCHAR(256) PRIMARY KEY,
     semester VARCHAR(6),
     dosv_applicants_update_time TIMESTAMP,
     dosv_applications_update_time TIMESTAMP
@@ -13,7 +14,7 @@ CREATE TABLE settings (
 CREATE TABLE course (
     id VARCHAR(256) PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
-    capacity INT
+    capacity INT NOT NULL
 );
 
 CREATE TABLE allocation_rule (
@@ -31,4 +32,4 @@ CREATE TABLE journal_record (
     detail TEXT
 );
 
-INSERT INTO settings (semester) VALUES ('2014WS');
+INSERT INTO settings (id, semester) VALUES ('settings', '2014WS');

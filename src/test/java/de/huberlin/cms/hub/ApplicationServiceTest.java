@@ -6,8 +6,7 @@
 package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
-
-import java.util.List;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +20,7 @@ public class ApplicationServiceTest extends HubTest {
 
     @Before
     public void before() {
-        this.course = this.service.createCourse("Informatik", 500, this.user);
+        this.course = this.service.createCourse("Computer Science", 500, this.user);
     }
 
     @Test
@@ -29,6 +28,7 @@ public class ApplicationServiceTest extends HubTest {
         String email = "moss@example.org";
         User user = this.service.createUser("Maurice", email);
         assertEquals(email, user.getEmail());
+        assertTrue(this.service.getUsers().contains(user));
     }
 
     @Test
@@ -40,8 +40,7 @@ public class ApplicationServiceTest extends HubTest {
 
     @Test
     public void testGetUser() {
-        User user = this.service.getUser(this.user.getId());
-        assertEquals(this.user.getId(), user.getId());
+        assertEquals(this.user, this.service.getUser(this.user.getId()));
     }
 
     @Test
@@ -49,12 +48,6 @@ public class ApplicationServiceTest extends HubTest {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("id");
         this.service.getUser("foo");
-    }
-
-    @Test
-    public void testGetUsers() {
-        List<User> users = this.service.getUsers();
-        assertEquals(this.user.getId(), users.get(0).getId());
     }
 
     @Test
@@ -71,9 +64,10 @@ public class ApplicationServiceTest extends HubTest {
 
     @Test
     public void testCreateCourse() {
-        String name = "Jura";
+        String name = "Computer Science";
         Course course = this.service.createCourse(name, 200, this.user);
         assertEquals(name, course.getName());
+        assertTrue(this.service.getCourses().contains(course));
     }
 
     @Test
@@ -84,22 +78,16 @@ public class ApplicationServiceTest extends HubTest {
     }
 
     @Test
-    public void testCreateCourseNegativeCapacity() {
+    public void testCreateCourseNonpositiveCapacity() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("capacity");
-        this.service.createCourse("Informatik", -3, this.user);
+        this.service.createCourse("Computer Science", -3, this.user);
     }
 
     @Test
     public void testGetCourse() {
         Course testCourse = this.service.getCourse(this.course.getId());
         assertEquals(this.course.getId(), testCourse.getId());
-    }
-
-    @Test
-    public void testGetCourses() {
-        List<Course> courses = this.service.getCourses();
-        assertEquals(this.course.getId(), courses.get(0).getId());
     }
 
     @Test

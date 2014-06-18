@@ -78,6 +78,140 @@ public class ApplicationService {
     }
 
     /**
+     * Legt einen neuen Benutzer an.
+     *
+     * @param name Name, mit dem der Benutzer von HUB angesprochen wird
+     * @param email Email-Adresse
+     * @return Angelegter Benutzer
+     * @throws IllegalArgumentException wenn <code>name</code> oder <code>email</code>
+     *     leer ist
+     */
+    public User createUser(String name, String email) {
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("illegal name: empty");
+        }
+        if (email.isEmpty()) {
+            throw new IllegalArgumentException("illegal email: empty");
+        }
+
+        try {
+            this.db.setAutoCommit(false);
+            // TODO: besseres Format für zufällige IDs
+            String id = Integer.toString(new Random().nextInt());
+            PreparedStatement statement =
+                db.prepareStatement("INSERT INTO \"user\" VALUES(?, ?, ?)");
+            statement.setString(1, id);
+            statement.setString(2, name);
+            statement.setString(3, email);
+            statement.executeUpdate();
+            journal.record(ActionType.USER_CREATED, null, null, null, name);
+            this.db.commit();
+            this.db.setAutoCommit(true);
+            return this.getUser(id);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Gibt den Benutzer mit der spezifizierten ID zurück.
+     *
+     * @param id ID des Benutzers
+     * @return Benutzer mit der spezifizierten ID
+     * @throws IllegalArgumentException wenn kein Benutzer mit der spezifizierten ID
+     *     existiert
+     */
+    public User getUser(String id) {
+        try {
+            PreparedStatement statement =
+                this.db.prepareStatement("SELECT * FROM \"user\" WHERE id = ?");
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException("illegal id: user does not exist");
+            }
+            return new User(results, this);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Gibt eine Liste aller Benutzer zurück.
+     *
+     * @return Liste aller Benutzer
+     */
+    public List<User> getUsers() {
+        try {
+            ArrayList<User> users = new ArrayList<User>();
+            PreparedStatement statement =
+                this.db.prepareStatement("SELECT * FROM \"user\"");
+            ResultSet results = statement.executeQuery();
+            while (results.next()) {
+                users.add(new User(results, this));
+            }
+            return users;
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Stellt das aktuelle Semester für das Bewerbungssystem ein.
+     *
+     * @param semester Neues aktuelles Semester.
+     * @see Settings#getSemester()
+     */
+    public void setSemester(String semester) {
+        try {
+            PreparedStatement statement =
+                db.prepareStatement("UPDATE settings SET semester = ?");
+            statement.setString(1, semester);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Verwendete Datenbankverbindung.
+     */
+    public Connection getDb() {
+        return db;
+    }
+
+    /**
+     * Konfiguration. Folgende Einstellungen können gesetzt werden:
+     * <ul>
+     *     <li>
+     *         dosv_url: URL zur DoSV-API. Der Standardwert ist
+     *         "https://hsst.hochschulstart.de/hochschule/webservice/2/" (Testumgebung).
+     *     </li>
+     *     <li>dosv_user: Benutzername für die DoSV-API. Der Standardwert ist "".</li>
+     *     <li>dosv_password: Passwort für die DoSV-API. Der Standardwert ist "".</li>
+     * </ul>
+     */
+    public Properties getConfig() {
+        return config;
+    }
+
+    /**
+     * Gibt die Einstellungen des Bewerbungssystems zurück.
+     *
+     * @return Einstellungen des Bewerbungssystems
+     */
+    public Settings getSettings() {
+        try {
+            PreparedStatement statement = db.prepareStatement("SELECT * FROM settings");
+            ResultSet results = statement.executeQuery();
+            results.next();
+            return new Settings(results, this);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+    
+    /**
      * Legt einen neuen Studiengang an.
      *
      * @param name Name des Studiengangs
@@ -85,14 +219,14 @@ public class ApplicationService {
      * @param user Benutzer, der den Studiengang anlegt
      * @return angelegter Studiengang
      * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
-     *     <code>capacity</code> negativ ist
+     *     <code>capacity</code> nicht positiv ist
      */
     public Course createCourse(String name, int capacity, User user) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
-        if (capacity < 0) {
-            throw new IllegalArgumentException("illegal capacity: negative number");
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("illegal capacity: nonpositive number");
         }
 
         try {
@@ -151,140 +285,6 @@ public class ApplicationService {
                 courses.add(new Course(results, this));
             }
             return courses;
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
-     * Legt einen neuen Benutzer an.
-     *
-     * @param name Name, mit dem der Benutzer von HUB angesprochen wird
-     * @param email Email-Adresse
-     * @return Angelegter Benutzer
-     * @throws IllegalArgumentException wenn <code>name</code> oder <code>email</code>
-     *     leer ist
-     */
-    public User createUser(String name, String email) {
-        if (name.isEmpty()) {
-            throw new IllegalArgumentException("illegal name: empty");
-        }
-        if (email.isEmpty()) {
-            throw new IllegalArgumentException("illegal email: empty");
-        }
-
-        try {
-            this.db.setAutoCommit(false);
-            // TODO: besseres Format für zufällige IDs
-            String id = Integer.toString(new Random().nextInt());
-            PreparedStatement statement =
-                db.prepareStatement("INSERT INTO \"user\" VALUES(?, ?, ?)");
-            statement.setString(1, id);
-            statement.setString(2, name);
-            statement.setString(3, email);
-            statement.executeUpdate();
-            journal.record(ActionType.USER_CREATED, null, null, null, name);
-            this.db.commit();
-            this.db.setAutoCommit(true);
-            return this.getUser(id);
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
-     * Gibt den Benutzer mit der spezifizierten ID zurück.
-     *
-     * @param id ID des Benutzers
-     * @return Benutzer mit der spezifizierten ID
-     * @throws IllegalArgumentException wenn kein Benutzer mit der spezifizierten ID
-     *     existiert
-     */
-    public User getUser(String id) {
-        try {
-            PreparedStatement statement =
-                this.db.prepareStatement("SELECT * FROM \"user\" WHERE id = ?");
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
-                throw new IllegalArgumentException("illegal id: user does not exist");
-            }
-            return new User(results);
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
-     * Gibt eine Liste aller Benutzer zurück.
-     *
-     * @return Liste aller Benutzer
-     */
-    public List<User> getUsers() {
-        try {
-            ArrayList<User> users = new ArrayList<User>();
-            PreparedStatement statement =
-                this.db.prepareStatement("SELECT * FROM \"user\"");
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                users.add(new User(results));
-            }
-            return users;
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
-     * Stellt das aktuelle Semester für das Bewerbungssystem ein.
-     *
-     * @param semester Neues aktuelles Semester.
-     * @see Settings#getSemester()
-     */
-    public void setSemester(String semester) {
-        try {
-            PreparedStatement statement =
-                db.prepareStatement("UPDATE settings SET semester = ?");
-            statement.setString(1, semester);
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
-     * Verwendete Datenbankverbindung.
-     */
-    public Connection getDb() {
-        return db;
-    }
-
-    /**
-     * Konfiguration. Folgende Einstellungen können gesetzt werden:
-     * <ul>
-     *     <li>
-     *         dosv_url: URL zur DoSV-API. Der Standardwert ist
-     *         "https://hsst.hochschulstart.de/hochschule/webservice/2/" (Testumgebung).
-     *     </li>
-     *     <li>dosv_user: Benutzername für die DoSV-API. Der Standardwert ist "".</li>
-     *     <li>dosv_password: Passwort für die DoSV-API. Der Standardwert ist "".</li>
-     * </ul>
-     */
-    public Properties getConfig() {
-        return config;
-    }
-
-    /**
-     * Gibt die Einstellungen des Bewerbungssystems zurück.
-     *
-     * @return Einstellungen des Bewerbungssystems
-     */
-    public Settings getSettings() {
-        try {
-            PreparedStatement statement = db.prepareStatement("SELECT * FROM settings");
-            ResultSet results = statement.executeQuery();
-            results.next();
-            return new Settings(results);
         } catch (SQLException e) {
             throw new IOError(e);
         }

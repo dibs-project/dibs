@@ -21,22 +21,21 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
  *
  * @author Phuong Anh Ha
  */
-public class Course {
-    private String id;
+public class Course extends HubObject {
     private String name;
     private int capacity;
     private ApplicationService service;
     private Connection db;
 
     Course(String id, String name, int capacity, ApplicationService service) {
-        this.id = id;
+        super(id, service);
         this.name = name;
         this.capacity = capacity;
         this.service = service;
-        this.db = this.service.getDb();
     }
 
     Course(ResultSet results, ApplicationService service) throws SQLException {
+        // initialisiert den Eintrag über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
             results.getInt("capacity"), service);
     }
