@@ -6,8 +6,7 @@
 package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
-
-import java.util.List;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -69,6 +68,7 @@ public class ApplicationServiceTest extends HubTest {
         String email = "moss@example.org";
         User user = this.service.createUser("Maurice", email);
         assertEquals(email, user.getEmail());
+        assertTrue(this.service.getUsers().contains(user));
     }
 
     @Test
@@ -80,8 +80,7 @@ public class ApplicationServiceTest extends HubTest {
 
     @Test
     public void testGetUser() {
-        User user = this.service.getUser(this.user.getId());
-        assertEquals(this.user.getId(), user.getId());
+        assertEquals(this.user, this.service.getUser(this.user.getId()));
     }
 
     @Test
@@ -89,12 +88,6 @@ public class ApplicationServiceTest extends HubTest {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("id");
         this.service.getUser("foo");
-    }
-
-    @Test
-    public void testGetUsers() {
-        List<User> users = this.service.getUsers();
-        assertEquals(this.user.getId(), users.get(0).getId());
     }
 
     @Test

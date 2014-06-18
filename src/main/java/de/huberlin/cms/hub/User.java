@@ -13,25 +13,20 @@ import java.sql.SQLException;
  *
  * @author Sven Pfaller
  */
-public class User {
-    private String id;
+public class User extends HubObject {
     private String name;
     private String email;
 
-    /**
-     * Initialisiert den User.
-     */
-    User(String id, String name, String email) {
-        this.id = id;
+    User(String id, String name, String email, ApplicationService service) {
+        super(id, service);
         this.name = name;
         this.email = email;
     }
 
-    /**
-     * Eindeutige ID.
-     */
-    public String getId() {
-        return this.id;
+    User(ResultSet results, ApplicationService service) throws SQLException {
+        // initialisiert den Benutzer über den Datenbankcursor
+        this(results.getString("id"), results.getString("name"),
+            results.getString("email"), service);
     }
 
     /**
@@ -46,16 +41,5 @@ public class User {
      */
     public String getEmail() {
         return this.email;
-    }
-
-    /**
-     * Initialisiert den User via Datenbankcursor.
-     *
-     * @param results Datenbankcursor, der auf eine Zeile aus <code>user</code> verweist
-     * @throws SQLException falls ein Datenbankzugriffsfehler auftritt
-     */
-    User(ResultSet results) throws SQLException {
-        this(results.getString("id"), results.getString("name"),
-            results.getString("email"));
     }
 }

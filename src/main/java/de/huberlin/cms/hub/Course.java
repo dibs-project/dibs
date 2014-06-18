@@ -13,29 +13,22 @@ import java.sql.SQLException;
  *
  * @author Phuong Anh Ha
  */
-public class Course {
+public class Course extends HubObject{
     private String id;
     private String name;
     private int capacity;
     private ApplicationService service;
 
     Course(String id, String name, int capacity, ApplicationService service) {
-        this.id = id;
+        super(id, service);
         this.name = name;
         this.capacity = capacity;
-        this.service = service;
     }
 
     Course(ResultSet results, ApplicationService service) throws SQLException {
+        // initialisiert den Eintrag über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
             results.getInt("capacity"), service);
-    }
-
-    /**
-     * Eindeutige ID.
-     */
-    public String getId() {
-        return this.id;
     }
 
     /**
