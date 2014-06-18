@@ -14,10 +14,8 @@ import java.sql.SQLException;
  * @author Phuong Anh Ha
  */
 public class Course extends HubObject{
-    private String id;
     private String name;
     private int capacity;
-    private ApplicationService service;
 
     Course(String id, String name, int capacity, ApplicationService service) {
         super(id, service);
