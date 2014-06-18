@@ -13,7 +13,7 @@ import java.sql.SQLException;
  *
  * @author Phuong Anh Ha
  */
-public class Course extends HubObject{
+public class Course extends HubObject {
     private String name;
     private int capacity;
 
