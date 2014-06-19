@@ -14,9 +14,15 @@ Struktur:
   | createCourse       |
   '--------------------'
 
-  .--------.
-  | Course |
-  '--------'
+  .----------------------.
+  | Course               |
+  |----------------------|
+  | createAllocationRule |
+  '----------------------'
+
+  .----------------.
+  | AllocationRule |
+  '----------------'
 
   .---------.
   | Journal |
@@ -26,10 +32,11 @@ Struktur:
 Ablauf:
 
 ```
-   . Applicant | Employee     | System
-  ------------------------------------
+   . Applicant | Employee               | System
+  ----------------------------------------------
    .             createUser
    .             createCourse
+   .             createAllocationRule
    . createUser
 
 ```
