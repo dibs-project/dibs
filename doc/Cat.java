@@ -86,6 +86,11 @@ public class Cat {
         think();
     }
 
+    private String think() {
+        logger.fine("running cat AI");
+        return Cat.FAVORITE_FOOD;
+    }
+
     /**
      * Eindeutige ID.
      */
@@ -105,10 +110,5 @@ public class Cat {
      */
     public double getMood() {
         return this.mood;
-    }
-
-    private String think() {
-        logger.fine("running cat AI");
-        return Cat.FAVORITE_FOOD;
     }
 }
