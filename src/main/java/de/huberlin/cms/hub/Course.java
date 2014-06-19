@@ -50,7 +50,7 @@ public class Course extends HubObject {
         }
 
         try {
-            this.getService().getDb().setAutoCommit(false);
+            this.service.getDb().setAutoCommit(false);
             String id = Integer.toString(new Random().nextInt());
             PreparedStatement statement =
                 this.service.getDb().prepareStatement("INSERT INTO allocation_rule "
@@ -60,8 +60,8 @@ public class Course extends HubObject {
             statement.executeUpdate();
             this.service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED, null,
                 null, agent.getId(), name);
-            this.getService().getDb().commit();
-            this.getService().getDb().setAutoCommit(true);
+            this.service.getDb().commit();
+            this.service.getDb().setAutoCommit(true);
             return this.getAllocationRule(id);
         } catch (SQLException e) {
             throw new IOError(e);
