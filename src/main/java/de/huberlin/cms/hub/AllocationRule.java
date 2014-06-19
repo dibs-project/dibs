@@ -23,12 +23,6 @@ public class AllocationRule extends HubObject {
         this.name = name;
     }
 
-    AllocationRule(String id, String name, List<Quota> quotas, ApplicationService service) {
-        super(id, service);
-        this.name = name;
-        this.quotas = quotas;
-    }
-
     AllocationRule(ResultSet results, ApplicationService service) throws SQLException {
         // initialisiert die Einstellungen über den Datenbankcursor
         this(results.getString("id"), results.getString("name"), service);

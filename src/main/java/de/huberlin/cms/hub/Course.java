@@ -40,11 +40,11 @@ public class Course extends HubObject {
      * Legt ein neues Vergabeschema an.
      *
      * @param name Name des Vergabeschemas
-     * @param user Benutzer, der das Vergabeschema anlegt
+     * @param agent ausführender Benutzer
      * @return angelegtes Vergabeschema
      * @throws IllegalArgumentException wenn <code>name</code> leer ist
      */
-    public AllocationRule createAllocationRule(String name, User user) {
+    public AllocationRule createAllocationRule(String name, User agent) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
@@ -59,7 +59,7 @@ public class Course extends HubObject {
             statement.setString(2, name);
             statement.executeUpdate();
             this.service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED, null,
-                null, user.getId(), name);
+                null, agent.getId(), name);
             this.getService().getDb().commit();
             this.getService().getDb().setAutoCommit(true);
             return this.getAllocationRule(id);
