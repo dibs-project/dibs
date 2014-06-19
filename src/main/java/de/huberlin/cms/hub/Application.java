@@ -15,12 +15,12 @@ import java.sql.SQLException;
 public class Application extends HubObject {
 
     // Konstanten für den Bewerbungsstatus
-    public static final String RECEIVED = "received";
+    public static final String INCOMPLETE = "incomplete";
+    public static final String COMPLETE = "complete";
     public static final String VALID = "valid";
-    public static final String REJECTED = "rejected";
     public static final String WITHDRAWN = "withdrawn";
     public static final String ADMITTED = "admitted";
-    public static final String ACCEPTED = "accepted";
+    public static final String CONFIRMED = "confirmed";
 
     private String status;
     private String userId;
@@ -41,12 +41,12 @@ public class Application extends HubObject {
      * Status der Bewerbung</br>
      * Konstanten:
      * <ul>
-     * <li><code>received</code>: eingegangen
-     * <li><code>valid</code>: gültig, nimmt am Verfahren teil
-     * <li><code>rejected</code>: vom Verfahren ausgeschlossen
+     * <li><code>incomplete</code>: angelegt, nicht vollständig
+     * <li><code>complete</code>: vom Benutzer finalisiert, vollständig
+     * <li><code>valid</code>: gültig, nimmt am Zulassungsverfahren teil
      * <li><code>withdrawn</code>: zurückgezogen
      * <li><code>admitted</code>: Zulassungsangebot ausgesprochen
-     * <li><code>accepted</code>: Zulassungsangebot angenommen, zugelassen
+     * <li><code>confirmed</code>: Zulassungsangebot angenommen, zugelassen
      * </ul>
      */
     public String getStatus() {
