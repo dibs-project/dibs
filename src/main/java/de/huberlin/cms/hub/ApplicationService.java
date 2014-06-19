@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import de.huberlin.cms.hub.JournalRecord.ActionType;
+
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
  * <p>
@@ -28,6 +30,7 @@ import java.util.Random;
 public class ApplicationService {
     private Properties config;
     private Connection db;
+    private Journal journal;
 
     /**
      * Stellt eine Verbindung zur Datenbank her.
@@ -71,6 +74,7 @@ public class ApplicationService {
         defaults.setProperty("dosv_password", "");
         this.config = new Properties(defaults);
         this.config.putAll(config);
+        this.journal = new Journal(this);
     }
 
     /**
@@ -91,6 +95,7 @@ public class ApplicationService {
         }
 
         try {
+            this.db.setAutoCommit(false);
             // TODO: besseres Format für zufällige IDs
             String id = Integer.toString(new Random().nextInt());
             PreparedStatement statement =
@@ -99,6 +104,9 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setString(3, email);
             statement.executeUpdate();
+            journal.record(ActionType.USER_CREATED, null, null, null, id);
+            this.db.commit();
+            this.db.setAutoCommit(true);
             return this.getUser(id);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -108,7 +116,7 @@ public class ApplicationService {
     /**
      * Gibt den Benutzer mit der spezifizierten ID zurück.
      *
-     * @param id ID des Benutzer
+     * @param id ID des Benutzers
      * @return Benutzer mit der spezifizierten ID
      * @throws IllegalArgumentException wenn kein Benutzer mit der spezifizierten ID
      *     existiert
@@ -122,7 +130,7 @@ public class ApplicationService {
             if (!results.next()) {
                 throw new IllegalArgumentException("illegal id: user does not exist");
             }
-            return new User(results);
+            return new User(results, this);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -140,7 +148,7 @@ public class ApplicationService {
                 this.db.prepareStatement("SELECT * FROM \"user\"");
             ResultSet results = statement.executeQuery();
             while (results.next()) {
-                users.add(new User(results));
+                users.add(new User(results, this));
             }
             return users;
         } catch (SQLException e) {
@@ -151,7 +159,7 @@ public class ApplicationService {
     /**
      * Stellt das aktuelle Semester für das Bewerbungssystem ein.
      *
-     * @param semester Neues aktuelle Semester.
+     * @param semester Neues aktuelles Semester.
      * @see Settings#getSemester()
      */
     public void setSemester(String semester) {
@@ -197,9 +205,95 @@ public class ApplicationService {
             PreparedStatement statement = db.prepareStatement("SELECT * FROM settings");
             ResultSet results = statement.executeQuery();
             results.next();
-            return new Settings(results);
+            return new Settings(results, this);
         } catch (SQLException e) {
             throw new IOError(e);
         }
+    }
+    
+    /**
+     * Legt einen neuen Studiengang an.
+     *
+     * @param name Name des Studiengangs
+     * @param capacity Kapazität des Studiengangs
+     * @param user Benutzer, der den Studiengang anlegt
+     * @return angelegter Studiengang
+     * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
+     *     <code>capacity</code> nicht positiv ist
+     */
+    public Course createCourse(String name, int capacity, User user) {
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("illegal name: empty");
+        }
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("illegal capacity: nonpositive number");
+        }
+
+        try {
+            this.db.setAutoCommit(false);
+            String id = Integer.toString(new Random().nextInt());
+            PreparedStatement statement =
+                db.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
+            statement.setString(1, id);
+            statement.setString(2, name);
+            statement.setInt(3, capacity);
+            statement.executeUpdate();
+            journal.record(ActionType.COURSE_CREATED, null, null, user.getId(), name);
+            this.db.commit();
+            this.db.setAutoCommit(true);
+            return this.getCourse(id);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+     /**
+     * Gibt den Studiengang mit der spezifizierten ID zurück.
+     *
+     * @param id ID des Studiengangs
+     * @return Studiengang mit der spezifizierten ID
+     * @throws IllegalArgumentException wenn kein Studiengang mit der spezifizierten ID
+     *     existiert
+     */
+    public Course getCourse(String id) {
+        try {
+            PreparedStatement statement =
+                this.db.prepareStatement("SELECT * FROM course WHERE id = ?");
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException("illegal id: course does not exist");
+            }
+            return new Course(results, this);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Gibt eine Liste aller Studiengänge zurück.
+     *
+     * @return Liste aller Studiengänge
+     */
+    public List<Course> getCourses() {
+        try {
+            ArrayList<Course> courses = new ArrayList<Course>();
+            PreparedStatement statement =
+                this.db.prepareStatement("SELECT * FROM course");
+            ResultSet results = statement.executeQuery();
+            while (results.next()) {
+                courses.add(new Course(results, this));
+            }
+            return courses;
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Das Protokollbuch des Bewerbungsdienstes.
+     */
+    public Journal getJournal() {
+        return new Journal(this);
     }
 }
