@@ -1,5 +1,6 @@
-/**
- * HUB Copyright (C) 2014 Humboldt-Universität zu Berlin
+/*
+ * HUB
+ * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
 package de.huberlin.cms.hub;
@@ -38,7 +39,7 @@ public class Application extends HubObject {
     }
 
     /**
-     * Status der Bewerbung</br>
+     * Status der Bewerbung.</br>
      * Konstanten:
      * <ul>
      * <li><code>incomplete</code>: angelegt, nicht vollständig
@@ -54,7 +55,7 @@ public class Application extends HubObject {
     }
 
     /**
-     * ID des Benutzers, zu dem die Bewerbung gehört
+     * ID des Benutzers, zu dem die Bewerbung gehört.
      */
     public String getUserId() {
         return this.userId;
