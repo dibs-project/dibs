@@ -16,7 +16,7 @@ import org.junit.Test;
  * @author Phuong Anh Ha
  */
 public class ApplicationServiceTest extends HubTest {
-    Course course;
+    private Course course;
 
     @Before
     public void before() {

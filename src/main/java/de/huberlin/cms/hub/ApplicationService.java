@@ -104,7 +104,7 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setString(3, email);
             statement.executeUpdate();
-            journal.record(ActionType.USER_CREATED, null, null, null, name);
+            journal.record(ActionType.USER_CREATED, null, null, null, id);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getUser(id);
