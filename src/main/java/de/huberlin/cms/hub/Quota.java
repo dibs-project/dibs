@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class Quota extends HubObject {
     // TODO hub.sql anpassen
+    // TODO Relation für Criteria einfügen
     private String name;
     private Double percentage;
     private List<Criterion> rankingCriteria;
@@ -30,9 +31,14 @@ public class Quota extends HubObject {
         this(results.getString("id"), service, results.getString("name"), results
             .getDouble("percentage"), new ArrayList<Criterion>(),
             new ArrayList<Criterion>());
-        // TODO Criterion-Objekte laden
+        // TODO Criterion-Objekte über Klassenname als String laden
     }
 
+    public Criterion addCriterion(Class clazz) {
+        // TODO stub
+        return null;
+    }
+    
     /**
      * Name der Quote
      */
@@ -51,6 +57,8 @@ public class Quota extends HubObject {
      * Kriterien für die Sortierung auf der Rangliste
      */
     public List<Criterion> getRankingCriteria() {
+        List<Criterion> rankingCriteria = new ArrayList<Criterion>();
+        
         return rankingCriteria;
     }
 
@@ -58,6 +66,8 @@ public class Quota extends HubObject {
      * Kriterien für die Aufnahme von Bewerbungen in die Quote
      */
     public List<Criterion> getInclusionCriteria() {
+        
+        
         return inclusionCriteria;
     }
 
