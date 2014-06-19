@@ -238,7 +238,8 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setInt(3, capacity);
             statement.executeUpdate();
-            journal.record(ActionType.COURSE_CREATED, null, null, agent.getId(), name);
+            journal.record(ActionType.COURSE_CREATED, null, null, HubObject.getId(agent),
+                name);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getCourse(id);
