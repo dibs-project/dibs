@@ -19,14 +19,16 @@ public class JournalRecord extends HubObject {
      * Typ der Aktion des Dienstes.
      */
     public enum ActionType {
-        USER_CREATED
+        USER_CREATED,
+        COURSE_CREATED
     };
 
     /**
      * Typ des Objekts des Dienstes.
      */
     public enum ObjectType {
-        USER
+        USER,
+        COURSE
     };
 
     private ActionType actionType;
