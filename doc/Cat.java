@@ -29,15 +29,13 @@ import java.util.logging.Logger;
  *
  * @author Sven Pfaller
  */
-public class Cat {
+public class Cat extends HubObject {
     public final static String FAVORITE_FOOD = "Cheezburger";
 
     private static Logger logger = Logger.getLogger("de.huberlin.cms.hub");
 
-    private String id;
     private String name;
     private int mood;
-    private ApplicationService service;
 
     /**
      * Gibt eine zufällige Speise zurück.
@@ -49,25 +47,25 @@ public class Cat {
     }
 
     Cat(String id, String name, int mood, ApplicationService service) {
-        this.id = id;
+        super(id, service);
         this.name = name;
         this.mood = mood;
-        this.service = service;
     }
 
     Cat(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert die Cat über den Datenbankcursor
+        // initialisiert die Katze über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
             results.getInt("mood"), service);
     }
 
     /**
-     * Füttert die Cat.
+     * Füttert die Katze.
      *
      * @param food Name der Speise (z.B. Cheezburger)
+     * @param agent ausführender Benutzer
      * @throws IllegalArgumentException wenn <code>food</code> leer ist
      */
-    public void feed(String food) {
+    public void feed(String food, User agent) {
         if (food.isEmpty()) {
             throw new IllegalArgumentException("illegal food: empty");
         }
@@ -82,7 +80,7 @@ public class Cat {
             throw new IOError(e);
         }
 
-        // nach dem Essen hat die Cat Energie zum Nachdenken
+        // nach dem Essen hat die Katze Energie zum Nachdenken
         think();
     }
 
@@ -92,14 +90,7 @@ public class Cat {
     }
 
     /**
-     * Eindeutige ID.
-     */
-    public String getId() {
-        return this.id;
-    }
-
-    /**
-     * (Ruf-) Name der Cat.
+     * (Ruf-) Name der Katze.
      */
     public String getName() {
         return this.name;
