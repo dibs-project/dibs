@@ -27,4 +27,10 @@ CREATE TABLE journal_record (
     detail TEXT
 );
 
+CREATE TABLE qualification (
+    id VARCHAR(256) PRIMARY KEY,
+    user_id VARCHAR(256) REFERENCES "user",
+    grade FLOAT NOT NULL
+);
+
 INSERT INTO settings (id, semester) VALUES ('settings', '2014WS');
