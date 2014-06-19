@@ -10,7 +10,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * Vergabeschema.
+ * Regel, nach der Studienplätze für ein Angebot an die Bewerber vergeben werden
+ * (Vergabeschema).
  *
  * @author Phuong Anh Ha
  */
@@ -29,14 +30,14 @@ public class AllocationRule extends HubObject {
     }
 
     /**
-     * Name des Vergabeschemas.
+     * Name des Vergabeschemas
      */
     public String getName() {
         return this.name;
     }
 
     /**
-     * Liste der Ranglistenköpfen.
+     * Liste der Quoten
      */
     public List<Quota> getQuotas() {
         return this.quotas;
