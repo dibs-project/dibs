@@ -16,13 +16,13 @@ public class CourseTest extends HubTest {
     @Before
     public void before() {
         this.course = this.service.createCourse("Computer Science", 500, null);
-        this.allocation = this.course.createAllocationRule("Standard", user);
+        this.allocation = this.course.createAllocationRule("Standard", null);
     }
 
     @Test
     public void testCreateAllocationRule() {
         String name = "Standard";
-        AllocationRule allocation = this.course.createAllocationRule(name, user);
+        AllocationRule allocation = this.course.createAllocationRule(name, null);
         assertEquals(name, allocation.getName());
         assertTrue(this.course.getAllocationRules().contains(allocation));
     }
@@ -31,7 +31,7 @@ public class CourseTest extends HubTest {
     public void testCreateAllocationRuleEmptyName() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("name");
-        course.createAllocationRule("", user);
+        course.createAllocationRule("", null);
     }
 
     @Test

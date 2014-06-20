@@ -59,7 +59,7 @@ public class Course extends HubObject {
             statement.setString(2, name);
             statement.executeUpdate();
             this.service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED, null,
-                null, agent.getId(), name);
+                null, HubObject.getId(agent), name);
             this.service.getDb().commit();
             this.service.getDb().setAutoCommit(true);
             return this.getAllocationRule(id);
