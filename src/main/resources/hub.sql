@@ -11,6 +11,12 @@ CREATE TABLE settings (
     dosv_applications_update_time TIMESTAMP
 );
 
+CREATE TABLE course (
+    id VARCHAR(256) PRIMARY KEY,
+    name VARCHAR(256) NOT NULL,
+    capacity INT NOT NULL
+);
+
 CREATE TABLE journal_record (
     id VARCHAR(256) PRIMARY KEY,
     action_type VARCHAR(256) NOT NULL,
@@ -21,11 +27,4 @@ CREATE TABLE journal_record (
     detail TEXT
 );
 
-CREATE TABLE application (
-    id VARCHAR(256) PRIMARY KEY,
-    status VARCHAR(256) NOT NULL,
-    user_id VARCHAR(256) REFERENCES "user"
-);
-
 INSERT INTO settings (id, semester) VALUES ('settings', '2014WS');
-

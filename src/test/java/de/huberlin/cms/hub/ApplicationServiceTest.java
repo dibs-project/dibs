@@ -8,12 +8,21 @@ package de.huberlin.cms.hub;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Sven Pfaller
+ * @author Phuong Anh Ha
  */
 public class ApplicationServiceTest extends HubTest {
+    private Course course;
+
+    @Before
+    public void before() {
+        this.course = this.service.createCourse("Computer Science", 500, this.user);
+    }
+
     @Test
     public void testCreateUser() {
         String email = "moss@example.org";
@@ -51,5 +60,39 @@ public class ApplicationServiceTest extends HubTest {
     @Test
     public void testGetSettings() {
         service.getSettings();
+    }
+
+    @Test
+    public void testCreateCourse() {
+        String name = "Computer Science";
+        Course course = this.service.createCourse(name, 200, this.user);
+        assertEquals(name, course.getName());
+        assertTrue(this.service.getCourses().contains(course));
+    }
+
+    @Test
+    public void testCreateCourseEmptyName() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("name");
+        this.service.createCourse("", 200, this.user);
+    }
+
+    @Test
+    public void testCreateCourseNonpositiveCapacity() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("capacity");
+        this.service.createCourse("Computer Science", -3, this.user);
+    }
+
+    @Test
+    public void testGetCourse() {
+        assertEquals(this.course, this.service.getCourse(this.course.getId()));
+    }
+
+    @Test
+    public void testGetCourseNonExisting() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("id");
+        this.service.getCourse("foo");
     }
 }
