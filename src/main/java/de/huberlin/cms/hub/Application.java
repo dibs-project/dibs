@@ -1,4 +1,4 @@
-/**
+/*
  * HUB
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
@@ -13,67 +13,49 @@ import java.sql.SQLException;
  *
  * @author Markus Michler
  */
-public class Application {
+public class Application extends HubObject {
 
-    /**
-     * Bewerbungsstatus
-     */
-    public enum Status {
-        RECEIVED("received"), VALID("valid"), REJECTED("rejected"),
-        WITHDRAWN("withdrawn"), ADMITTED("admitted"), ACCEPTED("accepted");
+    // Konstanten für den Bewerbungsstatus
+    public static final String INCOMPLETE = "incomplete";
+    public static final String COMPLETE = "complete";
+    public static final String VALID = "valid";
+    public static final String WITHDRAWN = "withdrawn";
+    public static final String ADMITTED = "admitted";
+    public static final String CONFIRMED = "confirmed";
 
-        private final String value;
-
-        Status(String value) {
-            this.value = value;
-        }
-
-        public String toValue() {
-            return value;
-        }
-
-        public static Status fromValue(String value) {
-            for (Status status : Status.values()) {
-                if (status.value.equals(value)) {
-                    return status;
-                }
-            }
-            throw new IllegalArgumentException("Value " + value
-                + "does not exist in Enum Status");
-        }
-    }
-
-    private String id;
-    private Status status;
+    private String status;
     private String userId;
 
-    Application(String id, Status status, String userId) {
-        this.id = id;
+    Application(String id, ApplicationService service, String status, String userId) {
+        super(id, service);
         this.status = status;
         this.userId = userId;
     }
 
-    Application(ResultSet results) throws SQLException {
-        this(results.getString("id"), Status.fromValue(results.getString("status")),
-            results.getString("userId"));
+    Application(ResultSet results, ApplicationService service) throws SQLException {
+        // initialisiert den Benutzer über den Datenbankcursor
+        this(results.getString("id"), service, results.getString("status"), results
+            .getString("userId"));
     }
 
     /**
-     * Eindeutige ID
+     * Status der Bewerbung.</br>
+     * Konstanten:
+     * <ul>
+     * <li><code>incomplete</code>: angelegt, nicht vollständig
+     * <li><code>complete</code>: vom Benutzer finalisiert, vollständig
+     * <li><code>valid</code>: gültig, nimmt am Zulassungsverfahren teil
+     * <li><code>withdrawn</code>: zurückgezogen
+     * <li><code>admitted</code>: Zulassungsangebot ausgesprochen
+     * <li><code>confirmed</code>: Zulassungsangebot angenommen, zugelassen
+     * </ul>
      */
-    public String getId() {
-        return this.id;
-    }
-
-    /**
-     * Status der Bewerbung
-     */
-    public Status getStatus() {
+    public String getStatus() {
         return status;
     }
 
     /**
-     * ID des Benutzers, zu dem die Bewerbung gehört
+     * ID des Benutzers, zu dem die Bewerbung gehört.
      */
     public String getUserId() {
         return this.userId;
