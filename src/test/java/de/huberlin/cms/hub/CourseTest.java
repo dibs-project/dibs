@@ -15,7 +15,7 @@ public class CourseTest extends HubTest {
 
     @Before
     public void before() {
-        this.course = this.service.createCourse("Computer Science", 500, this.user);
+        this.course = this.service.createCourse("Computer Science", 500, null);
         this.allocation = this.course.createAllocationRule("Standard", user);
     }
 

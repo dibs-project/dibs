@@ -51,11 +51,11 @@ public class JournalTest extends HubTest {
     @Test
     public void testGetRecordsUser() {
         JournalRecord record =
-            journal.record(ActionType.USER_CREATED, null, null, this.user.getId(), null);
-        List<JournalRecord> records = journal.getRecords(this.user.getId());
+            journal.record(ActionType.USER_CREATED, null, null, null, null);
+        List<JournalRecord> records = journal.getRecords(null);
         assertTrue(records.contains(record));
         for (JournalRecord r : records) {
-            assertEquals(this.user.getId(), r.getUserId());
+            assertEquals(null, r.getUserId());
         }
     }
 
