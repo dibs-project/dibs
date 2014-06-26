@@ -88,7 +88,8 @@ public abstract class HubTest {
 
             // TODO: Tabellen automatisch aus hub.sql lesen
             String[] tables =
-                {"user", "settings", "qualification", "course", "allocation_rule", "application", "journal_record"};
+                {"user", "settings", "qualification", "course", "allocation_rule",
+                    "application", "journal_record"};
             for (String table : tables) {
                 statement = this.db.prepareStatement(
                     String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));

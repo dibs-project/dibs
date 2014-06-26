@@ -22,6 +22,7 @@ CREATE TABLE allocation_rule (
     id VARCHAR(256) PRIMARY KEY
 );
 
+
 CREATE TABLE journal_record (
     id VARCHAR(256) PRIMARY KEY,
     action_type VARCHAR(256) NOT NULL,

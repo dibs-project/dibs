@@ -7,11 +7,11 @@ HUB-Benutzerdokumentation
 Struktur:
 
 ```
-  .--------------------.  .----------.  .------.
-  | ApplicationService |  | Settings |  | User |
-  |--------------------|  '----------'  '------'
-  | createUser         |
-  | createCourse       |
+  .--------------------.  .----------.  .-------------------.
+  | ApplicationService |  | Settings |  | User              |
+  |--------------------|  '----------'  |-------------------|
+  | createUser         |                | createInformation |
+  | createCourse       |                '-------------------'
   '--------------------'
 
   .-------------.
@@ -42,6 +42,6 @@ Ablauf:
    .                   | createCourse         |
    .                   | createAllocationRule |
    . createUser        |                      |
-   . createInformation |
+   . createInformation |                      |
 
 ```

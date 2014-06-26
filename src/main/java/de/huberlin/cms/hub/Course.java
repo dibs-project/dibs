@@ -32,7 +32,7 @@ public class Course extends HubObject {
     Course(ResultSet results, ApplicationService service) throws SQLException {
         // initialisiert den Studiengang über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
-            results.getInt("capacity"),service);
+            results.getInt("capacity"), service);
     }
 
     /**
