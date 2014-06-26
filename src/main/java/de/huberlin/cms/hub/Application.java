@@ -5,8 +5,7 @@
 
 package de.huberlin.cms.hub;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.HashMap;
 
 /**
  * Bewerbung, mit der Benutzer am Zulassungsverfahren teilnehmen.
@@ -23,19 +22,29 @@ public class Application extends HubObject {
     public static final String ADMITTED = "admitted";
     public static final String CONFIRMED = "confirmed";
 
-    private String status;
     private String userId;
+    private String courseId;
+    private String status;
 
-    Application(String id, ApplicationService service, String status, String userId) {
-        super(id, service);
-        this.status = status;
-        this.userId = userId;
+    Application(HashMap<String, Object> args) {
+        super((String)args.get("id"), (ApplicationService)args.get("service"));
+        this.userId = (String)args.get("user_id");
+        this.courseId = (String)args.get("course_id");
+        this.status = (String)args.get("status");
     }
 
-    Application(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert den Benutzer über den Datenbankcursor
-        this(results.getString("id"), service, results.getString("status"), results
-            .getString("userId"));
+    /**
+     * ID des Benutzers, zu dem die Bewerbung gehört.
+     */
+    public String getUserId() {
+        return this.userId;
+    }
+
+    /**
+     * ID des Studienangebots, auf das der Benutzer sich beworben hat.
+     */
+    public String getCourseId() {
+        return this.courseId;
     }
 
     /**
@@ -52,12 +61,5 @@ public class Application extends HubObject {
      */
     public String getStatus() {
         return status;
-    }
-
-    /**
-     * ID des Benutzers, zu dem die Bewerbung gehört.
-     */
-    public String getUserId() {
-        return this.userId;
     }
 }

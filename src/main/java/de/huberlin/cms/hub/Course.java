@@ -7,6 +7,7 @@ package de.huberlin.cms.hub;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 /**
  * Studiengang.
@@ -27,6 +28,19 @@ public class Course extends HubObject {
         // initialisiert den Eintrag über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
             results.getInt("capacity"), service);
+    }
+
+    /**
+     * TODO
+     *
+     * @param applicant
+     * @param agent
+     * @return
+     */
+    public Application apply(String userId, User agent) {
+        HashMap<String, Object> args = new HashMap<String, Object>();
+        // TODO Daten aus DB
+        return new Application(args);
     }
 
     /**
