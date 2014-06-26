@@ -18,9 +18,9 @@ Struktur:
   | Information |
   '-------------'
 
-  .--------.
-  | Course |
-  '--------'
+  .--------.  .-------. 
+  | Course |  | Quota |
+  '--------'  '-------'
 
   .---------.
   | Journal |
@@ -34,7 +34,7 @@ Ablauf:
   --------------------------------------------
    .                     createUser
    .                     createCourse
-   . createUser
+   . createUser          createQuota
    . createInformation
 
 ```
