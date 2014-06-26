@@ -5,6 +5,8 @@
 
 package de.huberlin.cms.hub;
 
+import static java.util.Collections.unmodifiableMap;
+
 import java.io.IOError;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,7 +14,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
@@ -31,6 +35,7 @@ public class ApplicationService {
     private Properties config;
     private Connection db;
     private Journal journal;
+    private HashMap<String, Information.Type> informationTypes;
 
     /**
      * Stellt eine Verbindung zur Datenbank her.
@@ -75,6 +80,9 @@ public class ApplicationService {
         this.config = new Properties(defaults);
         this.config.putAll(config);
         this.journal = new Journal(this);
+
+        this.informationTypes = new HashMap<String, Information.Type>();
+        this.informationTypes.put("qualification", new Qualification.Type());
     }
 
     /**
@@ -157,6 +165,34 @@ public class ApplicationService {
     }
 
     /**
+     * Gibt die Information mit der spezifizierten ID zurück.
+     *
+     * @param id ID der Information
+     * @return Information mit der spezifizierten ID
+     */
+    public Information getInformation(String id) {
+        String typeId = id.split(":")[0];
+        Information.Type type = this.informationTypes.get(typeId);
+        if (type == null) {
+            throw new IllegalArgumentException("illegal id: information does not exist");
+        }
+
+        try {
+            PreparedStatement statement = this.db.prepareStatement(
+                String.format("SELECT * FROM \"%s\" WHERE id = ?", typeId));
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException(
+                    "illegal id: information does not exist");
+            }
+            return type.newInstance(results, this);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
      * Stellt das aktuelle Semester für das Bewerbungssystem ein.
      *
      * @param semester Neues aktuelles Semester.
@@ -210,7 +246,7 @@ public class ApplicationService {
             throw new IOError(e);
         }
     }
-    
+
     /**
      * Legt einen neuen Studiengang an.
      *
@@ -296,4 +332,14 @@ public class ApplicationService {
     public Journal getJournal() {
         return new Journal(this);
     }
+
+    /**
+     * Verfügbare Informationstypen (indiziert nach ID).
+     */
+    public Map<String, Information.Type> getInformationTypes() {
+        return unmodifiableMap(this.informationTypes);
+    }
+
+    // TODO Stub
+    public Map<String, Criterion> getCriteria() { return null; }
 }
