@@ -339,4 +339,7 @@ public class ApplicationService {
     public Map<String, Information.Type> getInformationTypes() {
         return unmodifiableMap(this.informationTypes);
     }
+
+    // TODO Stub
+    public Map<String, Criterion> getCriteria() { return null; }
 }
