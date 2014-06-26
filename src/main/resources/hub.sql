@@ -48,7 +48,7 @@ CREATE TABLE quota (
 CREATE TABLE quota_ranking_criteria (
     PRIMARY KEY(quota_id)
     quota_id VARCHAR(256) REFERENCES quota,
-    criterion VARCHAR(256) NOT NULL
+    criterion_id VARCHAR(256) NOT NULL
 );
 
 INSERT INTO settings (id, semester) VALUES ('settings', '2014WS');
