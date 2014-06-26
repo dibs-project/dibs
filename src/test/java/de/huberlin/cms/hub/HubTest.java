@@ -87,7 +87,7 @@ public abstract class HubTest {
             PreparedStatement statement;
 
             // TODO: Tabellen automatisch aus hub.sql lesen
-            String[] tables = {"user", "settings", "course", "allocation_rule",
+            String[] tables = {"user", "settings", "allocation_rule", "course",
                 "application", "journal_record"};
             for (String table : tables) {
                 statement = this.db.prepareStatement(

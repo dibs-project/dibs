@@ -9,8 +9,6 @@ import java.io.IOError;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import de.huberlin.cms.hub.JournalRecord.ActionType;
@@ -23,91 +21,47 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
 public class Course extends HubObject {
     private String name;
     private int capacity;
+    private AllocationRule rule;
 
-    Course(String id, String name, int capacity, ApplicationService service) {
+    Course(String id, ApplicationService service) {
+        super(id, service);
+    }
+
+    Course(String id, String name, int capacity, AllocationRule rule,
+            ApplicationService service) {
         super(id, service);
         this.name = name;
         this.capacity = capacity;
+        this.rule = rule;
     }
 
-    Course(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert den Eintrag über den Datenbankcursor
+    Course(ResultSet results, ApplicationService service) throws
+            SQLException {
+        // initialisiert den Studiengang über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
-            results.getInt("capacity"), service);
+            results.getInt("capacity"),
+            service.getAllocationRule(results.getString("allocation_rule_id")), service);
     }
 
     /**
      * Legt ein neues Vergabeschema an.
      *
-     * @param name Name des Vergabeschemas
      * @param agent ausführender Benutzer
      * @return angelegtes Vergabeschema
-     * @throws IllegalArgumentException wenn <code>name</code> leer ist
      */
-    public AllocationRule createAllocationRule(String name, User agent) {
-        if (name.isEmpty()) {
-            throw new IllegalArgumentException("illegal name: empty");
-        }
-
+    AllocationRule createAllocationRule(User agent) {
         try {
             this.service.getDb().setAutoCommit(false);
-            String id = Integer.toString(new Random().nextInt());
+            String id = "allocation_rule:" + Integer.toString(new Random().nextInt());
             PreparedStatement statement =
-                this.service.getDb().prepareStatement("INSERT INTO allocation_rule "
-                    + "VALUES(?, ?)");
+                this.service.getDb().prepareStatement("INSERT INTO allocation_rule VALUES(?)");
             statement.setString(1, id);
-            statement.setString(2, name);
             statement.executeUpdate();
             this.service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED, null,
-                null, HubObject.getId(agent), name);
+                null, HubObject.getId(agent), id);
             this.service.getDb().commit();
             this.service.getDb().setAutoCommit(true);
-            return this.getAllocationRule(id);
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
-     * Gibt das Vergabeschema mit der identifizierten ID zurück.
-     *
-     * @param id ID des Vergabeschemas
-     * @return Vergabeschema mit der identifizierten ID
-     * @throws IllegalArgumentException wenn kein Vergabeschema mit der identifizierten ID
-     *     existiert
-     */
-    public AllocationRule getAllocationRule(String id) {
-        try {
-            PreparedStatement statement =
-                this.service.getDb().prepareStatement("SELECT * FROM allocation_rule "
-                    + "WHERE id = ?");
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
-                throw new IllegalArgumentException("illegal id: allocation_rule does not "
-                    + "exist");
-            }
-            return new AllocationRule(results, service);
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
-     * Gibt eine Liste aller Vergabeschemen zurück.
-     *
-     * @return Liste aller Vergabeschemen
-     */
-    public List<AllocationRule> getAllocationRules() {
-        try {
-            ArrayList<AllocationRule> allocations = new ArrayList<AllocationRule>();
-            PreparedStatement statement =
-                this.service.getDb().prepareStatement("SELECT * FROM allocation_rule");
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                allocations.add(new AllocationRule(results, this.service));
-            }
-            return allocations;
+            return this.service.getAllocationRule(id);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -125,5 +79,12 @@ public class Course extends HubObject {
      */
     public int getCapacity() {
         return this.capacity;
+    }
+
+    /**
+     * Vergabeschema des Studiengangs.
+     */
+    public AllocationRule getRule() {
+        return this.rule;
     }
 }

@@ -32,11 +32,11 @@ Struktur:
 Ablauf:
 
 ```
-   . Applicant | Employee               | System
-  ----------------------------------------------
-   .             createUser
-   .             createCourse
-   .             createAllocationRule
-   . createUser
+   . Applicant  | Employee             | System
+  ---------------------------------------------
+   .            | createUser           |
+   .            | createCourse         |
+   .            | createAllocationRule |
+   . createUser |                      |
 
 ```

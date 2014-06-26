@@ -20,7 +20,7 @@ public class ApplicationServiceTest extends HubTest {
 
     @Before
     public void before() {
-        this.course = this.service.createCourse("Computer Science", 500, null);
+//        this.course = this.service.createCourse("Computer Science", 500, null);
     }
 
     @Test
