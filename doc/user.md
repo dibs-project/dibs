@@ -34,7 +34,7 @@ Ablauf:
   --------------------------------------------
    .                     createUser
    .                     createCourse
-   . createUser          createQuota
+   . createUser
    . createInformation
 
 ```
