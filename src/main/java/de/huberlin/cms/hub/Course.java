@@ -23,24 +23,16 @@ public class Course extends HubObject {
     private int capacity;
     private AllocationRule rule;
 
-    Course(String id, ApplicationService service) {
-        super(id, service);
-    }
-
-    Course(String id, String name, int capacity, AllocationRule rule,
-            ApplicationService service) {
+    Course(String id, String name, int capacity, ApplicationService service) {
         super(id, service);
         this.name = name;
         this.capacity = capacity;
-        this.rule = rule;
     }
 
-    Course(ResultSet results, ApplicationService service) throws
-            SQLException {
+    Course(ResultSet results, ApplicationService service) throws SQLException {
         // initialisiert den Studiengang über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
-            results.getInt("capacity"),
-            service.getAllocationRule(results.getString("allocation_rule_id")), service);
+            results.getInt("capacity"),service);
     }
 
     /**
@@ -84,7 +76,7 @@ public class Course extends HubObject {
     /**
      * Vergabeschema des Studiengangs.
      */
-    public AllocationRule getRule() {
+    public AllocationRule getAllocationRule() {
         return this.rule;
     }
 }

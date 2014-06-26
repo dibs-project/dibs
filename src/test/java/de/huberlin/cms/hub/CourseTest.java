@@ -28,18 +28,6 @@ public class CourseTest extends HubTest {
     public void testCreateAllocationRule() {
         AllocationRule rule = this.course.createAllocationRule(null);
         assertEquals(rule.id, rule.getId());
+        assertTrue(this.service.getAllocationRule(rule.id).equals(rule));
     }
-
-//    @Test
-//    public void testGetAllocationRule() {
-//        assertEquals(this.rule,
-//            this.course.getAllocationRule(this.rule.getId()));
-//    }
-
-//    @Test
-//    public void testGetAllocationRuleNonExisting() {
-//        this.exception.expect(IllegalArgumentException.class);
-//        this.exception.expectMessage("id");
-//        course.getAllocationRule("foo");
-//    }
 }

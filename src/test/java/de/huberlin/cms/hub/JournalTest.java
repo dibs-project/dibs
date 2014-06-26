@@ -55,7 +55,7 @@ public class JournalTest extends HubTest {
         List<JournalRecord> records = journal.getRecords(this.user.getId());
         assertTrue(records.contains(record));
         for (JournalRecord r : records) {
-            assertEquals(null, r.getUserId());
+            assertEquals(this.user.getId(), r.getUserId());
         }
     }
 
