@@ -33,4 +33,10 @@ CREATE TABLE qualification (
     grade FLOAT NOT NULL
 );
 
+CREATE TABLE application (
+    id VARCHAR(256) PRIMARY KEY,
+    status VARCHAR(256) NOT NULL,
+    user_id VARCHAR(256) REFERENCES "user"
+);
+
 INSERT INTO settings (id, semester) VALUES ('settings', '2014WS');
