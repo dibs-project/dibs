@@ -20,6 +20,7 @@ public class JournalRecord extends HubObject {
      */
     public enum ActionType {
         USER_CREATED,
+        INFORMATION_CREATED,
         COURSE_CREATED,
         ALLOCATION_RULE_CREATED
     };
@@ -29,6 +30,7 @@ public class JournalRecord extends HubObject {
      */
     public enum ObjectType {
         USER,
+        INFORMATION,
         COURSE,
         ALLOCATION_RULE
     };

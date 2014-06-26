@@ -32,6 +32,12 @@ CREATE TABLE journal_record (
     detail TEXT
 );
 
+CREATE TABLE qualification (
+    id VARCHAR(256) PRIMARY KEY,
+    user_id VARCHAR(256) REFERENCES "user",
+    grade FLOAT NOT NULL
+);
+
 CREATE TABLE application (
     id VARCHAR(256) PRIMARY KEY,
     status VARCHAR(256) NOT NULL,
