@@ -15,12 +15,12 @@ import java.util.HashMap;
 public class Application extends HubObject {
 
     // Konstanten für den Bewerbungsstatus
-    public static final String INCOMPLETE = "incomplete";
-    public static final String COMPLETE = "complete";
-    public static final String VALID = "valid";
-    public static final String WITHDRAWN = "withdrawn";
-    public static final String ADMITTED = "admitted";
-    public static final String CONFIRMED = "confirmed";
+    public static final String STATUS_INCOMPLETE = "incomplete";
+    public static final String STATUS_COMPLETE = "complete";
+    public static final String STATUS_VALID = "valid";
+    public static final String STATUS_WITHDRAWN = "withdrawn";
+    public static final String STATUS_ADMITTED = "admitted";
+    public static final String STATUS_CONFIRMED = "confirmed";
 
     private String userId;
     private String courseId;
