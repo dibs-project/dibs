@@ -193,6 +193,34 @@ public class ApplicationService {
     }
 
     /**
+     * Gibt eine Bewerbung über die ID zurück.
+     *
+     * @param id ID der Bewerbung
+     * @return Bewerbung mit der spezifizierten ID
+     */
+    public Application getApplication(String id) {
+        try {
+            String sql = "SELECT * FROM application WHERE id = ?";
+            PreparedStatement statement = this.db.prepareStatement(sql);
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException(
+                    "illegal id: application does not exist");
+            }
+            HashMap<String, Object> args = new HashMap<String, Object>();
+            args.put("id", results.getString("id"));
+            args.put("service", this);
+            args.put("user_id", results.getString("user_id"));
+            args.put("course_id", results.getString("course_id"));
+            args.put("status", results.getString("status"));
+            return new Application(args);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
      * Stellt das aktuelle Semester für das Bewerbungssystem ein.
      *
      * @param semester Neues aktuelles Semester.

@@ -12,11 +12,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Benutzer, der mit dem Bewerbungssystem interagiert.
  *
  * @author Sven Pfaller
+ * @author Markus Michler
  */
 public class User extends HubObject {
     private String name;
@@ -76,6 +78,34 @@ public class User extends HubObject {
             }
         }
         return informationSet;
+    }
+
+    /**
+     * Gibt alle Bewerbungen des Benutzers zurück.
+     *
+     * @param agent ausführender Benutzer
+     * @return Liste aller Bewerbungen des Benutzers
+     */
+    public List<Application> getApplications(User agent) {
+        try {
+            List<Application> applications = new ArrayList<Application>();
+            String sql = "SELECT * FROM application WHERE user_id = ?";
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            while (results.next()) {
+                HashMap<String, Object> args = new HashMap<String, Object>();
+                args.put("id", results.getString("id"));
+                args.put("service", this);
+                args.put("user_id", results.getString("user_id"));
+                args.put("course_id", results.getString("course_id"));
+                args.put("status", results.getString("status"));
+                applications.add(new Application(args));
+            }
+            return applications;
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
     /**

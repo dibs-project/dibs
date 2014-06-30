@@ -18,8 +18,10 @@ Struktur:
   | Information |
   '-------------'
 
-  .--------.
-  | Course |
+  .--------.  .-------------.
+  | Course |  | Application |
+  |--------|  '-------------'
+  | apply  |
   '--------'
 
   .---------.
@@ -36,5 +38,6 @@ Ablauf:
    .                     createCourse
    . createUser
    . createInformation
+   . apply
 
 ```
