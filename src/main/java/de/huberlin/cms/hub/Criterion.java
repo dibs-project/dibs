@@ -25,8 +25,7 @@ public abstract class Criterion {
         this.service = service;
     }
 
-    public Criterion evaluate(Application application, Information information)
-    {
+    public Double evaluate(Application application, Information information) {
         return null;
     };
 
@@ -40,7 +39,11 @@ public abstract class Criterion {
     /**
      * Für das Kriterium benötigte Informationen.
      */
-    public String getRequiredInformationType() {
-        return this.requiredInformationType;
+    public Information.Type getRequiredInformationType() { 
+        return this.requiredInformationType; 
+     }
+
+    public String getId() { 
+        return null; 
     }
 }

@@ -17,10 +17,9 @@ public class QualificationCriterion extends Criterion  {
         super("qualification", "qualification", service);
     }
 
-    @Override
-    public Criterion evaluate(Application application, Information information)
+    public double evaluate(Application application, Qualification qualification)
     {
-        if (information.getGrade())
-            return this.grade;
+        if (qualification.getGrade())
+            return qualification.getGrade();
     };
 }
