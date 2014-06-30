@@ -266,13 +266,15 @@ public class ApplicationService {
         }
 
         try {
+            AllocationRule rule = Course.createAllocationRule(agent);
             this.db.setAutoCommit(false);
             String id = "course:" + Integer.toString(new Random().nextInt());
             PreparedStatement statement =
-                db.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
+                db.prepareStatement("INSERT INTO course VALUES(?, ?, ?, ?)");
             statement.setString(1, id);
             statement.setString(2, name);
             statement.setInt(3, capacity);
+            statement.setString(4, rule.getId());
             statement.executeUpdate();
             journal.record(ActionType.COURSE_CREATED, null, null, HubObject.getId(agent),
                 name);

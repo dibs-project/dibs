@@ -88,7 +88,7 @@ public abstract class HubTest {
 
             // TODO: Tabellen automatisch aus hub.sql lesen
             String[] tables =
-                {"user", "settings", "qualification", "allocation_rule","course",
+                {"user", "settings", "qualification", "allocation_rule", "course",
                     "application", "journal_record"};
             for (String table : tables) {
                 statement = this.db.prepareStatement(

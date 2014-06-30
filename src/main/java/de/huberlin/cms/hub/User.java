@@ -46,7 +46,7 @@ public class User extends HubObject {
      */
     public Information createInformation(String typeId, HashMap<String, Object> args,
             User agent) {
-        Information.Type type = this.service.getInformationTypes().get(typeId);
+        Information.Type type = HubObject.service.getInformationTypes().get(typeId);
         if (type == null) {
             throw new IllegalArgumentException("illegal typeId: unknown");
         }
@@ -61,15 +61,15 @@ public class User extends HubObject {
      */
     public List<Information> getInformationSet(User agent) {
         ArrayList<Information> informationSet = new ArrayList<Information>();
-        for (Information.Type type : this.service.getInformationTypes().values()) {
+        for (Information.Type type : HubObject.service.getInformationTypes().values()) {
             try {
-                PreparedStatement statement = this.service.getDb().prepareStatement(
+                PreparedStatement statement = HubObject.service.getDb().prepareStatement(
                     String.format("SELECT * FROM \"%s\" WHERE user_id = ?",
                         type.getId()));
                 statement.setString(1, this.id);
                 ResultSet results = statement.executeQuery();
                 while (results.next()) {
-                    informationSet.add(type.newInstance(results, this.service));
+                    informationSet.add(type.newInstance(results, HubObject.service));
                 }
             } catch (SQLException e) {
                 throw new IOError(e);

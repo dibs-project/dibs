@@ -12,7 +12,7 @@ package de.huberlin.cms.hub;
  */
 public abstract class HubObject {
     protected String id;
-    protected ApplicationService service;
+    protected static ApplicationService service;
 
     /**
      * Gibt die ID des Objekts zurück. Dabei werden <code>null</code>-Werte ignoriert.
@@ -29,7 +29,7 @@ public abstract class HubObject {
      */
     protected HubObject(String id, ApplicationService service) {
         this.id = id;
-        this.service = service;
+        HubObject.service = service;
     }
 
     /**
@@ -64,6 +64,6 @@ public abstract class HubObject {
      * Zugehöriger Bewerbungsdienst.
      */
     public ApplicationService getService() {
-        return this.service;
+        return HubObject.service;
     }
 }

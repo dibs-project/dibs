@@ -23,16 +23,20 @@ public class Course extends HubObject {
     private int capacity;
     private AllocationRule rule;
 
-    Course(String id, String name, int capacity, ApplicationService service) {
+    Course(String id, String name, int capacity, AllocationRule rule,
+            ApplicationService service) {
         super(id, service);
         this.name = name;
         this.capacity = capacity;
+        this.rule = rule;
     }
 
     Course(ResultSet results, ApplicationService service) throws SQLException {
         // initialisiert den Studiengang über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
-            results.getInt("capacity"), service);
+            results.getInt("capacity"),
+            service.getAllocationRule(results.getString("allocation_rule_id")),
+            service);
     }
 
     /**
@@ -41,19 +45,19 @@ public class Course extends HubObject {
      * @param agent ausführender Benutzer
      * @return angelegtes Vergabeschema
      */
-    AllocationRule createAllocationRule(User agent) {
+    protected static AllocationRule createAllocationRule(User agent) {
         try {
-            this.service.getDb().setAutoCommit(false);
+            HubObject.service.getDb().setAutoCommit(false);
             String id = "allocation_rule:" + Integer.toString(new Random().nextInt());
             PreparedStatement statement =
-                this.service.getDb().prepareStatement("INSERT INTO allocation_rule VALUES(?)");
+                HubObject.service.getDb().prepareStatement("INSERT INTO allocation_rule VALUES(?)");
             statement.setString(1, id);
             statement.executeUpdate();
-            this.service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED, null,
+            HubObject.service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED, null,
                 null, HubObject.getId(agent), id);
-            this.service.getDb().commit();
-            this.service.getDb().setAutoCommit(true);
-            return this.service.getAllocationRule(id);
+            HubObject.service.getDb().commit();
+            HubObject.service.getDb().setAutoCommit(true);
+            return HubObject.service.getAllocationRule(id);
         } catch (SQLException e) {
             throw new IOError(e);
         }
