@@ -12,13 +12,13 @@ package de.huberlin.cms.hub;
  */
 public abstract class Criterion {
     protected String name;
-    protected String requiredInformationType;
+    protected Information.Type requiredInformationType;
     protected ApplicationService service;
 
     /**
      * Initialisiert das Kriterium.
      */
-    Criterion(String name, String requiredInformationType,
+    Criterion(String name, Information.Type requiredInformationType,
             ApplicationService service) {
         this.name = name;
         this.requiredInformationType = requiredInformationType;

@@ -13,11 +13,12 @@ package de.huberlin.cms.hub;
 
 public class QualificationCriterion extends Criterion  {
 
-    QualificationCriterion(ApplicationService service) {
-        super("qualification", "qualification", service);
+    QualificationCriterion(String name, Qualification.Type qualificationtype,
+            ApplicationService service) {
+        super("qualification", qualificationtype, service);
     }
 
-    public double evaluate(Application application, Qualification qualification)
+    public Double evaluate(Application application, Qualification qualification)
     {
         if (qualification.getGrade())
             return qualification.getGrade();
