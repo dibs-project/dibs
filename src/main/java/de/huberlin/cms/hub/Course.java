@@ -54,8 +54,8 @@ public class Course extends HubObject {
             statement.setString(3, this.id);
             statement.setString(4, Application.STATUS_INCOMPLETE);
             statement.executeUpdate();
-            service.getJournal().record(ActionType.APPLICATION_CREATED,
-                ObjectType.APPLICATION, userId, HubObject.getId(agent), applicationId);
+            service.getJournal().record(ActionType.APPLIED, ObjectType.COURSE, this.id,
+                HubObject.getId(agent), applicationId);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);
             return service.getApplication(applicationId);

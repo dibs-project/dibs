@@ -96,7 +96,7 @@ public class User extends HubObject {
             while (results.next()) {
                 HashMap<String, Object> args = new HashMap<String, Object>();
                 args.put("id", results.getString("id"));
-                args.put("service", this);
+                args.put("service", this.getService());
                 args.put("user_id", results.getString("user_id"));
                 args.put("course_id", results.getString("course_id"));
                 args.put("status", results.getString("status"));

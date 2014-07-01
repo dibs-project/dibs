@@ -5,7 +5,13 @@
 
 package de.huberlin.cms.hub;
 
+import java.io.IOError;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.HashMap;
+
+import de.huberlin.cms.hub.JournalRecord.ActionType;
+import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
  * Bewerbung, mit der Benutzer am Zulassungsverfahren teilnehmen.
@@ -22,8 +28,8 @@ public class Application extends HubObject {
     public static final String STATUS_ADMITTED = "admitted";
     public static final String STATUS_CONFIRMED = "confirmed";
 
-    private String userId;
-    private String courseId;
+    private final String userId;
+    private final String courseId;
     private String status;
 
     Application(HashMap<String, Object> args) {
@@ -31,6 +37,24 @@ public class Application extends HubObject {
         this.userId = (String)args.get("user_id");
         this.courseId = (String)args.get("course_id");
         this.status = (String)args.get("status");
+    }
+
+    void setStatus(String status, User agent) {
+        this.status = status;
+        try {
+            service.getDb().setAutoCommit(false);
+            String sql = "UPDATE application SET status = ? WHERE id = ?";
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
+            statement.setString(1, status);
+            statement.setString(2, this.id);
+            statement.executeUpdate();
+            service.getJournal().record(ActionType.APPLICATION_STATUS_SET,
+                ObjectType.APPLICATION, this.id, HubObject.getId(agent), status);
+            service.getDb().commit();
+            service.getDb().setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
     /**
