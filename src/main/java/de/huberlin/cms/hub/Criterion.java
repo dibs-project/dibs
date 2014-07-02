@@ -11,39 +11,66 @@ package de.huberlin.cms.hub;
  * @author David Koschnick
  */
 public abstract class Criterion {
-    protected String name;
+    protected String id;
     protected Information.Type requiredInformationType;
     protected ApplicationService service;
 
     /**
      * Initialisiert das Kriterium.
      */
-    Criterion(String name, Information.Type requiredInformationType,
+    protected Criterion(String id, Information.Type requiredInformationType,
             ApplicationService service) {
-        this.name = name;
+        this.id = id;
         this.requiredInformationType = requiredInformationType;
         this.service = service;
     }
 
+    /**
+     * Bewertet die Information.
+     *
+     * @param application Bewerbung
+     * @param information Information, welche bewertet wird
+     * @return berechneter Wert für die Information
+     */
     public Double evaluate(Application application, Information information) {
         return null;
     };
-
-    /**
-     * Name des Kriteriums.
-     */
-    public String getName() {
-        return this.name;
-    }
 
     /**
      * Für das Kriterium benötigte Informationen.
      */
     public Information.Type getRequiredInformationType() { 
         return this.requiredInformationType; 
-     }
+    }
 
-    public String getId() { 
-        return null; 
+    /**
+     * Beschreibung eines Kriteriumtyps.
+     *
+     * @author David Koschnick
+     */
+    public static abstract class Type {
+        protected String id;
+
+        protected Type(String id) {
+            this.id = id;
+        }
+
+        /**
+         * Extension API: Erstellt eine neue Instanz dieses Kriteriumtyps
+         *
+         * @param id ID, des Kriteriums
+         * @param requiredInformationType Informationstyp
+         * @param service Bewerbungsdienst
+         * @return neues Kriterium
+         */
+        public abstract Criterion newInstance(String id,
+                Information.Type requiredInformationType, ApplicationService service);
+
+        /**
+         * Eindeutige ID.
+         */
+        public String getId() {
+            return this.id;
+        }
     }
 }

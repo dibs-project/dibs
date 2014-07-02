@@ -36,6 +36,7 @@ public class ApplicationService {
     private Connection db;
     private Journal journal;
     private HashMap<String, Information.Type> informationTypes;
+    private HashMap<String, Criterion.Type> criterionTypes;
 
     /**
      * Stellt eine Verbindung zur Datenbank her.
@@ -83,6 +84,9 @@ public class ApplicationService {
 
         this.informationTypes = new HashMap<String, Information.Type>();
         this.informationTypes.put("qualification", new Qualification.Type());
+
+        this.criterionTypes = new HashMap<String, Criterion.Type>();
+        this.criterionTypes.put("qualification", new QualificationCriterion.Type());
     }
 
     /**
