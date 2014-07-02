@@ -15,7 +15,7 @@ public class CourseTest extends HubTest {
 
     @Test
     public final void testApply() {
-        Application application = course.apply(user.getId(), user);
-        assertTrue(user.getApplications(user).contains(application));
+        Application application = course.apply(user.getId(), null);
+        assertTrue(user.getApplications(null).contains(application));
     }
 }
