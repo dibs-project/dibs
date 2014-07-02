@@ -31,13 +31,13 @@ public class QualificationCriterion extends Criterion  {
     };
 
     /**
-     * Beschreibung des Kriteriumtyps Hochschulzugangsberechtigung.
+     * Beschreibung des Kriteriumtyps Hocdasdadasadahschulzugangsberechtigung.
      *
      * @author David Koschnick
      */
     public static class Type extends Criterion.Type {
         /**
-         * Initialisiert den Kriteriumstyp.
+         * Initialisiert den Kriteriumtyp.
          */
         public Type() {
             super("qualification");

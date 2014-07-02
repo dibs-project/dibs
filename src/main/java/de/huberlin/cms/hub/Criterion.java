@@ -6,7 +6,7 @@
 package de.huberlin.cms.hub;
 
 /**
- * Kriterium, welches zu die Auswahl- und Zulassungsregeln abbildet.
+ * Kriterium, welches die Auswahl- und Zulassungsregeln abbildet.
  *
  * @author David Koschnick
  */
@@ -56,10 +56,10 @@ public abstract class Criterion {
         }
 
         /**
-         * Extension API: Erstellt eine neue Instanz dieses Kriteriumtyps
+         * Erstellt eine neue Instanz dieses Kriteriumtyps
          *
          * @param id ID, des Kriteriums
-         * @param requiredInformationType Informationstyp
+         * @param requiredInformationType Typ der Information
          * @param service Bewerbungsdienst
          * @return neues Kriterium
          */
