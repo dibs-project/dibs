@@ -33,10 +33,10 @@ public class Application extends HubObject {
     private String status;
 
     Application(HashMap<String, Object> args) {
-        super((String)args.get("id"), (ApplicationService)args.get("service"));
-        this.userId = (String)args.get("user_id");
-        this.courseId = (String)args.get("course_id");
-        this.status = (String)args.get("status");
+        super((String) args.get("id"), (ApplicationService) args.get("service"));
+        this.userId = (String) args.get("user_id");
+        this.courseId = (String) args.get("course_id");
+        this.status = (String) args.get("status");
     }
 
     void setStatus(String status, User agent) {

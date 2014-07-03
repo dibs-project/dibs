@@ -35,8 +35,8 @@ CREATE TABLE qualification (
 
 CREATE TABLE application (
     id VARCHAR(256) PRIMARY KEY,
-    user_id VARCHAR(256) REFERENCES "user",
-    course_id VARCHAR(256) REFERENCES course,
+    user_id VARCHAR(256) REFERENCES "user" NOT NULL,
+    course_id VARCHAR(256) REFERENCES course NOT NULL,
     status VARCHAR(256) NOT NULL
 );
 

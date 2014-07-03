@@ -1,25 +1,25 @@
 package de.huberlin.cms.hub;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class ApplicationTest extends HubTest {
     private Course course;
-    Application application;
+    private Application application;
 
     @Before
     public void before() throws Exception {
-        course = service.createCourse("Computer Science", 500, this.user);
+        course = service.createCourse("Computer Science", 500, null);
         application = course.apply(user.getId(), user);
     }
 
     @Test
     public final void testSetStatus() {
-        application.setStatus(Application.STATUS_COMPLETE, user);
-        application = user.getApplications(user).get(0);
-        assertTrue(application.getStatus().equals(Application.STATUS_COMPLETE));
+        String newStatus = Application.STATUS_COMPLETE;
+        application.setStatus(newStatus, null);
+        application = service.getApplication(application.getId());
+        assertEquals(application.getStatus(), newStatus);
     }
-
 }

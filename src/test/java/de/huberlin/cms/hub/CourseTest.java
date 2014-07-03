@@ -1,6 +1,6 @@
 package de.huberlin.cms.hub;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -10,7 +10,7 @@ public class CourseTest extends HubTest {
 
     @Before
     public void before() {
-        course = service.createCourse("Computer Science", 500, this.user);
+        course = service.createCourse("Computer Science", 500, null);
     }
 
     @Test
