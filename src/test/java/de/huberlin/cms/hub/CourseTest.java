@@ -24,13 +24,8 @@ public class CourseTest extends HubTest {
 
     @Test
     public void testCreateAllocationRule() {
-        this.rule = this.course.createAllocationRule(null);
-        assertEquals(rule.getId(), course.getAllocationRuleId());
-        assertEquals(this.rule, this.service.getAllocationRule(rule.getId()));
-    }
-    
-    @Test
-    public void testSetAllocationRuleId() {
-        this.course.
+        rule = course.createAllocationRule(null);
+        assertEquals(rule, course.getAllocationRule());
+        assertEquals(rule, service.getAllocationRule(rule.getId()));
     }
 }

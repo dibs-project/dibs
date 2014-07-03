@@ -6,6 +6,7 @@
 package de.huberlin.cms.hub;
 
 import java.io.IOError;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,25 +37,29 @@ public class Course extends HubObject {
     }
 
     /**
-     * Legt ein neues Vergabeschema an.
+     * Legt eine neue Vergaberegel an und verknüpft diese mit dem Studienangebot.
      *
      * @param agent ausführender Benutzer
      * @return angelegtes Vergabeschema
      */
-    protected AllocationRule createAllocationRule(User agent) {
+    public AllocationRule createAllocationRule(User agent) {
         try {
-            service.getDb().setAutoCommit(false);
+            Connection db = service.getDb();
+            db.setAutoCommit(false);
             String ruleId = "allocation_rule:" + Integer.toString(new Random().nextInt());
-            PreparedStatement statement =
-                service.getDb().prepareStatement(
-                    "INSERT INTO allocation_rule VALUES (?)");
+            String sql = "INSERT INTO allocation_rule VALUES (?)";
+            PreparedStatement statement = db.prepareStatement(sql);
             statement.setString(1, ruleId);
             statement.executeUpdate();
             service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED,
                 ObjectType.COURSE, this.id, HubObject.getId(agent), ruleId);
-            service.getDb().commit();
-            service.getDb().setAutoCommit(true);
-            this.setAllocationRuleId(this.service.getAllocationRule(ruleId), agent);
+            sql = "UPDATE course SET allocation_rule_id = ? WHERE id = ?";
+            statement = db.prepareStatement(sql);
+            statement.setString(1, ruleId);
+            statement.setString(2, this.id);
+            statement.executeUpdate();
+            db.commit();
+            db.setAutoCommit(true);
             return service.getAllocationRule(ruleId);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -62,46 +67,18 @@ public class Course extends HubObject {
     }
 
     /**
-     * Aktualisiert die ID des Vergabeschemas des Studiengangs.
-     * @param rule Vergabeschema
-     * @param agent ausführender Benutzer
-     * @return aktualisierten Studiengang
+     * Gibt die Vergaberegel zurück.
      */
-    protected Course setAllocationRuleId(AllocationRule rule, User agent) {
+    public AllocationRule getAllocationRule() {
         try {
-            service.getDb().setAutoCommit(false);
-            String ruleId = rule.getId();
-            PreparedStatement statement =
-                service.getDb().prepareStatement(
-                    "UPDATE course SET allocation_rule_id = ? WHERE id = ?");
-            statement.setString(1, ruleId);
-            statement.setString(2, this.id);
-            statement.executeUpdate();
-            service.getJournal().record(ActionType.COURSE_UPDATED, ObjectType.COURSE,
-                this.id, HubObject.getId(agent), ruleId);
-            service.getDb().commit();
-            service.getDb().setAutoCommit(true);
-            return service.getCourse(this.id);
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
-     * ID des Vergabeschemas des Studiengangs.
-     */
-    public String getAllocationRuleId() {
-        try {
-            PreparedStatement statement =
-                service.getDb().prepareStatement(
-                    "SELECT allocation_rule_id FROM course WHERE id = ?");
+            String sql = "SELECT allocation_rule_id FROM course WHERE id = ?";
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
             statement.setString(1, this.id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException(
-                    "illegal id: allocation rule does not exist");
+                return null;
             }
-            return results.getString(1);
+            return service.getAllocationRule(results.getString(1));
         } catch (SQLException e) {
             throw new IOError(e);
         }

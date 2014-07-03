@@ -22,7 +22,6 @@ public class JournalRecord extends HubObject {
         USER_CREATED,
         INFORMATION_CREATED,
         COURSE_CREATED,
-        COURSE_UPDATED,
         ALLOCATION_RULE_CREATED
     };
 
