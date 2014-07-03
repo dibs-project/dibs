@@ -44,18 +44,18 @@ public class Course extends HubObject {
     protected AllocationRule createAllocationRule(User agent) {
         try {
             service.getDb().setAutoCommit(false);
-            String rule_id = "allocation_rule:" + Integer.toString(new Random().nextInt());
+            String ruleId = "allocation_rule:" + Integer.toString(new Random().nextInt());
             PreparedStatement statement =
                 service.getDb().prepareStatement(
                     "INSERT INTO allocation_rule VALUES (?)");
-            statement.setString(1, rule_id);
+            statement.setString(1, ruleId);
             statement.executeUpdate();
             service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED,
-                ObjectType.COURSE, this.id, HubObject.getId(agent), rule_id);
+                ObjectType.COURSE, this.id, HubObject.getId(agent), ruleId);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);
-            this.updateAllocationRuleId(this.service.getAllocationRule(rule_id), agent);
-            return service.getAllocationRule(rule_id);
+            this.updateAllocationRuleId(this.service.getAllocationRule(ruleId), agent);
+            return service.getAllocationRule(ruleId);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -70,14 +70,14 @@ public class Course extends HubObject {
     private Course updateAllocationRuleId(AllocationRule rule, User agent) {
         try {
             service.getDb().setAutoCommit(false);
-            String rule_id = rule.getId();
+            String ruleId = rule.getId();
             PreparedStatement statement =
                 service.getDb().prepareStatement(
                     "UPDATE course SET allocation_rule_id = ?");
-            statement.setString(1, rule_id);
+            statement.setString(1, ruleId);
             statement.executeUpdate();
             service.getJournal().record(ActionType.COURSE_UPDATED, ObjectType.COURSE,
-                this.id, HubObject.getId(agent), rule_id);
+                this.id, HubObject.getId(agent), ruleId);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);
             return service.getCourse(this.id);
