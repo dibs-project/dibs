@@ -28,14 +28,14 @@ public class Application extends HubObject {
     public static final String STATUS_ADMITTED = "admitted";
     public static final String STATUS_CONFIRMED = "confirmed";
 
-    private final User user;
-    private final Course course;
+    private final String userId;
+    private final String courseId;
     private String status;
 
     Application(HashMap<String, Object> args) {
         super((String) args.get("id"), (ApplicationService) args.get("service"));
-        this.user = service.getUser((String) args.get("user_id"));
-        this.course = service.getCourse((String) args.get("course_id"));
+        this.userId = (String) args.get("user_id");
+        this.courseId = (String) args.get("course_id");
         this.status = (String) args.get("status");
     }
 
@@ -61,14 +61,14 @@ public class Application extends HubObject {
      * Benutzer, zu dem die Bewerbung gehört.
      */
     public User getUser() {
-        return this.user;
+        return service.getUser(this.userId);
     }
 
     /**
      * Studiengang, auf den der Benutzer sich beworben hat.
      */
     public Course getCourse() {
-        return this.course;
+        return service.getCourse(this.courseId);
     }
 
     /**
