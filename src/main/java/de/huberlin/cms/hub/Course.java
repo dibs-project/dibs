@@ -19,25 +19,33 @@ import de.huberlin.cms.hub.JournalRecord.ObjectType;
  * Studiengang.
  *
  * @author Phuong Anh Ha
+ * @author Markus Michler
  */
 public class Course extends HubObject {
     private String name;
     private int capacity;
+    private AllocationRule allocationRule;
 
-    Course(String id, String name, int capacity, ApplicationService service) {
+    Course(String id, String name, int capacity, String allocationRuleId,
+            ApplicationService service) {
         super(id, service);
         this.name = name;
         this.capacity = capacity;
+        if (allocationRuleId == null) {
+            this.allocationRule = null;
+        } else {
+            this.allocationRule = service.getAllocationRule(allocationRuleId);
+        }
     }
 
     Course(ResultSet results, ApplicationService service) throws SQLException {
         // initialisiert den Studiengang über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
-            results.getInt("capacity"), service);
+            results.getInt("capacity"), results.getString("allocation_rule_id"), service);
     }
 
     /**
-     * Legt eine neue Vergaberegel an und verknüpft diese mit dem Studienangebot.
+     * Legt eine neue Vergaberegel an und verknüpft diese mit dem Studiengang.
      *
      * @param agent ausführender Benutzer
      * @return angelegte und verknüpfte Vergaberegel
@@ -51,8 +59,6 @@ public class Course extends HubObject {
             PreparedStatement statement = db.prepareStatement(sql);
             statement.setString(1, ruleId);
             statement.executeUpdate();
-            service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED,
-                ObjectType.COURSE, this.id, HubObject.getId(agent), ruleId);
             sql = "UPDATE course SET allocation_rule_id = ? WHERE id = ?";
             statement = db.prepareStatement(sql);
             statement.setString(1, ruleId);
@@ -60,25 +66,10 @@ public class Course extends HubObject {
             statement.executeUpdate();
             db.commit();
             db.setAutoCommit(true);
-            return service.getAllocationRule(ruleId);
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
-     * Gibt die Vergaberegel zurück.
-     */
-    public AllocationRule getAllocationRule() {
-        try {
-            String sql = "SELECT allocation_rule_id FROM course WHERE id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, this.id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
-                return null;
-            }
-            return service.getAllocationRule(results.getString(1));
+            this.allocationRule = service.getAllocationRule(ruleId);
+            service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED,
+                ObjectType.COURSE, this.id, HubObject.getId(agent), ruleId);
+            return this.allocationRule;
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -96,5 +87,12 @@ public class Course extends HubObject {
      */
     public int getCapacity() {
         return this.capacity;
+    }
+
+    /**
+     * Vergaberegel des Studiengangs.
+     */
+    public AllocationRule getAllocationRule() {
+        return this.allocationRule;
     }
 }
