@@ -13,11 +13,12 @@ package de.huberlin.cms.hub;
 
 public class QualificationCriterion extends Criterion  {
 
-    QualificationCriterion(String name, Information.Type requiredInformationType,
+    QualificationCriterion(String id, Information.Type requiredInformationType,
             ApplicationService service) {
-        super("qualification",requiredInformationType, service);
+        super("qualification", requiredInformationType, service);
     }
 
+    @Override
     /**
      * Bewertet die Hochschulzugangsberechtigung.
      *
@@ -25,29 +26,7 @@ public class QualificationCriterion extends Criterion  {
      * @param qualification Hochschulzugangsberechtigung
      * @return Note der Hochschulzugangsberechtigung
      */
-    public Double evaluate(Application application, Qualification qualification)
-    {
-        return qualification.getGrade();
+    public Double evaluate(Application application, Information information) {
+        return ((Qualification) information).getGrade();
     };
-
-    /**
-     * Beschreibung des Kriteriumtyps Hocdasdadasadahschulzugangsberechtigung.
-     *
-     * @author David Koschnick
-     */
-    public static class Type extends Criterion.Type {
-        /**
-         * Initialisiert den Kriteriumtyp.
-         */
-        public Type() {
-            super("qualification");
-        }
-
-        @Override
-        public Criterion newInstance(String id, Information.Type requiredInformationType,
-                ApplicationService service) {
-            return new QualificationCriterion("qualification", requiredInformationType,
-                    service);
-        }
-    }
 }

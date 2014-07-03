@@ -27,6 +27,8 @@ public abstract class Criterion {
 
     /**
      * Bewertet die Information.
+     * Ein Rueckgabewert von <code>null</code> bedeutet die Information konnte nicht 
+     * automatisch bewertet werden.
      *
      * @param application Bewerbung
      * @param information Information, welche bewertet wird
@@ -44,33 +46,9 @@ public abstract class Criterion {
     }
 
     /**
-     * Beschreibung eines Kriteriumtyps.
-     *
-     * @author David Koschnick
+     * Eindeutige ID.
      */
-    public static abstract class Type {
-        protected String id;
-
-        protected Type(String id) {
-            this.id = id;
-        }
-
-        /**
-         * Erstellt eine neue Instanz dieses Kriteriumtyps
-         *
-         * @param id ID, des Kriteriums
-         * @param requiredInformationType Typ der Information
-         * @param service Bewerbungsdienst
-         * @return neues Kriterium
-         */
-        public abstract Criterion newInstance(String id,
-                Information.Type requiredInformationType, ApplicationService service);
-
-        /**
-         * Eindeutige ID.
-         */
-        public String getId() {
-            return this.id;
-        }
+    public String getId() {
+        return this.id;
     }
 }
