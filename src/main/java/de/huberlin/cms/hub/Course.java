@@ -54,14 +54,20 @@ public class Course extends HubObject {
                 ObjectType.COURSE, this.id, HubObject.getId(agent), rule_id);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);
-            this.updateAllocationRule(this.service.getAllocationRule(rule_id), agent);
+            this.updateAllocationRuleId(this.service.getAllocationRule(rule_id), agent);
             return service.getAllocationRule(rule_id);
         } catch (SQLException e) {
             throw new IOError(e);
         }
     }
 
-    private Course updateAllocationRule(AllocationRule rule, User agent) {
+    /**
+     * Aktualisiert die ID des Vergabeschemas des Studiengangs.
+     * @param rule Vergabeschema
+     * @param agent ausführender Benutzer
+     * @return aktualisierten Studiengang
+     */
+    private Course updateAllocationRuleId(AllocationRule rule, User agent) {
         try {
             service.getDb().setAutoCommit(false);
             String rule_id = rule.getId();
