@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.Random;
 
 import de.huberlin.cms.hub.JournalRecord.ActionType;
+import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
  * Studiengang.
@@ -42,18 +43,19 @@ public class Course extends HubObject {
      */
     protected AllocationRule createAllocationRule(User agent) {
         try {
-            this.service.getDb().setAutoCommit(false);
-            String id = "allocation_rule:" + Integer.toString(new Random().nextInt());
+            service.getDb().setAutoCommit(false);
+            String rule_id = "allocation_rule:" + Integer.toString(new Random().nextInt());
             PreparedStatement statement =
-                this.service.getDb().prepareStatement("INSERT INTO allocation_rule VALUES(?)");
-            statement.setString(1, id);
+                service.getDb().prepareStatement(
+                    "INSERT INTO allocation_rule VALUES (?)");
+            statement.setString(1, rule_id);
             statement.executeUpdate();
-            this.service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED, null,
-                null, HubObject.getId(agent), id);
-            this.service.getDb().commit();
-            this.service.getDb().setAutoCommit(true);
-            this.updateAllocationRule(this.service.getAllocationRule(id), agent);
-            return this.service.getAllocationRule(id);
+            service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED,
+                ObjectType.COURSE, this.id, HubObject.getId(agent), rule_id);
+            service.getDb().commit();
+            service.getDb().setAutoCommit(true);
+            this.updateAllocationRule(this.service.getAllocationRule(rule_id), agent);
+            return service.getAllocationRule(rule_id);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -61,18 +63,18 @@ public class Course extends HubObject {
 
     private Course updateAllocationRule(AllocationRule rule, User agent) {
         try {
-            this.service.getDb().setAutoCommit(false);
-            String id = rule.getId();
+            service.getDb().setAutoCommit(false);
+            String rule_id = rule.getId();
             PreparedStatement statement =
-                this.service.getDb().prepareStatement(
+                service.getDb().prepareStatement(
                     "UPDATE course SET allocation_rule_id = ?");
-            statement.setString(1, id);
+            statement.setString(1, rule_id);
             statement.executeUpdate();
-            this.service.getJournal().record(ActionType.COURSE_UPDATED, null,
-                null, HubObject.getId(agent), id);
-            this.service.getDb().commit();
-            this.service.getDb().setAutoCommit(true);
-            return this.service.getCourse(this.id);
+            service.getJournal().record(ActionType.COURSE_UPDATED, ObjectType.COURSE,
+                this.id, HubObject.getId(agent), rule_id);
+            service.getDb().commit();
+            service.getDb().setAutoCommit(true);
+            return service.getCourse(this.id);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -84,7 +86,7 @@ public class Course extends HubObject {
     public String getAllocationRuleId() {
         try {
             PreparedStatement statement =
-                this.service.getDb().prepareStatement(
+                service.getDb().prepareStatement(
                     "SELECT allocation_rule_id FROM course WHERE id = ?");
             statement.setString(1, this.id);
             ResultSet results = statement.executeQuery();
