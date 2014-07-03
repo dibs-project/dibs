@@ -36,7 +36,7 @@ public abstract class Criterion {
      */
     public Double evaluate(Application application, Information information) {
         return null;
-    };
+    }
 
     /**
      * Für das Kriterium benötigte Informationen.
