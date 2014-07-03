@@ -11,8 +11,8 @@ package de.huberlin.cms.hub;
  * @author Sven Pfaller
  */
 public abstract class HubObject {
-    protected String id;
-    protected ApplicationService service;
+    protected final String id;
+    protected final ApplicationService service;
 
     /**
      * Gibt die ID des Objekts zurück. Dabei werden <code>null</code>-Werte ignoriert.
