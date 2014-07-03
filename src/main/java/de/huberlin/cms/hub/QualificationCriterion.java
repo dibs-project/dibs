@@ -28,5 +28,5 @@ public class QualificationCriterion extends Criterion  {
      */
     public Double evaluate(Application application, Information information) {
         return ((Qualification) information).getGrade();
-    };
+    }
 }
