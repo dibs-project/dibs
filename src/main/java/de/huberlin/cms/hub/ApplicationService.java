@@ -266,15 +266,13 @@ public class ApplicationService {
         }
 
         try {
-            AllocationRule rule = Course.createAllocationRule(agent);
             this.db.setAutoCommit(false);
             String id = "course:" + Integer.toString(new Random().nextInt());
             PreparedStatement statement =
-                db.prepareStatement("INSERT INTO course VALUES(?, ?, ?, ?)");
+                db.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
             statement.setString(1, id);
             statement.setString(2, name);
             statement.setInt(3, capacity);
-            statement.setString(4, rule.getId());
             statement.executeUpdate();
             journal.record(ActionType.COURSE_CREATED, null, null, HubObject.getId(agent),
                 name);
@@ -334,8 +332,6 @@ public class ApplicationService {
      *
      * @param id ID des Vergabeschemas
      * @return Vergabeschema mit der spezifizierten ID
-     * @throws IllegalArgumentException wenn kein Vergabeschema mit der spezifizierten ID
-     *     existiert
      */
     public AllocationRule getAllocationRule(String id) {
         try {
@@ -344,7 +340,8 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException("illegal id: allocation rule does not exist");
+                throw new IllegalArgumentException(
+                    "illegal id: allocation rule does not exist");
             }
             return new AllocationRule(results, this);
         } catch (SQLException e) {

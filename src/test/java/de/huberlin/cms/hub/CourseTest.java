@@ -6,20 +6,26 @@
 package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import de.huberlin.cms.hub.AllocationRule;
 import de.huberlin.cms.hub.Course;
 
 public class CourseTest extends HubTest {
-    AllocationRule rule;
+    private Course course;
+    private AllocationRule rule;
+
+    @Before
+    public void before() {
+        this.course = this.service.createCourse("Computer Science", 500, null);
+    }
 
     @Test
     public void testCreateAllocationRule() {
-        rule = Course.createAllocationRule(null);
-        assertEquals(rule.id, rule.getId());
-        assertTrue(rule.equals(this.service.getAllocationRule(rule.getId())));
+        this.rule = this.course.createAllocationRule(null);
+        assertEquals(rule.getId(), course.getAllocationRuleId());
+        assertEquals(this.rule, this.service.getAllocationRule(rule.getId()));
     }
 }

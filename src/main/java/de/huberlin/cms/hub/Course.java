@@ -21,22 +21,17 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
 public class Course extends HubObject {
     private String name;
     private int capacity;
-    private AllocationRule rule;
 
-    Course(String id, String name, int capacity, AllocationRule rule,
-            ApplicationService service) {
+    Course(String id, String name, int capacity, ApplicationService service) {
         super(id, service);
         this.name = name;
         this.capacity = capacity;
-        this.rule = rule;
     }
 
     Course(ResultSet results, ApplicationService service) throws SQLException {
         // initialisiert den Studiengang über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
-            results.getInt("capacity"),
-            service.getAllocationRule(results.getString("allocation_rule_id")),
-            service);
+            results.getInt("capacity"), service);
     }
 
     /**
@@ -45,19 +40,59 @@ public class Course extends HubObject {
      * @param agent ausführender Benutzer
      * @return angelegtes Vergabeschema
      */
-    protected static AllocationRule createAllocationRule(User agent) {
+    protected AllocationRule createAllocationRule(User agent) {
         try {
-            HubObject.service.getDb().setAutoCommit(false);
+            this.service.getDb().setAutoCommit(false);
             String id = "allocation_rule:" + Integer.toString(new Random().nextInt());
             PreparedStatement statement =
-                HubObject.service.getDb().prepareStatement("INSERT INTO allocation_rule VALUES(?)");
+                this.service.getDb().prepareStatement("INSERT INTO allocation_rule VALUES(?)");
             statement.setString(1, id);
             statement.executeUpdate();
-            HubObject.service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED, null,
+            this.service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED, null,
                 null, HubObject.getId(agent), id);
-            HubObject.service.getDb().commit();
-            HubObject.service.getDb().setAutoCommit(true);
-            return HubObject.service.getAllocationRule(id);
+            this.service.getDb().commit();
+            this.service.getDb().setAutoCommit(true);
+            this.updateAllocationRule(this.service.getAllocationRule(id), agent);
+            return this.service.getAllocationRule(id);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    private Course updateAllocationRule(AllocationRule rule, User agent) {
+        try {
+            this.service.getDb().setAutoCommit(false);
+            String id = rule.getId();
+            PreparedStatement statement =
+                this.service.getDb().prepareStatement(
+                    "UPDATE course SET allocation_rule_id = ?");
+            statement.setString(1, id);
+            statement.executeUpdate();
+            this.service.getJournal().record(ActionType.COURSE_UPDATED, null,
+                null, HubObject.getId(agent), id);
+            this.service.getDb().commit();
+            this.service.getDb().setAutoCommit(true);
+            return this.service.getCourse(this.id);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * ID des Vergabeschemas des Studiengangs.
+     */
+    public String getAllocationRuleId() {
+        try {
+            PreparedStatement statement =
+                this.service.getDb().prepareStatement(
+                    "SELECT allocation_rule_id FROM course WHERE id = ?");
+            statement.setString(1, this.id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException(
+                    "illegal id: allocation rule does not exist");
+            }
+            return results.getString(1);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -75,12 +110,5 @@ public class Course extends HubObject {
      */
     public int getCapacity() {
         return this.capacity;
-    }
-
-    /**
-     * Vergabeschema des Studiengangs.
-     */
-    public AllocationRule getAllocationRule() {
-        return this.rule;
     }
 }
