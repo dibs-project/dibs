@@ -40,7 +40,7 @@ public class Course extends HubObject {
      * Legt eine neue Vergaberegel an und verknüpft diese mit dem Studienangebot.
      *
      * @param agent ausführender Benutzer
-     * @return angelegtes Vergabeschema
+     * @return angelegte und verknüpfte Vergaberegel
      */
     public AllocationRule createAllocationRule(User agent) {
         try {
