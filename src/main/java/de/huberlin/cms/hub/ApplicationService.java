@@ -285,7 +285,7 @@ public class ApplicationService {
      * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
      *     <code>capacity</code> nicht positiv ist
      */
-    public Course createCourse(String name, int capacity, User user) {
+    public Course createCourse(String name, int capacity, User agent) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
@@ -302,7 +302,8 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setInt(3, capacity);
             statement.executeUpdate();
-            journal.record(ActionType.COURSE_CREATED, null, null, user.getId(), name);
+            journal.record(ActionType.COURSE_CREATED, null, null, HubObject.getId(agent),
+                name);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getCourse(id);
