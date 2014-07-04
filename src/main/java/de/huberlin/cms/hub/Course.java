@@ -24,18 +24,14 @@ import de.huberlin.cms.hub.JournalRecord.ObjectType;
 public class Course extends HubObject {
     private String name;
     private int capacity;
-    private AllocationRule allocationRule;
+    private String allocationRuleId;
 
     Course(String id, String name, int capacity, String allocationRuleId,
-            ApplicationService service) {
+        ApplicationService service) {
         super(id, service);
         this.name = name;
         this.capacity = capacity;
-        if (allocationRuleId == null) {
-            this.allocationRule = null;
-        } else {
-            this.allocationRule = service.getAllocationRule(allocationRuleId);
-        }
+        this.allocationRuleId = allocationRuleId;
     }
 
     Course(ResultSet results, ApplicationService service) throws SQLException {
@@ -64,12 +60,12 @@ public class Course extends HubObject {
             statement.setString(1, ruleId);
             statement.setString(2, this.id);
             statement.executeUpdate();
-            db.commit();
-            db.setAutoCommit(true);
-            this.allocationRule = service.getAllocationRule(ruleId);
+            this.allocationRuleId = ruleId;
             service.getJournal().record(ActionType.COURSE_ALLOCATION_RULE_CREATED,
                 ObjectType.COURSE, this.id, HubObject.getId(agent), ruleId);
-            return this.allocationRule;
+            db.commit();
+            db.setAutoCommit(true);
+            return service.getAllocationRule(allocationRuleId);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -93,6 +89,6 @@ public class Course extends HubObject {
      * Vergaberegel des Studiengangs.
      */
     public AllocationRule getAllocationRule() {
-        return this.allocationRule;
+        return allocationRuleId != null ? service.getAllocationRule(allocationRuleId) : null;
     }
 }
