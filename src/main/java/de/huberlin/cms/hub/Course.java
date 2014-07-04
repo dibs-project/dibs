@@ -37,7 +37,7 @@ public class Course extends HubObject {
     }
 
     /**
-     * Legt eine Bewerbung auf das Studienangebot an.
+     * Legt eine Bewerbung auf den Studiengang an.
      *
      * @param userId ID des Bewerbers
      * @param agent ausführender Benutzer
@@ -45,7 +45,7 @@ public class Course extends HubObject {
      */
     public Application apply(String userId, User agent) {
         try {
-            String applicationId = Integer.toString(new Random().nextInt());
+            String applicationId = "application:" + Integer.toString(new Random().nextInt());
             service.getDb().setAutoCommit(false);
             String sql = "INSERT INTO application VALUES(?, ?, ?, ?)";
             PreparedStatement statement = service.getDb().prepareStatement(sql);
@@ -54,7 +54,7 @@ public class Course extends HubObject {
             statement.setString(3, this.id);
             statement.setString(4, Application.STATUS_INCOMPLETE);
             statement.executeUpdate();
-            service.getJournal().record(ActionType.APPLIED, ObjectType.COURSE, this.id,
+            service.getJournal().record(ActionType.COURSE_APPLIED, ObjectType.COURSE, this.id,
                 HubObject.getId(agent), applicationId);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);

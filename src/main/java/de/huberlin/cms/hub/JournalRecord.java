@@ -21,7 +21,7 @@ public class JournalRecord extends HubObject {
     public enum ActionType {
         USER_CREATED,
         INFORMATION_CREATED,
-        APPLIED,
+        COURSE_APPLIED,
         APPLICATION_STATUS_SET,
         COURSE_CREATED
     };
