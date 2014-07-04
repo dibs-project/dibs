@@ -67,7 +67,7 @@ public class Course extends HubObject {
             db.commit();
             db.setAutoCommit(true);
             this.allocationRule = service.getAllocationRule(ruleId);
-            service.getJournal().record(ActionType.ALLOCATION_RULE_CREATED,
+            service.getJournal().record(ActionType.COURSE_ALLOCATION_RULE_CREATED,
                 ObjectType.COURSE, this.id, HubObject.getId(agent), ruleId);
             return this.allocationRule;
         } catch (SQLException e) {
