@@ -36,6 +36,7 @@ public class ApplicationService {
     private Connection db;
     private Journal journal;
     private HashMap<String, Information.Type> informationTypes;
+    private HashMap<String, Criterion> criteria;
 
     /**
      * Stellt eine Verbindung zur Datenbank her.
@@ -83,6 +84,10 @@ public class ApplicationService {
 
         this.informationTypes = new HashMap<String, Information.Type>();
         this.informationTypes.put("qualification", new Qualification.Type());
+
+        this.criteria = new HashMap<String, Criterion>();
+        this.criteria.put("qualification", new QualificationCriterion("qualification",
+                informationTypes.get("qualification"), this));
     }
 
     /**
@@ -363,6 +368,10 @@ public class ApplicationService {
         return unmodifiableMap(this.informationTypes);
     }
 
-    // TODO Stub
-    public Map<String, Criterion> getCriteria() { return null; }
+    /**
+     *  Verfügbare Kriterien (indiziert nach ID).
+     */
+    public Map<String, Criterion> getCriteria() { 
+        return unmodifiableMap(this.criteria); 
+    }
 }
