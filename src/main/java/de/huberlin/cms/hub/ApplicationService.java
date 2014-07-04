@@ -87,7 +87,7 @@ public class ApplicationService {
 
         this.criteria = new HashMap<String, Criterion>();
         this.criteria.put("qualification", new QualificationCriterion("qualification",
-                informationTypes.get("qualification"), this));
+             informationTypes.get("qualification"), this));
     }
 
     /**
@@ -347,7 +347,7 @@ public class ApplicationService {
     }
 
     /**
-     *  Verfügbare Kriterien (indiziert nach ID).
+     * Verfügbare Kriterien (indiziert nach ID).
      */
     public Map<String, Criterion> getCriteria() { 
         return unmodifiableMap(this.criteria); 
