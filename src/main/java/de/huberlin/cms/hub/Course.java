@@ -72,6 +72,34 @@ public class Course extends HubObject {
     }
 
     /**
+     * Legt eine Bewerbung auf den Studiengang an.
+     *
+     * @param userId ID des Bewerbers
+     * @param agent ausführender Benutzer
+     * @return die angelegte Bewerbung
+     */
+    public Application apply(String userId, User agent) {
+        try {
+            String applicationId = "application:" + Integer.toString(new Random().nextInt());
+            service.getDb().setAutoCommit(false);
+            String sql = "INSERT INTO application VALUES(?, ?, ?, ?)";
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
+            statement.setString(1, applicationId);
+            statement.setString(2, userId);
+            statement.setString(3, this.id);
+            statement.setString(4, Application.STATUS_INCOMPLETE);
+            statement.executeUpdate();
+            service.getJournal().record(ActionType.COURSE_APPLIED, ObjectType.COURSE, this.id,
+                HubObject.getId(agent), applicationId);
+            service.getDb().commit();
+            service.getDb().setAutoCommit(true);
+            return service.getApplication(applicationId);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
      * Name des Studiengangs.
      */
     public String getName() {

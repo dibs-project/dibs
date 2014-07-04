@@ -20,10 +20,11 @@ Struktur:
                    | evaluate  |
                    '-----------'
 
-  .----------------------.
-  | Course               |
-  |----------------------|
+  .----------------------.  .-------------.
+  | Course               |  | Application |
+  |----------------------|  '-------------'
   | createAllocationRule |
+  | apply                |
   '----------------------'
 
   .----------------.
@@ -45,5 +46,6 @@ Ablauf:
    .                   | createAllocationRule |
    . createUser        |                      |
    . createInformation |                      |
+   . apply
 
 ```

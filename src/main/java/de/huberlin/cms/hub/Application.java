@@ -5,8 +5,13 @@
 
 package de.huberlin.cms.hub;
 
-import java.sql.ResultSet;
+import java.io.IOError;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.HashMap;
+
+import de.huberlin.cms.hub.JournalRecord.ActionType;
+import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
  * Bewerbung, mit der Benutzer am Zulassungsverfahren teilnehmen.
@@ -16,26 +21,54 @@ import java.sql.SQLException;
 public class Application extends HubObject {
 
     // Konstanten für den Bewerbungsstatus
-    public static final String INCOMPLETE = "incomplete";
-    public static final String COMPLETE = "complete";
-    public static final String VALID = "valid";
-    public static final String WITHDRAWN = "withdrawn";
-    public static final String ADMITTED = "admitted";
-    public static final String CONFIRMED = "confirmed";
+    public static final String STATUS_INCOMPLETE = "incomplete";
+    public static final String STATUS_COMPLETE = "complete";
+    public static final String STATUS_VALID = "valid";
+    public static final String STATUS_WITHDRAWN = "withdrawn";
+    public static final String STATUS_ADMITTED = "admitted";
+    public static final String STATUS_CONFIRMED = "confirmed";
 
+    private final String userId;
+    private final String courseId;
     private String status;
-    private String userId;
 
-    Application(String id, ApplicationService service, String status, String userId) {
-        super(id, service);
-        this.status = status;
-        this.userId = userId;
+    Application(HashMap<String, Object> args) {
+        super((String) args.get("id"), (ApplicationService) args.get("service"));
+        this.userId = (String) args.get("user_id");
+        this.courseId = (String) args.get("course_id");
+        this.status = (String) args.get("status");
     }
 
-    Application(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert den Benutzer über den Datenbankcursor
-        this(results.getString("id"), service, results.getString("status"), results
-            .getString("userId"));
+    void setStatus(String status, User agent) {
+        this.status = status;
+        try {
+            service.getDb().setAutoCommit(false);
+            String sql = "UPDATE application SET status = ? WHERE id = ?";
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
+            statement.setString(1, status);
+            statement.setString(2, this.id);
+            statement.executeUpdate();
+            service.getJournal().record(ActionType.APPLICATION_STATUS_SET,
+                ObjectType.APPLICATION, this.id, HubObject.getId(agent), status);
+            service.getDb().commit();
+            service.getDb().setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Benutzer, zu dem die Bewerbung gehört.
+     */
+    public User getUser() {
+        return service.getUser(this.userId);
+    }
+
+    /**
+     * Studiengang, auf den der Benutzer sich beworben hat.
+     */
+    public Course getCourse() {
+        return service.getCourse(this.courseId);
     }
 
     /**
@@ -52,12 +85,5 @@ public class Application extends HubObject {
      */
     public String getStatus() {
         return status;
-    }
-
-    /**
-     * ID des Benutzers, zu dem die Bewerbung gehört.
-     */
-    public String getUserId() {
-        return this.userId;
     }
 }
