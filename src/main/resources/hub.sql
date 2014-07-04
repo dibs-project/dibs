@@ -11,10 +11,15 @@ CREATE TABLE settings (
     dosv_applications_update_time TIMESTAMP
 );
 
+CREATE TABLE allocation_rule (
+    id VARCHAR(256) PRIMARY KEY
+);
+
 CREATE TABLE course (
     id VARCHAR(256) PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
-    capacity INT NOT NULL
+    capacity INT NOT NULL,
+    allocation_rule_id VARCHAR(256) REFERENCES allocation_rule
 );
 
 CREATE TABLE journal_record (
@@ -35,8 +40,9 @@ CREATE TABLE qualification (
 
 CREATE TABLE application (
     id VARCHAR(256) PRIMARY KEY,
-    status VARCHAR(256) NOT NULL,
-    user_id VARCHAR(256) REFERENCES "user"
+    user_id VARCHAR(256) REFERENCES "user" NOT NULL,
+    course_id VARCHAR(256) REFERENCES course NOT NULL,
+    status VARCHAR(256) NOT NULL
 );
 
 CREATE TABLE quota (

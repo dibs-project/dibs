@@ -14,13 +14,16 @@ Struktur:
   | createCourse       |                '-------------------'
   '--------------------'
 
-  .-------------.
-  | Information |
-  '-------------'
+  .-------------. .-------------. 
+  | Information | | Application | 
+  '-------------' '-------------' 
 
-  .--------.  .-------. 
-  | Course |  | Quota |
-  '--------'  '-------'
+  .----------------------. .----------------. .-------. .-----------.
+  | Course               | | AllocationRule | | Quota | | Criterion |
+  |----------------------| '----------------' '-------' |-----------|
+  | createAllocationRule |                              | evaluate  |
+  | apply                |                              '-----------'
+  '----------------------'
 
   .---------.
   | Journal |
@@ -30,11 +33,13 @@ Struktur:
 Ablauf:
 
 ```
-   . Applicant         | Employee     | System
-  --------------------------------------------
-   .                     createUser
-   .                     createCourse
-   . createUser
-   . createInformation
+   . Applicant         | Employee             | System
+  ----------------------------------------------------
+   .                   | createUser           |
+   .                   | createCourse         |
+   .                   | createAllocationRule |
+   . createUser        |                      |
+   . createInformation |                      |
+   . apply
 
 ```
