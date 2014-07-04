@@ -285,7 +285,7 @@ public class ApplicationService {
      *
      * @param name Name des Studiengangs
      * @param capacity Kapazität des Studiengangs
-     * @param user Benutzer, der den Studiengang anlegt
+     * @param agent ausführender Benutzer
      * @return angelegter Studiengang
      * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
      *     <code>capacity</code> nicht positiv ist
@@ -300,7 +300,7 @@ public class ApplicationService {
 
         try {
             this.db.setAutoCommit(false);
-            String id = Integer.toString(new Random().nextInt());
+            String id = "course:" + Integer.toString(new Random().nextInt());
             PreparedStatement statement =
                 db.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
             statement.setString(1, id);
@@ -355,6 +355,28 @@ public class ApplicationService {
                 courses.add(new Course(results, this));
             }
             return courses;
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Gibt das Vergabeschema mit der spezifizierten ID zurück.
+     *
+     * @param id ID des Vergabeschemas
+     * @return Vergabeschema mit der spezifizierten ID
+     */
+    public AllocationRule getAllocationRule(String id) {
+        try {
+            PreparedStatement statement =
+                this.db.prepareStatement("SELECT * FROM allocation_rule WHERE id = ?");
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException(
+                    "illegal id: allocation rule does not exist");
+            }
+            return new AllocationRule(results, this);
         } catch (SQLException e) {
             throw new IOError(e);
         }

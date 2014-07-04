@@ -23,7 +23,8 @@ public class JournalRecord extends HubObject {
         INFORMATION_CREATED,
         COURSE_APPLIED,
         APPLICATION_STATUS_SET,
-        COURSE_CREATED
+        COURSE_CREATED,
+        COURSE_ALLOCATION_RULE_CREATED
     };
 
     /**
@@ -33,7 +34,8 @@ public class JournalRecord extends HubObject {
         USER,
         INFORMATION,
         APPLICATION,
-        COURSE
+        COURSE,
+        ALLOCATION_RULE
     };
 
     private ActionType actionType;

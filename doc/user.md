@@ -20,11 +20,16 @@ Struktur:
                    | evaluate  |
                    '-----------'
 
-  .--------.  .-------------.
-  | Course |  | Application |
-  |--------|  '-------------'
-  | apply  |
-  '--------'
+  .----------------------.  .-------------.
+  | Course               |  | Application |
+  |----------------------|  '-------------'
+  | createAllocationRule |
+  | apply                |
+  '----------------------'
+
+  .----------------.
+  | AllocationRule |
+  '----------------'
 
   .---------.
   | Journal |
@@ -34,12 +39,13 @@ Struktur:
 Ablauf:
 
 ```
-   . Applicant         | Employee     | System
-  --------------------------------------------
-   .                     createUser
-   .                     createCourse
-   . createUser
-   . createInformation
+   . Applicant         | Employee             | System
+  ----------------------------------------------------
+   .                   | createUser           |
+   .                   | createCourse         |
+   .                   | createAllocationRule |
+   . createUser        |                      |
+   . createInformation |                      |
    . apply
 
 ```
