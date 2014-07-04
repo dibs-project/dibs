@@ -55,7 +55,7 @@ public class Journal {
 
         try {
             Timestamp time = new Timestamp(new Date().getTime());
-            String id = Integer.toString(new Random().nextInt());
+            String id = "journal_record:" + Integer.toString(new Random().nextInt());
             PreparedStatement statement =
                 db.prepareStatement("INSERT INTO journal_record VALUES (?, ?, ?, ?, ?, ?, ?)");
             statement.setString(1, id);
