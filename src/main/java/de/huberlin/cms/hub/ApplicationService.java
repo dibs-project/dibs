@@ -36,6 +36,7 @@ public class ApplicationService {
     private Connection db;
     private Journal journal;
     private HashMap<String, Information.Type> informationTypes;
+    private HashMap<String, Criterion> criteria;
 
     /**
      * Stellt eine Verbindung zur Datenbank her.
@@ -83,6 +84,10 @@ public class ApplicationService {
 
         this.informationTypes = new HashMap<String, Information.Type>();
         this.informationTypes.put("qualification", new Qualification.Type());
+
+        this.criteria = new HashMap<String, Criterion>();
+        this.criteria.put("qualification", new QualificationCriterion("qualification",
+                informationTypes.get("qualification"), this));
     }
 
     /**
@@ -280,7 +285,7 @@ public class ApplicationService {
      *
      * @param name Name des Studiengangs
      * @param capacity Kapazität des Studiengangs
-     * @param user Benutzer, der den Studiengang anlegt
+     * @param agent ausführender Benutzer
      * @return angelegter Studiengang
      * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
      *     <code>capacity</code> nicht positiv ist
@@ -295,7 +300,7 @@ public class ApplicationService {
 
         try {
             this.db.setAutoCommit(false);
-            String id = Integer.toString(new Random().nextInt());
+            String id = "course:" + Integer.toString(new Random().nextInt());
             PreparedStatement statement =
                 db.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
             statement.setString(1, id);
@@ -356,6 +361,28 @@ public class ApplicationService {
     }
 
     /**
+     * Gibt das Vergabeschema mit der spezifizierten ID zurück.
+     *
+     * @param id ID des Vergabeschemas
+     * @return Vergabeschema mit der spezifizierten ID
+     */
+    public AllocationRule getAllocationRule(String id) {
+        try {
+            PreparedStatement statement =
+                this.db.prepareStatement("SELECT * FROM allocation_rule WHERE id = ?");
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException(
+                    "illegal id: allocation rule does not exist");
+            }
+            return new AllocationRule(results, this);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
      * Das Protokollbuch des Bewerbungsdienstes.
      */
     public Journal getJournal() {
@@ -369,6 +396,10 @@ public class ApplicationService {
         return unmodifiableMap(this.informationTypes);
     }
 
-    // TODO Stub
-    public Map<String, Criterion> getCriteria() { return null; }
+    /**
+     *  Verfügbare Kriterien (indiziert nach ID).
+     */
+    public Map<String, Criterion> getCriteria() { 
+        return unmodifiableMap(this.criteria); 
+    }
 }

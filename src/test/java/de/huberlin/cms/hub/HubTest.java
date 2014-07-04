@@ -57,7 +57,7 @@ public abstract class HubTest {
     protected User user;
 
     /**
-     * Allgemeines Studienangebot.
+     * Allgemeiner Studiengang.
      */
     protected Course course;
 
@@ -94,7 +94,8 @@ public abstract class HubTest {
 
             // TODO: Tabellen automatisch aus hub.sql lesen
             String[] tables =
-                {"user", "settings", "qualification", "course", "application", "journal_record"};
+                {"user", "settings", "qualification", "allocation_rule", "course",
+                    "application", "journal_record"};
             for (String table : tables) {
                 statement = this.db.prepareStatement(
                     String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));

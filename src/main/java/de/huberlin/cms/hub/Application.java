@@ -58,17 +58,17 @@ public class Application extends HubObject {
     }
 
     /**
-     * ID des Benutzers, zu dem die Bewerbung gehört.
+     * Benutzer, zu dem die Bewerbung gehört.
      */
-    public String getUserId() {
-        return this.userId;
+    public User getUser() {
+        return service.getUser(this.userId);
     }
 
     /**
-     * ID des Studienangebots, auf das der Benutzer sich beworben hat.
+     * Studiengang, auf den der Benutzer sich beworben hat.
      */
-    public String getCourseId() {
-        return this.courseId;
+    public Course getCourse() {
+        return service.getCourse(this.courseId);
     }
 
     /**
