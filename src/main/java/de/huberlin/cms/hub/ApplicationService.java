@@ -87,7 +87,7 @@ public class ApplicationService {
 
         this.criteria = new HashMap<String, Criterion>();
         this.criteria.put("qualification", new QualificationCriterion("qualification",
-             informationTypes.get("qualification"), this));
+            informationTypes.get("qualification"), this));
     }
 
     /**
