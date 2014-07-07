@@ -40,7 +40,7 @@ public class Quota extends HubObject {
      * @param agent ausführender Benutzer
      * @return verknüpfte Kriterium
      */
-    Criterion addRankingCriterion(String criterionId, User agent) {
+    public Criterion addRankingCriterion(String criterionId, User agent) {
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
