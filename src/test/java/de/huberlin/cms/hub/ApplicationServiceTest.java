@@ -16,13 +16,6 @@ import org.junit.Test;
  * @author Phuong Anh Ha
  */
 public class ApplicationServiceTest extends HubTest {
-    private Course course;
-
-    @Before
-    public void before() {
-        this.course = this.service.createCourse("Computer Science", 500, null);
-    }
-
     @Test
     public void testCreateUser() {
         String email = "moss@example.org";
