@@ -6,6 +6,7 @@
 package de.huberlin.cms.hub;
 
 import java.io.IOError;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,33 +14,49 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import de.huberlin.cms.hub.JournalRecord.ActionType;
+import de.huberlin.cms.hub.JournalRecord.ObjectType;
+
 /**
- * Quote, welche die Kriterien für die Ranglistenerstellung für eine Untermenge der Plätze
+ * Quote, welche die Kriterien für die Ranglistenerstellung für einen Teil der Plätze
  * eines Studienangebots beinhaltet.
  *
  * @author Markus Michler
  */
 public class Quota extends HubObject {
-    private String name;
-    private double percentage;
+    private final String name;
+    private final double percentage;
 
     Quota(HashMap<String, Object> args) {
-        super((String)args.get("id"), (ApplicationService)args.get("service"));
-        this.name = (String)args.get("name");
-        this.percentage = (Double)args.get("percentage");
+        super((String) args.get("id"), (ApplicationService) args.get("service"));
+        this.name = (String) args.get("name");
+        this.percentage = Double.parseDouble((String) args.get("percentage"));
     }
 
-    void addRankingCriteria(List<Criterion> rankingCriteria) {
-        for (Criterion criterion : rankingCriteria) {
-            try {
-                String sql = "INSERT INTO quota_ranking_criteria VALUES(?, ?)";
-                PreparedStatement statement = service.getDb().prepareStatement(sql);
-                statement.setString(1, id);
-                statement.setString(2, criterion.getId());
-            } catch (SQLException e) {
-                throw new IOError(e);
-            }
+    /**
+     * verknüpft ein Kriterium zur Sortierung von Bewerbern auf einer Rangliste.
+     *
+     * @param criterionId ID des zu verknüpfenden Kriteriums
+     * @param agent ausführender Benutzer
+     * @return verknüpfte Kriterium
+     */
+    Criterion addRankingCriterion(String criterionId, User agent) {
+        try {
+            Connection db = service.getDb();
+            db.setAutoCommit(false);
+            String sql = "INSERT INTO quota_ranking_criteria VALUES(?, ?)";
+            PreparedStatement statement = db.prepareStatement(sql);
+            statement.setString(1, id);
+            statement.setString(2, criterionId);
+            statement.executeUpdate();
+            service.getJournal().record(ActionType.QUOTA_CRITERION_CREATED,
+                ObjectType.QUOTA, this.id, HubObject.getId(agent), criterionId);
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
         }
+        return service.getCriteria().get(criterionId);
     }
 
     /**
@@ -47,8 +64,8 @@ public class Quota extends HubObject {
      */
     public List<Criterion> getRankingCriteria() {
         List<Criterion> rankingCriteria = new ArrayList<Criterion>();
-        ResultSet results;
         try {
+            ResultSet results;
             String query =
                 "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
             PreparedStatement statement = service.getDb().prepareStatement(query);
@@ -58,10 +75,10 @@ public class Quota extends HubObject {
                 rankingCriteria.add(service.getCriteria().get(
                     results.getString("criterion_id")));
             }
+            return rankingCriteria;
         } catch (SQLException e) {
             throw new IOError(e);
         }
-        return rankingCriteria;
     }
 
     // TODO Kriterien für die Aufnahme von Bewerbungen in die Quote:

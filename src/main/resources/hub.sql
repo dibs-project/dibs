@@ -11,8 +11,21 @@ CREATE TABLE settings (
     dosv_applications_update_time TIMESTAMP
 );
 
+CREATE TABLE quota (
+    id VARCHAR(256) PRIMARY KEY,
+    name VARCHAR(256) NOT NULL,
+    percentage DOUBLE PRECISION NOT NULL
+);
+
+CREATE TABLE quota_ranking_criteria (
+    quota_id VARCHAR(256) REFERENCES quota,
+    PRIMARY KEY(quota_id),
+    criterion_id VARCHAR(256) NOT NULL
+);
+
 CREATE TABLE allocation_rule (
-    id VARCHAR(256) PRIMARY KEY
+    id VARCHAR(256) PRIMARY KEY,
+    quota_id VARCHAR(256) REFERENCES quota
 );
 
 CREATE TABLE course (
@@ -43,18 +56,6 @@ CREATE TABLE application (
     user_id VARCHAR(256) REFERENCES "user" NOT NULL,
     course_id VARCHAR(256) REFERENCES course NOT NULL,
     status VARCHAR(256) NOT NULL
-);
-
-CREATE TABLE quota (
-    id VARCHAR(256) PRIMARY KEY,
-    name VARCHAR(256) NOT NULL,
-    percentage DOUBLE PRECISION NOT NULL
-);
-
-CREATE TABLE quota_ranking_criteria (
-    PRIMARY KEY(quota_id)
-    quota_id VARCHAR(256) REFERENCES quota,
-    criterion_id VARCHAR(256) NOT NULL
 );
 
 INSERT INTO settings (id, semester) VALUES ('settings', '2014WS');
