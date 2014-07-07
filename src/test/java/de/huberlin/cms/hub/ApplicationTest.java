@@ -5,13 +5,14 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * @author Markus Michler
+ */
 public class ApplicationTest extends HubTest {
-    private Course course;
     private Application application;
 
     @Before
     public void before() throws Exception {
-        course = service.createCourse("Computer Science", 500, null);
         application = course.apply(user.getId(), user);
     }
 

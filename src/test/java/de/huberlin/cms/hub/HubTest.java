@@ -56,6 +56,11 @@ public abstract class HubTest {
      */
     protected User user;
 
+    /**
+     * Allgemeiner Studiengang.
+     */
+    protected Course course;
+
     @Before
     public void commonBefore() throws IOException, SQLException {
         this.config = new Properties();
@@ -71,6 +76,7 @@ public abstract class HubTest {
 
         this.service = new ApplicationService(this.db, this.config);
         this.user = this.service.createUser("Jen", "barber@example.org");
+        this.course = this.service.createCourse("Computer Science", 500, null);
     }
 
     @After
