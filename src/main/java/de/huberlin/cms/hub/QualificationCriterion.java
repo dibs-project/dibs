@@ -18,13 +18,6 @@ public class QualificationCriterion extends Criterion  {
         super("qualification", requiredInformationType, service);
     }
 
-    /**
-     * Bewertet die Hochschulzugangsberechtigung.
-     *
-     * @param application Bewerbung
-     * @param qualification Hochschulzugangsberechtigung
-     * @return Note der Hochschulzugangsberechtigung
-     */
     @Override
     public Double evaluate(Application application, Information information) {
         return ((Qualification) information).getGrade();

@@ -39,16 +39,16 @@ public abstract class Criterion {
     }
 
     /**
-     * Für das Kriterium benötigte Informationen.
-     */
-    public Information.Type getRequiredInformationType() { 
-        return this.requiredInformationType; 
-    }
-
-    /**
      * Eindeutige ID.
      */
     public String getId() {
         return this.id;
+    }
+
+    /**
+     * Für das Kriterium benötigte Informationen.
+     */
+    public Information.Type getRequiredInformationType() { 
+        return this.requiredInformationType; 
     }
 }
