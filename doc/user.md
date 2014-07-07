@@ -18,11 +18,11 @@ Struktur:
   | Information | | Application | 
   '-------------' '-------------' 
 
-  .----------------------. .----------------. .-------. .-----------.
-  | Course               | | AllocationRule | | Quota | | Criterion |
-  |----------------------| '----------------' '-------' |-----------|
-  | createAllocationRule |                              | evaluate  |
-  | apply                |                              '-----------'
+  .----------------------. .----------------. .--------------. .-----------.
+  | Course               | | AllocationRule | | Quota        | | Criterion |
+  |----------------------| |----------------| |--------------' |-----------|
+  | createAllocationRule | | createQuota    | | addCriterion | | evaluate  |
+  | apply                | '----------------' '--------------' '-----------'
   '----------------------'
 
   .---------.
@@ -38,8 +38,10 @@ Ablauf:
    .                   | createUser           |
    .                   | createCourse         |
    .                   | createAllocationRule |
+   .                   | createQuota          |
+   .                   | addCriterion         |
    . createUser        |                      |
    . createInformation |                      |
-   . apply
+   . apply             |                      |
 
 ```
