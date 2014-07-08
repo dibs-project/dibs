@@ -8,7 +8,6 @@ package de.huberlin.cms.hub;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -41,6 +40,15 @@ public class ApplicationServiceTest extends HubTest {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("id");
         this.service.getUser("foo");
+    }
+
+    @Test
+    public void testRegister() {
+        String name = "Mary";
+        User user = this.service.register(name, "mary@example.org");
+        assertEquals(name, user.getName());
+        assertEquals(user, this.service.getUser(user.getId()));
+        assertTrue(this.service.getUsers().contains(user));
     }
 
     @Test

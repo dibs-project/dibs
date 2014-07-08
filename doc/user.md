@@ -44,7 +44,7 @@ Ablauf:
    .                   | createUser           |
    .                   | createCourse         |
    .                   | createAllocationRule |
-   . createUser        |                      |
+   . register          |                      |
    . createInformation |                      |
    . apply
 
