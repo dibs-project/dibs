@@ -10,8 +10,9 @@ Struktur:
   .--------------------.  .----------.  .-------------------.
   | ApplicationService |  | Settings |  | User              |
   |--------------------|  '----------'  |-------------------|
-  | createUser         |                | createInformation |
-  | createCourse       |                '-------------------'
+  | register           |                | createInformation |
+  | createUser         |                '-------------------'
+  | createCourse       | 
   '--------------------'
 
   .-------------.  .-----------.
@@ -44,7 +45,7 @@ Ablauf:
    .                   | createUser           |
    .                   | createCourse         |
    .                   | createAllocationRule |
-   . createUser        |                      |
+   . register          |                      |
    . createInformation |                      |
    . apply
 
