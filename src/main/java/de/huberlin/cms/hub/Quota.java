@@ -38,9 +38,8 @@ public class Quota extends HubObject {
      *
      * @param criterionId ID des zu verknüpfenden Kriteriums
      * @param agent ausführender Benutzer
-     * @return verknüpfte Kriterium
      */
-    public Criterion addRankingCriterion(String criterionId, User agent) {
+    public void addRankingCriterion(String criterionId, User agent) {
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -56,7 +55,6 @@ public class Quota extends HubObject {
         } catch (SQLException e) {
             throw new IOError(e);
         }
-        return service.getCriteria().get(criterionId);
     }
 
     /**
