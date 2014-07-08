@@ -24,7 +24,8 @@ public class QuotaTest extends HubTest {
     @Test
     public final void testAddRankingCriterion() {
         QualificationCriterion criterion =
-            (QualificationCriterion) quota.addRankingCriterion("qualification", null);
+            (QualificationCriterion) service.getCriteria().get("qualification");
+        quota.addRankingCriterion("qualification", null);
         assertTrue(quota.getRankingCriteria().contains(criterion));
     }
 }
