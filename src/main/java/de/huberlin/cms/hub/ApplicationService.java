@@ -384,8 +384,8 @@ public class ApplicationService {
 
     /**
      * Gibt die Quote mit der spezifizierten ID zurück.
-     * 
-     * @param id der Quote
+     *
+     * @param id ID der Quote
      * @return Quote mit der spezifizierten ID
      */
     public Quota getQuota(String id) {

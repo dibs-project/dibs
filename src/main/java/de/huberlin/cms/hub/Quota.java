@@ -66,8 +66,7 @@ public class Quota extends HubObject {
         List<Criterion> rankingCriteria = new ArrayList<Criterion>();
         try {
             ResultSet results;
-            String query =
-                "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
+            String query = "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
             PreparedStatement statement = service.getDb().prepareStatement(query);
             statement.setString(1, id);
             results = statement.executeQuery();

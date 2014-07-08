@@ -47,10 +47,13 @@ public class AllocationRule extends HubObject {
      */
     public Quota createQuota(String name, double percentage, User agent) {
         if (!isInRange(percentage, (double) 0, (double) 100)) {
-            throw new IllegalArgumentException("percentage is out of range");
+            throw new IllegalArgumentException("illegal percentage: out of range");
         }
-        if (name == null ) {
-            throw new IllegalArgumentException("name can not be null");
+        if (name == null) {
+            throw new IllegalArgumentException("illegal name: can not be null");
+        }
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("illegal name: empty");
         }
         try {
             Connection db = service.getDb();

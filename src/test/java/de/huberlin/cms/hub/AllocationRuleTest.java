@@ -42,9 +42,16 @@ public class AllocationRuleTest extends HubTest {
     }
 
     @Test
-    public final void testCreateQuotaEmptyName() {
+    public final void testCreateQuotaNameNull() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("name");
         rule.createQuota(null, 100, null);
+    }
+
+    @Test
+    public final void testCreateQuotaEmptyName() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("name");
+        rule.createQuota("", 100, null);
     }
 }
