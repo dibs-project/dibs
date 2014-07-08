@@ -43,15 +43,6 @@ public class ApplicationServiceTest extends HubTest {
     }
 
     @Test
-    public void testRegister() {
-        String name = "Mary";
-        User user = this.service.register(name, "mary@example.org");
-        assertEquals(name, user.getName());
-        assertEquals(user, this.service.getUser(user.getId()));
-        assertTrue(this.service.getUsers().contains(user));
-    }
-
-    @Test
     public void testSetSemester() {
         String semester = "2222SS";
         service.setSemester(semester);
