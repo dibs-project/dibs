@@ -10,9 +10,9 @@ Struktur:
   .--------------------.  .----------.  .-------------------.
   | ApplicationService |  | Settings |  | User              |
   |--------------------|  '----------'  |-------------------|
-  | register           |                |                   |
-  | createUser         |                | createInformation |
-  | createCourse       |                '-------------------'
+  | register           |                | createInformation |
+  | createUser         |                '-------------------'
+  | createCourse       | 
   '--------------------'
 
   .-------------.  .-----------.
