@@ -58,7 +58,7 @@ public class Quota extends HubObject {
     }
 
     /**
-     * Kriterien für die Sortierung der Bewerber auf der Rangliste
+     * Kriterien für die Sortierung der Bewerber auf der Rangliste.
      */
     public List<Criterion> getRankingCriteria() {
         List<Criterion> rankingCriteria = new ArrayList<Criterion>();
@@ -82,7 +82,7 @@ public class Quota extends HubObject {
     // List<Criterion> getInclusionCriteria()
 
     /**
-     * Name der Quote
+     * Name der Quote.
      */
     public String getName() {
         return name;

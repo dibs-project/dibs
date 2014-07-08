@@ -170,6 +170,17 @@ public class ApplicationService {
     }
 
     /**
+    * Registriert einen neuen Benutzer.
+    *
+    * @param name Name, mit dem der Benutzer von HUB angesprochen wird
+    * @param email Email-Adresse
+    * @return Registrierter Nutzer
+    */
+    public User register(String name, String email) {
+        return this.createUser(name, email);
+    }
+
+    /**
      * Gibt die Information mit der spezifizierten ID zurück.
      *
      * @param id ID der Information
