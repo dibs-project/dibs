@@ -6,6 +6,7 @@
 package de.huberlin.cms.hub;
 
 import static java.util.Collections.unmodifiableMap;
+import static org.apache.commons.collections4.CollectionUtils.filter;
 
 import java.io.IOError;
 import java.sql.Connection;
@@ -14,11 +15,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
+
+import org.apache.commons.collections4.Predicate;
 
 import de.huberlin.cms.hub.JournalRecord.ActionType;
 
@@ -32,6 +38,10 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
  * @author Sven Pfaller
  */
 public class ApplicationService {
+    /** Unterstützte Filter für {@link #getCriteria(Map, User)}. */
+    public static final Set<String> GET_CRITERIA_FILTER_KEYS =
+        new HashSet<String>(Arrays.asList("required_information_type_id"));
+
     private Properties config;
     private Connection db;
     private Journal journal;
@@ -417,6 +427,42 @@ public class ApplicationService {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+    }
+
+    /**
+     * Gibt eine Liste aller Kriterien zurück.
+     *
+     * @param filter Filter
+     * @param agent ausführender Benutzer
+     * @return Liste aller Kriterien
+     */
+    public List<Criterion> getCriteria(Map<String, Object> filter, User agent) {
+        if (!GET_CRITERIA_FILTER_KEYS.containsAll(filter.keySet())) {
+            throw new IllegalArgumentException("illegal filter: improper keys");
+        }
+
+        ArrayList<Criterion> criteria = new ArrayList<Criterion>(this.criteria.values());
+        final String requiredInformationTypeId =
+            (String) filter.get("required_information_type_id");
+        if (requiredInformationTypeId != null) {
+            filter(criteria,
+                new Predicate<Criterion>() {
+                    public boolean evaluate(Criterion object) {
+                        return object.getRequiredInformationType().getId().equals(
+                            requiredInformationTypeId);
+                    }
+                });
+        }
+        return criteria;
+    }
+
+    /**
+     * Gibt eine Liste aller Kriterien zurück.
+     *
+     * @see #getCriteria(Map, User)
+     */
+    public List<Criterion> getCriteria(User agent) {
+        return this.getCriteria(new HashMap<String, Object>(), agent);
     }
 
     /**
