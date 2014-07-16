@@ -18,7 +18,7 @@ public class AllocationRuleTest extends HubTest {
 
     @Before
     public void before() {
-        rule = course.createAllocationRule(null);
+        rule = course.getAllocationRule();
     }
 
     @Test
