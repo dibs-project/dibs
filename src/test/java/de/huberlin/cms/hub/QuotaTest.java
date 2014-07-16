@@ -18,7 +18,7 @@ public class QuotaTest extends HubTest {
 
     @Before
     public void before() {
-        quota = course.createAllocationRule(null).createQuota("Performance", 100, null);
+        quota = course.getAllocationRule().getQuota();
     }
 
     @Test
