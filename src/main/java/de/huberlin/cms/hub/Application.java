@@ -5,10 +5,19 @@
 
 package de.huberlin.cms.hub;
 
+import static java.util.Collections.nCopies;
+
 import java.io.IOError;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
@@ -28,6 +37,10 @@ public class Application extends HubObject {
     public static final String STATUS_ADMITTED = "admitted";
     public static final String STATUS_CONFIRMED = "confirmed";
 
+    /** Unterstützte Filter für {@link #getEvaluations(Map, User)}. */
+    public static final Set<String> GET_EVALUATIONS_FILTER_KEYS =
+        ApplicationService.GET_CRITERIA_FILTER_KEYS;
+
     private final String userId;
     private final String courseId;
     private String status;
@@ -37,6 +50,66 @@ public class Application extends HubObject {
         this.userId = (String) args.get("user_id");
         this.courseId = (String) args.get("course_id");
         this.status = (String) args.get("status");
+    }
+
+    /**
+     * Gibt eine Liste aller Bewertungen, die zu dieser Bewerbung gehören, zurück.
+     *
+     * @param filter Filter
+     * @param agent ausführender Benutzer
+     * @return Liste aller Bewertungen, die zu dieser Bewerbung gehören
+     */
+    public List<Evaluation> getEvaluations(Map<String, Object> filter, User agent) {
+        if (!GET_EVALUATIONS_FILTER_KEYS.containsAll(filter.keySet())) {
+            throw new IllegalArgumentException("illegal filter: improper keys");
+        }
+
+        // Filter zusammensetzen
+        String filterSql = "WHERE application_id = ?";
+        ArrayList<Object> filterValues = new ArrayList<Object>();
+        filterValues.add(this.id);
+        if (filter.containsKey("required_information_type_id")) {
+            List<Criterion> criteria = this.service.getCriteria(filter, agent);
+            filterSql += String.format(" AND criterion_id IN (%s)",
+                StringUtils.join(nCopies(criteria.size(), "?"), ", "));
+            for (Criterion criterion : criteria) {
+                filterValues.add(criterion.getId());
+            }
+        }
+
+        try {
+            ArrayList<Evaluation> evaluations = new ArrayList<Evaluation>();
+            // NOTE: optimierter Query
+            PreparedStatement statement = this.service.getDb().prepareStatement(
+                String.format("SELECT * FROM evaluation %s", filterSql));
+            for (int i = 0; i < filterValues.size(); i++) {
+                statement.setObject(i + 1, filterValues.get(i));
+            }
+            ResultSet results = statement.executeQuery();
+            while (results.next()) {
+                HashMap<String, Object> args = new HashMap<String, Object>();
+                args.put("id", results.getString("id"));
+                args.put("application_id", results.getString("application_id"));
+                args.put("criterion_id", results.getString("criterion_id"));
+                args.put("information_id", results.getString("information_id"));
+                args.put("value", results.getDouble("value"));
+                args.put("status", results.getString("status"));
+                args.put("service", this.service);
+                evaluations.add(new Evaluation(args));
+            }
+            return evaluations;
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Gibt eine Liste aller Bewertungen, die zu dieser Bewerbung gehören, zurück.
+     *
+     * @see #getEvaluations(Map, User)
+     */
+    public List<Evaluation> getEvaluations(User agent) {
+        return this.getEvaluations(new HashMap<String, Object>(), agent);
     }
 
     void setStatus(String status, User agent) {
