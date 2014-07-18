@@ -28,4 +28,10 @@ public class QuotaTest extends HubTest {
         quota.addRankingCriterion("qualification", null);
         assertTrue(quota.getRankingCriteria().contains(criterion));
     }
+
+    @Test
+    public final void testAddRankingCriterionRedundantCriterionId() {
+        quota.addRankingCriterion("qualification", null);
+        quota.addRankingCriterion("qualification", null);
+    }
 }

@@ -45,14 +45,14 @@ public class AllocationRule extends HubObject {
      * @param agent ausführender Benutzer
      * @return angelegte und verknüpfte Quote
      */
-    public Quota createQuota(String name, double percentage, User agent) {
-        if (!isInRange(percentage, (double) 0, (double) 100)) {
+    public Quota createQuota(String name, int percentage, User agent) {
+        if (!isInRange(percentage, 0, 100)) {
             throw new IllegalArgumentException("illegal percentage: out of range");
         }
         if (name == null) {
             throw new IllegalArgumentException("illegal name: can not be null");
         }
-        if (name.isEmpty()) {
+        if (name.isEmpty()) { //TODO null-Validierung in Morgenkreis
             throw new IllegalArgumentException("illegal name: empty");
         }
         try {

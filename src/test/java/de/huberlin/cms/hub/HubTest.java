@@ -79,8 +79,7 @@ public abstract class HubTest {
 
         this.course = this.service.createCourse("Computer Science", 500, null);
         AllocationRule rule = this.course.createAllocationRule(null);
-        Quota quota = rule.createQuota("Standard", 100, null);
-        quota.addRankingCriterion("qualification", null);
+        rule.createQuota("Standard", 100, null);
     }
 
     @After
@@ -97,9 +96,8 @@ public abstract class HubTest {
             PreparedStatement statement;
 
             // TODO: Tabellen automatisch aus hub.sql lesen
-            String[] tables =
-                {"user", "settings", "qualification", "allocation_rule", "course",
-                    "application", "journal_record", "quota", "quota_ranking_criteria"};
+            String[] tables = {"user", "settings", "quota", "quota_ranking_criteria",
+                "allocation_rule", "course", "journal_record", "qualification", "application"};
             for (String table : tables) {
                 statement = this.db.prepareStatement(
                     String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));

@@ -410,9 +410,9 @@ public class ApplicationService {
             }
             HashMap<String, Object> args = new HashMap<String, Object>();
             args.put("id", id);
-            args.put("service", this);
             args.put("name", results.getString("name"));
-            args.put("percentage", results.getString("percentage"));
+            args.put("percentage", results.getInt("percentage"));
+            args.put("service", this);
             return new Quota(args);
         } catch (SQLException e) {
             throw new IOError(e);

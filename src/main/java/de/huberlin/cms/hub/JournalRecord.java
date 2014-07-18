@@ -26,7 +26,7 @@ public class JournalRecord extends HubObject {
         COURSE_CREATED,
         COURSE_ALLOCATION_RULE_CREATED,
         ALLOCATION_RULE_QUOTA_CREATED,
-        QUOTA_CRITERION_CREATED
+        QUOTA_RANKING_CRITERION_ADDED
     };
 
     /**
