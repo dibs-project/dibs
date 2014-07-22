@@ -49,10 +49,7 @@ public class AllocationRule extends HubObject {
         if (!isInRange(percentage, 0, 100)) {
             throw new IllegalArgumentException("illegal percentage: out of range");
         }
-        if (name == null) {
-            throw new IllegalArgumentException("illegal name: can not be null");
-        }
-        if (name.isEmpty()) { //TODO null-Validierung in Morgenkreis
+        if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
         try {
