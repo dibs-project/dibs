@@ -40,7 +40,7 @@ public class AllocationRule extends HubObject {
     /**
      * Erstellt und verknüpft eine Quote.
      *
-     * @param name Name der Quote, darf nicht <code>null</code> oder leer sein
+     * @param name Name der Quote, darf nicht leer sein
      * @param percentage Anteil der Quote an der Gesamtallokation in Prozent
      * @param agent ausführender Benutzer
      * @return angelegte und verknüpfte Quote

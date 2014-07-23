@@ -401,7 +401,7 @@ public class ApplicationService {
      */
     public Quota getQuota(String id) {
         try {
-            String sql = "SELECT * FROM quota WHERE id = ? ";
+            String sql = "SELECT * FROM quota WHERE id = ?";
             PreparedStatement statement = this.db.prepareStatement(sql);
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
