@@ -24,7 +24,9 @@ public class JournalRecord extends HubObject {
         COURSE_APPLIED,
         APPLICATION_STATUS_SET,
         COURSE_CREATED,
-        COURSE_ALLOCATION_RULE_CREATED
+        COURSE_ALLOCATION_RULE_CREATED,
+        ALLOCATION_RULE_QUOTA_CREATED,
+        QUOTA_RANKING_CRITERION_ADDED
     };
 
     /**
@@ -35,7 +37,8 @@ public class JournalRecord extends HubObject {
         INFORMATION,
         APPLICATION,
         COURSE,
-        ALLOCATION_RULE
+        ALLOCATION_RULE,
+        QUOTA
     };
 
     private ActionType actionType;

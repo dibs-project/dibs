@@ -394,6 +394,32 @@ public class ApplicationService {
     }
 
     /**
+     * Gibt die Quote mit der spezifizierten ID zurück.
+     *
+     * @param id ID der Quote
+     * @return Quote mit der spezifizierten ID
+     */
+    public Quota getQuota(String id) {
+        try {
+            String sql = "SELECT * FROM quota WHERE id = ?";
+            PreparedStatement statement = this.db.prepareStatement(sql);
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException("illegal id: quota does not exist");
+            }
+            HashMap<String, Object> args = new HashMap<String, Object>();
+            args.put("id", id);
+            args.put("name", results.getString("name"));
+            args.put("percentage", results.getInt("percentage"));
+            args.put("service", this);
+            return new Quota(args);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
      * Das Protokollbuch des Bewerbungsdienstes.
      */
     public Journal getJournal() {

@@ -7,30 +7,24 @@ HUB-Benutzerdokumentation
 Struktur:
 
 ```
-  .--------------------.  .----------.  .-------------------.
-  | ApplicationService |  | Settings |  | User              |
-  |--------------------|  '----------'  |-------------------|
-  | register           |                | createInformation |
-  | createUser         |                '-------------------'
+  .--------------------. .----------. .-------------------.
+  | ApplicationService | | Settings | | User              |
+  |--------------------| '----------' |-------------------|
+  | register           |              | createInformation |
+  | createUser         |              '-------------------'
   | createCourse       | 
   '--------------------'
 
-  .-------------.  .-----------.
-  | Information |  | Criterion |
-  '-------------'  |-----------|
-                   | evaluate  |
-                   '-----------'
+  .-------------. .-------------. 
+  | Information | | Application | 
+  '-------------' '-------------' 
 
-  .----------------------.  .-------------.
-  | Course               |  | Application |
-  |----------------------|  '-------------'
-  | createAllocationRule |
-  | apply                |
+  .----------------------. .----------------. .---------------------. .-----------.
+  | Course               | | AllocationRule | | Quota               | | Criterion |
+  |----------------------| |----------------| |---------------------| |-----------|
+  | createAllocationRule | | createQuota    | | addRankingCriterion | | evaluate  |
+  | apply                | '----------------' '---------------------' '-----------'
   '----------------------'
-
-  .----------------.
-  | AllocationRule |
-  '----------------'
 
   .---------.
   | Journal |
@@ -41,12 +35,14 @@ Ablauf:
 
 ```
    . Applicant         | Employee             | System
-  ----------------------------------------------------
+  ---------------------+----------------------+-------
    .                   | createUser           |
    .                   | createCourse         |
    .                   | createAllocationRule |
+   .                   | createQuota          |
+   .                   | addRankingCriterion  |
    . register          |                      |
    . createInformation |                      |
-   . apply
+   . apply             |                      |
 
 ```

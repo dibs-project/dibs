@@ -11,8 +11,21 @@ CREATE TABLE settings (
     dosv_applications_update_time TIMESTAMP
 );
 
+CREATE TABLE quota (
+    id VARCHAR(256) PRIMARY KEY,
+    name VARCHAR(256) NOT NULL,
+    percentage INT NOT NULL
+);
+
+CREATE TABLE quota_ranking_criteria (
+    quota_id VARCHAR(256) REFERENCES quota,
+    criterion_id VARCHAR(256),
+    PRIMARY KEY(quota_id, criterion_id)
+);
+
 CREATE TABLE allocation_rule (
-    id VARCHAR(256) PRIMARY KEY
+    id VARCHAR(256) PRIMARY KEY,
+    quota_id VARCHAR(256) REFERENCES quota
 );
 
 CREATE TABLE course (
