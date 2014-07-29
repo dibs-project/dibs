@@ -19,41 +19,51 @@ import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
 /**
  * Quote, welche die Kriterien für die Ranglistenerstellung für einen Teil der Plätze
- * eines Studienangebots beinhaltet.
+ * eines Studiengangs beinhaltet.
  *
  * @author Markus Michler
  */
 public class Quota extends HubObject {
     private final String name;
-    private final double percentage;
+    private final int percentage;
 
     Quota(HashMap<String, Object> args) {
         super((String) args.get("id"), (ApplicationService) args.get("service"));
         this.name = (String) args.get("name");
-        this.percentage = Double.parseDouble((String) args.get("percentage"));
+        this.percentage = (Integer) args.get("percentage");
     }
 
     /**
-     * verknüpft ein Kriterium zur Sortierung von Bewerbern auf einer Rangliste.
+     * Verknüpft ein Kriterium zur Sortierung von Bewerbern auf einer Rangliste.
      *
      * @param criterionId ID des zu verknüpfenden Kriteriums
      * @param agent ausführender Benutzer
      */
     public void addRankingCriterion(String criterionId, User agent) {
+        Connection db = service.getDb();
         try {
-            Connection db = service.getDb();
             db.setAutoCommit(false);
             String sql = "INSERT INTO quota_ranking_criteria VALUES(?, ?)";
             PreparedStatement statement = db.prepareStatement(sql);
             statement.setString(1, id);
             statement.setString(2, criterionId);
             statement.executeUpdate();
-            service.getJournal().record(ActionType.QUOTA_CRITERION_CREATED,
+            service.getJournal().record(ActionType.QUOTA_RANKING_CRITERION_ADDED,
                 ObjectType.QUOTA, this.id, HubObject.getId(agent), criterionId);
             db.commit();
             db.setAutoCommit(true);
         } catch (SQLException e) {
-            throw new IOError(e);
+            if (e.getSQLState().equals("23505")) {
+                // unique violation ignorieren
+                try {
+                    db.rollback();
+                    db.setAutoCommit(true);
+                } catch (SQLException e1) {
+                    throw new IOError(e1);
+                }
+            } else {
+                throw new IOError(e);
+            }
         }
     }
 
@@ -63,11 +73,10 @@ public class Quota extends HubObject {
     public List<Criterion> getRankingCriteria() {
         List<Criterion> rankingCriteria = new ArrayList<Criterion>();
         try {
-            ResultSet results;
             String query = "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
             PreparedStatement statement = service.getDb().prepareStatement(query);
             statement.setString(1, id);
-            results = statement.executeQuery();
+            ResultSet results = statement.executeQuery();
             while (results.next()) {
                 rankingCriteria.add(service.getCriteria().get(
                     results.getString("criterion_id")));
@@ -89,9 +98,9 @@ public class Quota extends HubObject {
     }
 
     /**
-     * Prozentualer Anteil der Quote an der Gesamtzahl der vergebenen Studienplätze.
+     * Prozentualer Anteil (0..100) der Quote an der Gesamtzahl der vergebenen Studienplätze.
      */
-    public double getPercentage() {
+    public int getPercentage() {
         return percentage;
     }
 }

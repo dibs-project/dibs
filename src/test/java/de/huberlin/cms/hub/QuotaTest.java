@@ -18,13 +18,23 @@ public class QuotaTest extends HubTest {
 
     @Before
     public void before() {
-        quota = course.getAllocationRule().getQuota();
+        quota = service.createCourse("Computer Science", 500, null).
+            createAllocationRule(null).createQuota("Performance", 100, null);
     }
 
     @Test
     public final void testAddRankingCriterion() {
         QualificationCriterion criterion =
             (QualificationCriterion) service.getCriteria().get("qualification");
+        quota.addRankingCriterion("qualification", null);
+        assertTrue(quota.getRankingCriteria().contains(criterion));
+    }
+
+    @Test
+    public final void testAddRankingCriterionRedundantCriterionId() {
+        QualificationCriterion criterion =
+            (QualificationCriterion) service.getCriteria().get("qualification");
+        quota.addRankingCriterion("qualification", null);
         quota.addRankingCriterion("qualification", null);
         assertTrue(quota.getRankingCriteria().contains(criterion));
     }
