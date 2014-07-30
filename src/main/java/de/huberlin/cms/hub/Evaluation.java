@@ -5,6 +5,9 @@
 
 package de.huberlin.cms.hub;
 
+import java.io.IOError;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.HashMap;
 
 /**
@@ -16,8 +19,6 @@ import java.util.HashMap;
 public class Evaluation extends HubObject {
     /** Status: Information fehlt noch, bzw.&nbsp;wurde noch nicht zugeordnet. */
     public final static String STATUS_INFORMATION_MISSING = "information_missing";
-    /** Status: Bewertung noch nicht durchgeführt. */
-    public final static String STATUS_UNEVALUATED = "unevaluated";
     /** Status: Bewertung durchgeführt. */
     public final static String STATUS_EVALUATED = "evaluated";
 
@@ -34,6 +35,24 @@ public class Evaluation extends HubObject {
         this.informationId = (String) args.get("information_id");
         this.value = (Double) args.get("value");
         this.status = (String) args.get("status");
+    }
+
+    void assignInformation(Information information) {
+        this.informationId = information.getId();
+        this.value = this.getCriterion().evaluate(this.getApplication(), information);
+        this.status = STATUS_EVALUATED;
+
+        try {
+            PreparedStatement statement = this.service.getDb().prepareStatement(
+                "UPDATE evaluation SET information_id = ?, value = ?, status = ? WHERE id = ?");
+            statement.setString(1, this.informationId);
+            statement.setDouble(2, this.value);
+            statement.setString(3, this.status);
+            statement.setString(4, this.id);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
     /**
@@ -55,7 +74,8 @@ public class Evaluation extends HubObject {
      * wurde.
      */
     public Information getInformation() {
-        return this.service.getInformation(this.informationId);
+        return this.informationId != null ?
+            this.service.getInformation(this.informationId) : null;
     }
 
     /**

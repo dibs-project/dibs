@@ -130,6 +130,16 @@ public class Application extends HubObject {
         }
     }
 
+    void assignInformation(Information information) {
+        // Ordnet eine Information automatisch den entsprechenden Bewertungen dieser
+        // Bewerbung zu. Wird angestoßen von Course.apply und User.createInformation.
+        HashMap<String, Object> filter = new HashMap<String, Object>();
+        filter.put("required_information_type_id", information.getType().getId());
+        for (Evaluation evaluation : this.getEvaluations(filter, null)) {
+            evaluation.assignInformation(information);
+        }
+    }
+
     /**
      * Benutzer, zu dem die Bewerbung gehört.
      */
