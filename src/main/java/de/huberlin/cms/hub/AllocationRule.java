@@ -40,17 +40,14 @@ public class AllocationRule extends HubObject {
     /**
      * Erstellt und verknüpft eine Quote.
      *
-     * @param name Name der Quote, darf nicht <code>null</code> oder leer sein
+     * @param name Name der Quote, darf nicht leer sein
      * @param percentage Anteil der Quote an der Gesamtallokation in Prozent
      * @param agent ausführender Benutzer
      * @return angelegte und verknüpfte Quote
      */
-    public Quota createQuota(String name, double percentage, User agent) {
-        if (!isInRange(percentage, (double) 0, (double) 100)) {
+    public Quota createQuota(String name, int percentage, User agent) {
+        if (!isInRange(percentage, 0, 100)) {
             throw new IllegalArgumentException("illegal percentage: out of range");
-        }
-        if (name == null) {
-            throw new IllegalArgumentException("illegal name: can not be null");
         }
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");

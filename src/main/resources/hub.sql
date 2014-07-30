@@ -14,13 +14,13 @@ CREATE TABLE settings (
 CREATE TABLE quota (
     id VARCHAR(256) PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
-    percentage DOUBLE PRECISION NOT NULL
+    percentage INT NOT NULL
 );
 
 CREATE TABLE quota_ranking_criteria (
     quota_id VARCHAR(256) REFERENCES quota,
-    PRIMARY KEY(quota_id),
-    criterion_id VARCHAR(256) NOT NULL
+    criterion_id VARCHAR(256),
+    PRIMARY KEY(quota_id, criterion_id)
 );
 
 CREATE TABLE allocation_rule (

@@ -442,7 +442,7 @@ public class ApplicationService {
      */
     public Quota getQuota(String id) {
         try {
-            String sql = "SELECT * FROM quota WHERE id = ? ";
+            String sql = "SELECT * FROM quota WHERE id = ?";
             PreparedStatement statement = this.db.prepareStatement(sql);
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
@@ -451,9 +451,9 @@ public class ApplicationService {
             }
             HashMap<String, Object> args = new HashMap<String, Object>();
             args.put("id", id);
-            args.put("service", this);
             args.put("name", results.getString("name"));
-            args.put("percentage", results.getString("percentage"));
+            args.put("percentage", results.getInt("percentage"));
+            args.put("service", this);
             return new Quota(args);
         } catch (SQLException e) {
             throw new IOError(e);

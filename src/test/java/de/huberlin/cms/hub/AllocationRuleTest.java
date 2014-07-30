@@ -28,24 +28,10 @@ public class AllocationRuleTest extends HubTest {
     }
 
     @Test
-    public final void testCreateQuotaPercentageLowerConstraint() {
+    public final void testCreateQuotaOutOfRangePercentage() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("percentage");
         rule.createQuota("Performance", -1, null);
-    }
-
-    @Test
-    public final void testCreateQuotaPercentageUpperConstraint() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("percentage");
-        rule.createQuota("Performance", 101, null);
-    }
-
-    @Test
-    public final void testCreateQuotaNameNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("name");
-        rule.createQuota(null, 100, null);
     }
 
     @Test
