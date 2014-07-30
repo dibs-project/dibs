@@ -8,6 +8,9 @@ package de.huberlin.cms.hub;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.HashMap;
+
 import org.junit.Test;
 
 /**
@@ -86,5 +89,13 @@ public class ApplicationServiceTest extends HubTest {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("id");
         this.service.getCourse("foo");
+    }
+
+    @Test
+    public void testGetCriteriaFilter() {
+        HashMap<String, Object> filter = new HashMap<String, Object>();
+        filter.put("required_information_type_id", "qualification");
+        assertEquals(Arrays.asList(this.service.getCriteria().get("qualification")),
+            this.service.getCriteria(filter, null));
     }
 }
