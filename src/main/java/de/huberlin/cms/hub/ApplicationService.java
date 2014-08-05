@@ -268,7 +268,7 @@ public class ApplicationService {
             args.put("application_id", results.getString("application_id"));
             args.put("criterion_id", results.getString("criterion_id"));
             args.put("information_id", results.getString("information_id"));
-            args.put("value", results.getDouble("value"));
+            args.put("value", results.getObject("value"));
             args.put("status", results.getString("status"));
             args.put("service", this);
             return new Evaluation(args);

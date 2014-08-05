@@ -53,9 +53,9 @@ public class User extends HubObject {
         }
         Information information = type.create(args, this, agent);
 
-        // Ereignis stößt Application.assignInformation an
+        // Pseudo-Ereignis auslösen
         for (Application application : this.getApplications(null)) {
-            application.assignInformation(information);
+            application.userInformationCreated(this, information);
         }
 
         return information;

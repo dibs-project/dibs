@@ -13,6 +13,7 @@ import org.junit.Test;
 
 /**
  * @author Markus Michler
+ * @author Sven Pfaller
  */
 public class ApplicationTest extends HubTest {
     private Application application;
@@ -43,14 +44,11 @@ public class ApplicationTest extends HubTest {
         Information information =
             this.user.createInformation("qualification", args, null);
 
-        // TODO: this.application.getEvaluationByCriterionId("qualification");
-        HashMap<String, Object> filter = new HashMap<String, Object>();
-        filter.put("required_information_type_id", "qualification");
-        for (Evaluation evaluation : this.application.getEvaluations(filter, null)) {
-            assertEquals(information, evaluation.getInformation());
-            assertEquals(Evaluation.STATUS_EVALUATED, evaluation.getStatus());
-            assertNotNull(evaluation.getValue());
-        }
+        Evaluation evaluation =
+            this.application.getEvaluationByCriterionId("qualification");
+        assertEquals(Evaluation.STATUS_EVALUATED, evaluation.getStatus());
+        assertEquals(information, evaluation.getInformation());
+        assertNotNull(evaluation.getValue());
     }
 
     @Test
