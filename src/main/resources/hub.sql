@@ -58,4 +58,13 @@ CREATE TABLE application (
     status VARCHAR(256) NOT NULL
 );
 
+CREATE TABLE evaluation (
+    id VARCHAR(256) PRIMARY KEY,
+    application_id VARCHAR(256) REFERENCES application NOT NULL,
+    criterion_id VARCHAR(256) NOT NULL,
+    information_id VARCHAR(256),
+    value FLOAT,
+    status VARCHAR(256) NOT NULL
+);
+
 INSERT INTO settings (id, semester) VALUES ('settings', '2014WS');
