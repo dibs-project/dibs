@@ -46,7 +46,7 @@ public class Evaluation extends HubObject {
             PreparedStatement statement = this.service.getDb().prepareStatement(
                 "UPDATE evaluation SET information_id = ?, value = ?, status = ? WHERE id = ?");
             statement.setString(1, this.informationId);
-            statement.setDouble(2, this.value);
+            statement.setObject(2, this.value);
             statement.setString(3, this.status);
             statement.setString(4, this.id);
             statement.executeUpdate();

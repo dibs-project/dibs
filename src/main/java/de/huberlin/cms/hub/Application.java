@@ -26,6 +26,7 @@ import de.huberlin.cms.hub.JournalRecord.ObjectType;
  * Bewerbung, mit der Benutzer am Zulassungsverfahren teilnehmen.
  *
  * @author Markus Michler
+ * @author Sven Pfaller
  */
 public class Application extends HubObject {
 
@@ -52,11 +53,16 @@ public class Application extends HubObject {
         this.status = (String) args.get("status");
     }
 
-    // TODO: Dokumentieren
+    /**
+     * Gibt die Bewertung zurück, die sich auf das angegebene Kriterium bezieht.
+     *
+     * @param criterionId ID des Kriteriums
+     * @return Bewertung, die sich auf das angegebene Kriterium bezieht
+     */
     public Evaluation getEvaluationByCriterionId(String criterionId) {
         try {
             PreparedStatement statement = this.service.getDb().prepareStatement(
-                "SELECT * FROM evaluation WHERE application_id=? AND criterion_id=?");
+                "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?");
             statement.setString(1, this.id);
             statement.setString(2, criterionId);
             ResultSet results = statement.executeQuery();
@@ -157,7 +163,7 @@ public class Application extends HubObject {
     }
 
     void assignInformation(Information information) {
-        // Ordnet eine Information der Bewerbung (bzw. den entsprechenden Bewertungen) zu.
+        // ordnet eine Information der Bewerbung (bzw. den entsprechenden Bewertungen) zu
         HashMap<String, Object> filter = new HashMap<String, Object>();
         filter.put("required_information_type_id", information.getType().getId());
         for (Evaluation evaluation : this.getEvaluations(filter, null)) {

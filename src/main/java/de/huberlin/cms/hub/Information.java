@@ -29,6 +29,9 @@ public abstract class Information extends HubObject {
         return this.service.getUser(this.userId);
     }
 
+    /**
+     * Typ dieser Information.
+     */
     public abstract Information.Type getType();
 
     /**
