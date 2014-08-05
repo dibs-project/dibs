@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.util.List;
 import java.util.Random;
 
 import de.huberlin.cms.hub.JournalRecord.ActionType;
@@ -76,24 +78,46 @@ public class Course extends HubObject {
      *
      * @param userId ID des Bewerbers
      * @param agent ausführender Benutzer
-     * @return die angelegte Bewerbung
+     * @return angelegte Bewerbung
      */
     public Application apply(String userId, User agent) {
+        // TODO: sicherstellen, dass Metadaten komplett sind (= Vergaberegel und Quote)
+
         try {
-            String applicationId = "application:" + Integer.toString(new Random().nextInt());
             service.getDb().setAutoCommit(false);
-            String sql = "INSERT INTO application VALUES(?, ?, ?, ?)";
+            String applicationId =
+                String.format("application:%s", new Random().nextInt());
+            String sql = "INSERT INTO application VALUES (?, ?, ?, ?)";
             PreparedStatement statement = service.getDb().prepareStatement(sql);
             statement.setString(1, applicationId);
             statement.setString(2, userId);
             statement.setString(3, this.id);
             statement.setString(4, Application.STATUS_INCOMPLETE);
             statement.executeUpdate();
-            service.getJournal().record(ActionType.COURSE_APPLIED, ObjectType.COURSE, this.id,
-                HubObject.getId(agent), applicationId);
+
+            // Bewertung für jedes Kriterium der Verteilungsregel erstellen
+            // NOTE: Query kann noch optimiert werden
+            List<Criterion> criteria =
+                this.getAllocationRule().getQuota().getRankingCriteria();
+            for (Criterion criterion : criteria) {
+                String id = String.format("evaluation:%s", new Random().nextInt());
+                statement = this.service.getDb().prepareStatement(
+                    "INSERT INTO evaluation VALUES (?, ?, ?, ?, ?, ?)");
+                statement.setString(1, id);
+                statement.setString(2, applicationId);
+                statement.setString(3, criterion.getId());
+                statement.setNull(4, Types.VARCHAR);
+                statement.setNull(5, Types.DOUBLE);
+                statement.setString(6, Evaluation.STATUS_INFORMATION_MISSING);
+                statement.executeUpdate();
+            }
+
+            service.getJournal().record(ActionType.COURSE_APPLIED, ObjectType.COURSE,
+                this.id, HubObject.getId(agent), applicationId);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);
             return service.getApplication(applicationId);
+
         } catch (SQLException e) {
             throw new IOError(e);
         }

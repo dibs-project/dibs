@@ -247,6 +247,37 @@ public class ApplicationService {
     }
 
     /**
+     * Gibt die Bewertung mit der spezifizierten ID zurück.
+     *
+     * @param id ID der Bewertung
+     * @param agent ausführender Benutzer
+     * @return Bewertung mit der spezifizierten ID
+     */
+    public Evaluation getEvaluation(String id, User agent) {
+        try {
+            PreparedStatement statement =
+                this.db.prepareStatement("SELECT * FROM evaluation WHERE id = ?");
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException(
+                    "illegal id: evaluation does not exist");
+            }
+            HashMap<String, Object> args = new HashMap<String, Object>();
+            args.put("id", results.getString("id"));
+            args.put("application_id", results.getString("application_id"));
+            args.put("criterion_id", results.getString("criterion_id"));
+            args.put("information_id", results.getString("information_id"));
+            args.put("value", results.getDouble("value"));
+            args.put("status", results.getString("status"));
+            args.put("service", this);
+            return new Evaluation(args);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
      * Stellt das aktuelle Semester für das Bewerbungssystem ein.
      *
      * @param semester Neues aktuelles Semester.
