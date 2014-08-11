@@ -35,7 +35,6 @@ public class Journal {
      * Schreibt einen Protokolleintrag in das Protokollbuch.
      *
      * @param actionType Typ der ausgeführten Aktion
-     * @param objectType Typ des Objekts, das die Aktion ausführt
      * @param objectId ID des Objekts, das die Aktion ausführt
      * @param agentId ID des Nutzers, der die Aktion ausführt
      * @param detail Detailbeschreibung
@@ -83,11 +82,10 @@ public class Journal {
     }
 
     /**
-     * Gibt alle Protokolleinträge für das spezifierte Objekt zurück.
+     * Gibt alle Protokolleinträge für die spezifierte Objekt-ID zurück.
      *
-     * @param objectType Typ des Objekts
      * @param objectId ID des Objekts
-     * @return Protokoll für das spezifizierte Objekt
+     * @return Protokolleinträge des Objektes
      */
     public List<JournalRecord> getRecordsObject(String objectId) {
         try {
