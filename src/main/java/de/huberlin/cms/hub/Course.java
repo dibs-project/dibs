@@ -14,9 +14,6 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Random;
 
-import de.huberlin.cms.hub.JournalRecord.ActionType;
-import de.huberlin.cms.hub.JournalRecord.ObjectType;
-
 /**
  * Studiengang.
  *
@@ -63,8 +60,8 @@ public class Course extends HubObject {
             statement.setString(2, this.id);
             statement.executeUpdate();
             this.allocationRuleId = ruleId;
-            service.getJournal().record(ActionType.COURSE_ALLOCATION_RULE_CREATED,
-                ObjectType.COURSE, this.id, HubObject.getId(agent), ruleId);
+            service.getJournal().record(JournalRecord.TYPE_COURSE_ALLOCATION_RULE_CREATED,
+                this.id, HubObject.getId(agent), ruleId);
             db.commit();
             db.setAutoCommit(true);
             return service.getAllocationRule(allocationRuleId);
@@ -112,8 +109,8 @@ public class Course extends HubObject {
                 statement.executeUpdate();
             }
 
-            service.getJournal().record(ActionType.COURSE_APPLIED, ObjectType.COURSE,
-                this.id, HubObject.getId(agent), applicationId);
+            service.getJournal().record(JournalRecord.TYPE_COURSE_APPLIED, this.id,
+                HubObject.getId(agent), applicationId);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);
             return service.getApplication(applicationId);

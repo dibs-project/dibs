@@ -17,9 +17,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 
-import de.huberlin.cms.hub.JournalRecord.ActionType;
-import de.huberlin.cms.hub.JournalRecord.ObjectType;
-
 /**
  * Hochschulreife (bzw. Hochschulzugangsberechtigung).
  *
@@ -94,8 +91,8 @@ public class Qualification extends Information {
                 statement.setString(2, user.getId());
                 statement.setDouble(3, grade);
                 statement.executeUpdate();
-                service.getJournal().record(ActionType.INFORMATION_CREATED,
-                    ObjectType.USER, user.getId(), HubObject.getId(agent), id);
+                service.getJournal().record(JournalRecord.TYPE_INFORMATION_CREATED,
+                    user.getId(), HubObject.getId(agent), id);
                 db.commit();
                 db.setAutoCommit(true);
                 return service.getInformation(id);

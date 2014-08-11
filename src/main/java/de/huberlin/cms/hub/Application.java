@@ -19,9 +19,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import de.huberlin.cms.hub.JournalRecord.ActionType;
-import de.huberlin.cms.hub.JournalRecord.ObjectType;
-
 /**
  * Bewerbung, mit der Benutzer am Zulassungsverfahren teilnehmen.
  *
@@ -121,8 +118,8 @@ public class Application extends HubObject {
             statement.setString(1, status);
             statement.setString(2, this.id);
             statement.executeUpdate();
-            service.getJournal().record(ActionType.APPLICATION_STATUS_SET,
-                ObjectType.APPLICATION, this.id, HubObject.getId(agent), status);
+            service.getJournal().record(JournalRecord.TYPE_APPLICATION_STATUS_SET,
+                this.id, HubObject.getId(agent), status);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);
         } catch (SQLException e) {

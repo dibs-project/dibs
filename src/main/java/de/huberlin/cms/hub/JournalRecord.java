@@ -18,44 +18,27 @@ public class JournalRecord extends HubObject {
     /**
      * Typ der Aktion des Dienstes.
      */
-    public enum ActionType {
-        USER_CREATED,
-        INFORMATION_CREATED,
-        COURSE_APPLIED,
-        APPLICATION_STATUS_SET,
-        COURSE_CREATED,
-        COURSE_ALLOCATION_RULE_CREATED,
-        ALLOCATION_RULE_QUOTA_CREATED,
-        QUOTA_RANKING_CRITERION_ADDED
-    };
+    public static final String TYPE_USER_CREATED = "user_created";
+    public static final String TYPE_INFORMATION_CREATED = "information_created";
+    public static final String TYPE_COURSE_APPLIED = "course_applied";
+    public static final String TYPE_APPLICATION_STATUS_SET = "application_status_set";
+    public static final String TYPE_COURSE_CREATED = "course_created";
+    public static final String TYPE_COURSE_ALLOCATION_RULE_CREATED = "course_allocation_rule_created";
+    public static final String TYPE_ALLOCATION_RULE_QUOTA_CREATED = "allocation_rule_quota_created";
+    public static final String TYPE_QUOTA_RANKING_CRITERION_ADDED = "quota_ranking_criterion_added";
 
-    /**
-     * Typ des Objekts des Dienstes.
-     */
-    public enum ObjectType {
-        USER,
-        INFORMATION,
-        APPLICATION,
-        COURSE,
-        ALLOCATION_RULE,
-        QUOTA
-    };
-
-    private ActionType actionType;
-    private ObjectType objectType;
+    private String actionType;
     private String objectId;
-    private String userId;
+    private String agentId;
     private Timestamp time;
     private String detail;
 
-    JournalRecord(String id, ActionType actionType, ObjectType objectType,
-            String objectId, String userId, Timestamp time, String detail,
-            ApplicationService service) {
+    JournalRecord(String id, String actionType, String objectId, String userId,
+            Timestamp time, String detail, ApplicationService service) {
         super(id, service);
         this.actionType = actionType;
-        this.objectType = objectType;
         this.objectId = objectId;
-        this.userId = userId;
+        this.agentId = userId;
         this.time = time;
         this.detail = detail;
     }
@@ -64,10 +47,9 @@ public class JournalRecord extends HubObject {
         // initialisiert den Eintrag über den Datenbankcursor
         this(
             results.getString("id"),
-            ActionType.valueOf(results.getString("action_type")),
-            Util.valueOfEnum(ObjectType.class, results.getString("object_type")),
+            results.getString("action_type"),
             results.getString("object_id"),
-            results.getString("user_id"),
+            results.getString("agent_id"),
             results.getTimestamp("time"),
             results.getString("detail"),
             service
@@ -75,17 +57,21 @@ public class JournalRecord extends HubObject {
     }
 
     /**
-     * Typ der Aktion.
+     * Typ der Aktion.</br>
+     * Konstanten:
+     * <ul>
+     * <li><code>user_created</code>: neuer Benutzer erstellen
+     * <li><code>information_created</code>: Information erstellen
+     * <li><code>course_applied</code>: Studiengang bewerben
+     * <li><code>application_status_set</code>: Bewerbungstatus bearbeiten
+     * <li><code>course_created</code>: Studiengang anlegen
+     * <li><code>course_allocation_rule_created</code>: Vergabeschema anlegen
+     * <li><code>allocation_rule_quota_created</code>: Ranglsiten anlegen
+     * <li><code>quota_ranking_criterion_added</code>: Kriterium anlegen
+     * </ul>
      */
-    public ActionType getActionType() {
+    public String getActionType() {
         return this.actionType;
-    }
-
-    /**
-     * Typ des Objekts, das die Aktion ausführt.
-     */
-    public ObjectType getObjectType() {
-        return this.objectType;
     }
 
     /**
@@ -98,8 +84,8 @@ public class JournalRecord extends HubObject {
     /**
      * ID des Nutzers, der die Aktion ausführt.
      */
-    public String getUserId() {
-        return this.userId;
+    public String getAgentId() {
+        return this.agentId;
     }
 
     /**

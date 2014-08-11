@@ -14,9 +14,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
 
-import de.huberlin.cms.hub.JournalRecord.ActionType;
-import de.huberlin.cms.hub.JournalRecord.ObjectType;
-
 /**
  * Regel, nach der Studienplätze für einen Studiengang an die Bewerber vergeben werden
  * (Vergabeschema).
@@ -68,8 +65,8 @@ public class AllocationRule extends HubObject {
             statement.setString(2, this.id);
             statement.executeUpdate();
             this.quotaId = quotaId;
-            service.getJournal().record(ActionType.ALLOCATION_RULE_QUOTA_CREATED,
-                ObjectType.ALLOCATION_RULE, this.id, HubObject.getId(agent), quotaId);
+            service.getJournal().record(JournalRecord.TYPE_ALLOCATION_RULE_QUOTA_CREATED,
+                this.id, HubObject.getId(agent), quotaId);
             db.commit();
             db.setAutoCommit(true);
             return service.getQuota(this.quotaId);

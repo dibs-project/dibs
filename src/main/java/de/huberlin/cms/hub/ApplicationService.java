@@ -26,8 +26,6 @@ import java.util.Set;
 
 import org.apache.commons.collections4.Predicate;
 
-import de.huberlin.cms.hub.JournalRecord.ActionType;
-
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
  * <p>
@@ -127,7 +125,7 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setString(3, email);
             statement.executeUpdate();
-            journal.record(ActionType.USER_CREATED, null, null, null, id);
+            journal.record(JournalRecord.TYPE_USER_CREATED, null, null, id);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getUser(id);
@@ -359,7 +357,7 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setInt(3, capacity);
             statement.executeUpdate();
-            journal.record(ActionType.COURSE_CREATED, null, null, HubObject.getId(agent),
+            journal.record(JournalRecord.TYPE_COURSE_CREATED, null, HubObject.getId(agent),
                 name);
             this.db.commit();
             this.db.setAutoCommit(true);
@@ -513,7 +511,7 @@ public class ApplicationService {
     /**
      * Verfügbare Kriterien (indiziert nach ID).
      */
-    public Map<String, Criterion> getCriteria() { 
-        return unmodifiableMap(this.criteria); 
+    public Map<String, Criterion> getCriteria() {
+        return unmodifiableMap(this.criteria);
     }
 }
