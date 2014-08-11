@@ -91,16 +91,14 @@ public class Journal {
         try {
             List<JournalRecord> journal = new ArrayList<JournalRecord>();
             PreparedStatement statement = null;
-
             if (objectId == null) {
-                String sql = "SELECT * FROM journal_record WHERE object_id IS NULL";
-                statement = this.db.prepareStatement(sql);
+                statement = this.db.prepareStatement(
+                    "SELECT * FROM journal_record WHERE object_id IS NULL");
             } else {
-                String sql = "SELECT * FROM journal_record WHERE object_id = ?";
-                statement = this.db.prepareStatement(sql);
+                statement = this.db.prepareStatement(
+                    "SELECT * FROM journal_record WHERE object_id = ?");
                 statement.setString(1, objectId);
             }
-
             ResultSet results = statement.executeQuery();
             while (results.next()) {
                 journal.add(new JournalRecord(results, this.service));
@@ -120,17 +118,15 @@ public class Journal {
     public List<JournalRecord> getRecordsAgent(String agentId) {
         try {
             List<JournalRecord> journal = new ArrayList<JournalRecord>();
-            PreparedStatement statement;
-
-            if (agentId != null) {
-                String sql = "SELECT * FROM journal_record WHERE agent_id = ?";
-                statement = this.db.prepareStatement(sql);
-                statement.setString(1, agentId);
+            PreparedStatement statement = null;
+            if (agentId == null) {
+                statement = this.db.prepareStatement(
+                    "SELECT * FROM journal_record WHERE agent_id IS NULL");
             } else {
-                String sql = "SELECT * FROM journal_record WHERE agent_id IS NULL";
-                statement = this.db.prepareStatement(sql);
+                statement = this.db.prepareStatement(
+                    "SELECT * FROM journal_record WHERE agent_id = ?");
+                statement.setString(1, agentId);
             }
-
             ResultSet results = statement.executeQuery();
             while (results.next()) {
                 journal.add(new JournalRecord(results, this.service));

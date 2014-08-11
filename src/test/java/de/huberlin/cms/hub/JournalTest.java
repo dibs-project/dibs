@@ -13,9 +13,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * @author Phuong Anh Ha
- */
 public class JournalTest extends HubTest {
     private Journal journal;
 
@@ -58,12 +55,13 @@ public class JournalTest extends HubTest {
 
     @Test
     public void testGetRecordsObject() {
+        String objectId = "application: 1";
         JournalRecord record =
-            journal.record(JournalRecord.TYPE_APPLICATION_STATUS_SET, "application: 1", null, null);
-        List<JournalRecord> records = journal.getRecordsObject("application: 1");
+            journal.record(JournalRecord.TYPE_APPLICATION_STATUS_SET, objectId, null, null);
+        List<JournalRecord> records = journal.getRecordsObject(objectId);
         assertTrue(records.contains(record));
         for (JournalRecord r : records) {
-            assertEquals("application: 1", r.getObjectId());
+            assertEquals(objectId, r.getObjectId());
         }
     }
 }

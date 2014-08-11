@@ -18,14 +18,22 @@ public class JournalRecord extends HubObject {
     /**
      * Typ der Aktion des Dienstes.
      */
-    public static final String TYPE_USER_CREATED = "user_created";
-    public static final String TYPE_INFORMATION_CREATED = "information_created";
-    public static final String TYPE_COURSE_APPLIED = "course_applied";
-    public static final String TYPE_APPLICATION_STATUS_SET = "application_status_set";
-    public static final String TYPE_COURSE_CREATED = "course_created";
-    public static final String TYPE_COURSE_ALLOCATION_RULE_CREATED = "course_allocation_rule_created";
-    public static final String TYPE_ALLOCATION_RULE_QUOTA_CREATED = "allocation_rule_quota_created";
-    public static final String TYPE_QUOTA_RANKING_CRITERION_ADDED = "quota_ranking_criterion_added";
+    public static final String TYPE_USER_CREATED =
+        "user_created";
+    public static final String TYPE_INFORMATION_CREATED =
+        "information_created";
+    public static final String TYPE_COURSE_APPLIED =
+        "course_applied";
+    public static final String TYPE_APPLICATION_STATUS_SET =
+        "application_status_set";
+    public static final String TYPE_COURSE_CREATED =
+        "course_created";
+    public static final String TYPE_COURSE_ALLOCATION_RULE_CREATED =
+        "course_allocation_rule_created";
+    public static final String TYPE_ALLOCATION_RULE_QUOTA_CREATED =
+        "allocation_rule_quota_created";
+    public static final String TYPE_QUOTA_RANKING_CRITERION_ADDED =
+        "quota_ranking_criterion_added";
 
     private String actionType;
     private String objectId;
@@ -60,14 +68,18 @@ public class JournalRecord extends HubObject {
      * Typ der Aktion.</br>
      * Konstanten:
      * <ul>
-     * <li><code>user_created</code>: neuer Benutzer erstellen
-     * <li><code>information_created</code>: Information erstellen
-     * <li><code>course_applied</code>: Studiengang bewerben
-     * <li><code>application_status_set</code>: Bewerbungstatus bearbeiten
-     * <li><code>course_created</code>: Studiengang anlegen
-     * <li><code>course_allocation_rule_created</code>: Vergabeschema anlegen
-     * <li><code>allocation_rule_quota_created</code>: Ranglsiten anlegen
-     * <li><code>quota_ranking_criterion_added</code>: Kriterium anlegen
+     * <li><code>user_created</code>: einen neuen Benutzer angelegt
+     * <li><code>information_created</code>: eine neue Information für einen Benutzer
+     *     angelegt
+     * <li><code>course_applied</code>: eine Bewerbung auf den Studiengang angelegt
+     * <li><code>application_status_set</code>: den Bewerbungstatus bearbeitet
+     * <li><code>course_created</code>: einen neuen Studiengang angelegt
+     * <li><code>course_allocation_rule_created</code>: eine neue Vergaberegel angelegt
+     *     und mit dem Studiengang verknüpft
+     * <li><code>allocation_rule_quota_created</code>: eine Quote erstellt und mit dem
+     *     Vergaberegel verknüpft
+     * <li><code>quota_ranking_criterion_added</code>: ein Kriterium zur Sortierung von
+     *     Bewerbern auf einer Rangliste verknüpft
      * </ul>
      */
     public String getActionType() {
