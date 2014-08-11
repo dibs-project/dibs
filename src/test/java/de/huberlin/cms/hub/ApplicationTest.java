@@ -10,9 +10,6 @@ import org.apache.commons.collections4.Predicate;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * @author Markus Michler
- */
 public class ApplicationTest extends HubTest {
     private Application application;
 
