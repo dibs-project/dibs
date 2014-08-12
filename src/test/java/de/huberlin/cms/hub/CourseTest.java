@@ -11,9 +11,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import de.huberlin.cms.hub.AllocationRule;
 
-/**
- * @author Markus Michler
- */
 public class CourseTest extends HubTest {
     @Test
     public void testCreateAllocationRule() {

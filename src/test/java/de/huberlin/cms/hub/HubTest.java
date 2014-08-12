@@ -27,8 +27,6 @@ import org.junit.rules.ExpectedException;
  * <p>
  * Die Konfiguration der Testumgebung wird aus der Datei <code>test.properties</code>
  * gelesen.
- *
- * @author Sven Pfaller
  */
 public abstract class HubTest {
     @Rule
