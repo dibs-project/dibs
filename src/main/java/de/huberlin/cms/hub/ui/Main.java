@@ -51,7 +51,9 @@ public class Main implements Closeable {
     @Override
     public void close() throws IOException {
         try {
-            this.db.close();
+            if (this.db != null) {
+                this.db.close();
+            }
         } catch (SQLException e) {
             throw new IOException(e);
         }
