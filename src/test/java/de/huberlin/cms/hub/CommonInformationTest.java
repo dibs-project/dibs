@@ -14,8 +14,6 @@ import org.junit.Test;
 /**
  * Extension API: Basisklasse für {@link Information}-Tests. Stellt allgemeine Tests der
  * {@link Information}-API bereit.
- *
- * @author Sven Pfaller
  */
 public abstract class CommonInformationTest extends HubTest {
     /**
