@@ -39,8 +39,14 @@
 
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-jetty-http</artifactId>
+            <artifactId>jersey-container-servlet</artifactId>
             <version>2.11</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+            <version>9.2.2.v20140723</version>
         </dependency>
 
         <dependency>
