@@ -11,10 +11,6 @@ import org.apache.commons.collections4.Predicate;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * @author Markus Michler
- * @author Sven Pfaller
- */
 public class ApplicationTest extends HubTest {
     private Application application;
 

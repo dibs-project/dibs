@@ -16,9 +16,6 @@ import org.junit.Test;
 import de.huberlin.cms.hub.JournalRecord.ActionType;
 import de.huberlin.cms.hub.JournalRecord.ObjectType;
 
-/**
- * @author Phuong Anh Ha
- */
 public class JournalTest extends HubTest {
     private Journal journal;
 

@@ -14,10 +14,6 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
-/**
- * @author Markus Michler
- * @author Sven Pfaller
- */
 public class CourseTest extends HubTest {
     @Test
     public void testCreateAllocationRule() {
