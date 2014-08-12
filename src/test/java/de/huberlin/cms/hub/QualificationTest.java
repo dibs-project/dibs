@@ -9,9 +9,6 @@ import java.util.HashMap;
 
 import org.junit.Before;
 
-/**
- * @author Sven Pfaller
- */
 public class QualificationTest extends CommonInformationTest {
     @Before
     public void before() {
