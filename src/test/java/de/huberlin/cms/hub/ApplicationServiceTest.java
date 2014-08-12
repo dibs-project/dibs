@@ -13,10 +13,6 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
-/**
- * @author Sven Pfaller
- * @author Phuong Anh Ha
- */
 public class ApplicationServiceTest extends HubTest {
     @Test
     public void testCreateUser() {

@@ -91,7 +91,7 @@ public class Qualification extends Information {
                 statement.setString(2, user.getId());
                 statement.setDouble(3, grade);
                 statement.executeUpdate();
-                service.getJournal().record(JournalRecord.TYPE_INFORMATION_CREATED,
+                service.getJournal().record(JournalRecord.ACTION_TYPE_INFORMATION_CREATED,
                     user.getId(), HubObject.getId(agent), id);
                 db.commit();
                 db.setAutoCommit(true);

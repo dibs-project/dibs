@@ -125,7 +125,7 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setString(3, email);
             statement.executeUpdate();
-            journal.record(JournalRecord.TYPE_USER_CREATED, null, null, id);
+            journal.record(JournalRecord.ACTION_TYPE_USER_CREATED, null, null, id);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getUser(id);
@@ -357,7 +357,7 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setInt(3, capacity);
             statement.executeUpdate();
-            journal.record(JournalRecord.TYPE_COURSE_CREATED, null, HubObject.getId(agent),
+            journal.record(JournalRecord.ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
                 name);
             this.db.commit();
             this.db.setAutoCommit(true);

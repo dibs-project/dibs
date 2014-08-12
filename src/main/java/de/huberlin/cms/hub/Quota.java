@@ -45,7 +45,7 @@ public class Quota extends HubObject {
             statement.setString(1, id);
             statement.setString(2, criterionId);
             statement.executeUpdate();
-            service.getJournal().record(JournalRecord.TYPE_QUOTA_RANKING_CRITERION_ADDED,
+            service.getJournal().record(JournalRecord.ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED,
                 this.id, HubObject.getId(agent), criterionId);
             db.commit();
             db.setAutoCommit(true);

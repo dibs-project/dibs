@@ -65,7 +65,7 @@ public class AllocationRule extends HubObject {
             statement.setString(2, this.id);
             statement.executeUpdate();
             this.quotaId = quotaId;
-            service.getJournal().record(JournalRecord.TYPE_ALLOCATION_RULE_QUOTA_CREATED,
+            service.getJournal().record(JournalRecord.ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED,
                 this.id, HubObject.getId(agent), quotaId);
             db.commit();
             db.setAutoCommit(true);

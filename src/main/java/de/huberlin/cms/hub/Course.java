@@ -60,7 +60,7 @@ public class Course extends HubObject {
             statement.setString(2, this.id);
             statement.executeUpdate();
             this.allocationRuleId = ruleId;
-            service.getJournal().record(JournalRecord.TYPE_COURSE_ALLOCATION_RULE_CREATED,
+            service.getJournal().record(JournalRecord.ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED,
                 this.id, HubObject.getId(agent), ruleId);
             db.commit();
             db.setAutoCommit(true);
@@ -109,7 +109,7 @@ public class Course extends HubObject {
                 statement.executeUpdate();
             }
 
-            service.getJournal().record(JournalRecord.TYPE_COURSE_APPLIED, this.id,
+            service.getJournal().record(JournalRecord.ACTION_TYPE_COURSE_APPLIED, this.id,
                 HubObject.getId(agent), applicationId);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);

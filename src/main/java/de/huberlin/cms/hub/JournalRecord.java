@@ -15,24 +15,24 @@ import java.sql.Timestamp;
  * @author Phuong Anh Ha
  */
 public class JournalRecord extends HubObject {
-    /**
-     * Typ der Aktion des Dienstes.
-     */
-    public static final String TYPE_USER_CREATED =
-        "user_created";
-    public static final String TYPE_INFORMATION_CREATED =
-        "information_created";
-    public static final String TYPE_COURSE_APPLIED =
-        "course_applied";
-    public static final String TYPE_APPLICATION_STATUS_SET =
-        "application_status_set";
-    public static final String TYPE_COURSE_CREATED =
-        "course_created";
-    public static final String TYPE_COURSE_ALLOCATION_RULE_CREATED =
+    /** Aktionstyp: einen neuen Benutzer angelegt. */
+    public static final String ACTION_TYPE_USER_CREATED = "user_created";
+    /** Aktionstyp: eine neue Information für einen Benutzer angelegt. */
+    public static final String ACTION_TYPE_INFORMATION_CREATED = "information_created";
+    /** Aktionstyp: eine Bewerbung auf den Studiengang angelegt. */
+    public static final String ACTION_TYPE_COURSE_APPLIED = "course_applied";
+    /** Aktionstyp: den Bewerbungstatus bearbeitet. */
+    public static final String ACTION_TYPE_APPLICATION_STATUS_SET = "application_status_set";
+    /** Aktionstyp: einen neuen Studiengang angelegt. */
+    public static final String ACTION_TYPE_COURSE_CREATED = "course_created";
+    /** Aktionstyp: eine neue Vergaberegel angelegt und mit dem Studiengang verknüpft. */
+    public static final String ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED =
         "course_allocation_rule_created";
-    public static final String TYPE_ALLOCATION_RULE_QUOTA_CREATED =
+    /** Aktionstyp: eine Quote erstellt und mit dem Vergaberegel verknüpft. */
+    public static final String ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED =
         "allocation_rule_quota_created";
-    public static final String TYPE_QUOTA_RANKING_CRITERION_ADDED =
+    /** Aktionstyp: ein Kriterium erstellt und zur Sortierung von Bewerbern auf einer Rangliste verknüpft. */
+    public static final String ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED =
         "quota_ranking_criterion_added";
 
     private String actionType;
@@ -65,22 +65,7 @@ public class JournalRecord extends HubObject {
     }
 
     /**
-     * Typ der Aktion.</br>
-     * Konstanten:
-     * <ul>
-     * <li><code>user_created</code>: einen neuen Benutzer angelegt
-     * <li><code>information_created</code>: eine neue Information für einen Benutzer
-     *     angelegt
-     * <li><code>course_applied</code>: eine Bewerbung auf den Studiengang angelegt
-     * <li><code>application_status_set</code>: den Bewerbungstatus bearbeitet
-     * <li><code>course_created</code>: einen neuen Studiengang angelegt
-     * <li><code>course_allocation_rule_created</code>: eine neue Vergaberegel angelegt
-     *     und mit dem Studiengang verknüpft
-     * <li><code>allocation_rule_quota_created</code>: eine Quote erstellt und mit dem
-     *     Vergaberegel verknüpft
-     * <li><code>quota_ranking_criterion_added</code>: ein Kriterium zur Sortierung von
-     *     Bewerbern auf einer Rangliste verknüpft
-     * </ul>
+     * Typ der Aktion.
      */
     public String getActionType() {
         return this.actionType;
@@ -94,10 +79,10 @@ public class JournalRecord extends HubObject {
     }
 
     /**
-     * ID des Nutzers, der die Aktion ausführt.
+     * Ausführender Benutzer.
      */
-    public String getAgentId() {
-        return this.agentId;
+    public User getAgent() {
+        return this.service.getUser(this.agentId);
     }
 
     /**

@@ -118,7 +118,7 @@ public class Application extends HubObject {
             statement.setString(1, status);
             statement.setString(2, this.id);
             statement.executeUpdate();
-            service.getJournal().record(JournalRecord.TYPE_APPLICATION_STATUS_SET,
+            service.getJournal().record(JournalRecord.ACTION_TYPE_APPLICATION_STATUS_SET,
                 this.id, HubObject.getId(agent), status);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);

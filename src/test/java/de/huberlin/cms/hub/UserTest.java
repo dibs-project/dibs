@@ -12,9 +12,6 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
-/**
- * @author Sven Pfaller
- */
 public class UserTest extends HubTest {
     @Test
     public void testCreateInformation() {
