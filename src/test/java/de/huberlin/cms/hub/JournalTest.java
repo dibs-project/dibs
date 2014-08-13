@@ -46,10 +46,10 @@ public class JournalTest extends HubTest {
     }
 
     @Test
-    public void testGetRecordsAgent() {
+    public void testGetRecordsByAgentId() {
         JournalRecord record =
             journal.record(JournalRecord.ACTION_TYPE_USER_CREATED, null, this.user.getId(), null);
-        List<JournalRecord> records = journal.getRecordsAgent(this.user.getId());
+        List<JournalRecord> records = journal.getRecordsByAgentId(this.user.getId());
         assertTrue(records.contains(record));
         for (JournalRecord r : records) {
             assertEquals(this.user, r.getAgent());
@@ -57,11 +57,11 @@ public class JournalTest extends HubTest {
     }
 
     @Test
-    public void testGetRecordsObject() {
+    public void testGetRecordsByObjectId() {
         String objectId = "application: 1";
         JournalRecord record =
             journal.record(JournalRecord.ACTION_TYPE_APPLICATION_STATUS_SET, objectId, null, null);
-        List<JournalRecord> records = journal.getRecordsObject(objectId);
+        List<JournalRecord> records = journal.getRecordsByObjectId(objectId);
         assertTrue(records.contains(record));
         for (JournalRecord r : records) {
             assertEquals(objectId, r.getObjectId());

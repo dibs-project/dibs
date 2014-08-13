@@ -87,7 +87,7 @@ public class Journal {
      * @param objectId ID des Objekts
      * @return Protokolleinträge des Objektes
      */
-    public List<JournalRecord> getRecordsObject(String objectId) {
+    public List<JournalRecord> getRecordsByObjectId(String objectId) {
         try {
             List<JournalRecord> journal = new ArrayList<JournalRecord>();
             PreparedStatement statement = null;
@@ -115,7 +115,7 @@ public class Journal {
      * @param agentId ID des ausführenden Nutzers
      * @return Protokolleinträge des Nutzers
      */
-    public List<JournalRecord> getRecordsAgent(String agentId) {
+    public List<JournalRecord> getRecordsByAgentId(String agentId) {
         try {
             List<JournalRecord> journal = new ArrayList<JournalRecord>();
             PreparedStatement statement = null;
