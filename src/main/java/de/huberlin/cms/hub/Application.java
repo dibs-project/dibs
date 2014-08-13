@@ -26,6 +26,7 @@ import de.huberlin.cms.hub.JournalRecord.ObjectType;
  * Bewerbung, mit der Benutzer am Zulassungsverfahren teilnehmen.
  *
  * @author Markus Michler
+ * @author Sven Pfaller
  */
 public class Application extends HubObject {
 
@@ -50,6 +51,37 @@ public class Application extends HubObject {
         this.userId = (String) args.get("user_id");
         this.courseId = (String) args.get("course_id");
         this.status = (String) args.get("status");
+    }
+
+    /**
+     * Gibt die Bewertung zurück, die sich auf das angegebene Kriterium bezieht.
+     *
+     * @param criterionId ID des Kriteriums
+     * @return Bewertung, die sich auf das angegebene Kriterium bezieht
+     */
+    public Evaluation getEvaluationByCriterionId(String criterionId) {
+        try {
+            PreparedStatement statement = this.service.getDb().prepareStatement(
+                "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?");
+            statement.setString(1, this.id);
+            statement.setString(2, criterionId);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new IllegalArgumentException(
+                    "illegal criterionId: evaluation does not exist");
+            }
+            HashMap<String, Object> args = new HashMap<String, Object>();
+            args.put("id", results.getString("id"));
+            args.put("application_id", results.getString("application_id"));
+            args.put("criterion_id", results.getString("criterion_id"));
+            args.put("information_id", results.getString("information_id"));
+            args.put("value", results.getObject("value"));
+            args.put("status", results.getString("status"));
+            args.put("service", this.service);
+            return new Evaluation(args);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
     /**
@@ -92,7 +124,7 @@ public class Application extends HubObject {
                 args.put("application_id", results.getString("application_id"));
                 args.put("criterion_id", results.getString("criterion_id"));
                 args.put("information_id", results.getString("information_id"));
-                args.put("value", results.getDouble("value"));
+                args.put("value", results.getObject("value"));
                 args.put("status", results.getString("status"));
                 args.put("service", this.service);
                 evaluations.add(new Evaluation(args));
@@ -128,6 +160,19 @@ public class Application extends HubObject {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+    }
+
+    void assignInformation(Information information) {
+        // ordnet eine Information der Bewerbung (bzw. den entsprechenden Bewertungen) zu
+        HashMap<String, Object> filter = new HashMap<String, Object>();
+        filter.put("required_information_type_id", information.getType().getId());
+        for (Evaluation evaluation : this.getEvaluations(filter, null)) {
+            evaluation.assignInformation(information);
+        }
+    }
+
+    void userInformationCreated(User user, Information information) {
+        this.assignInformation(information);
     }
 
     /**

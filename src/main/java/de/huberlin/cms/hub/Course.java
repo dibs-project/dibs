@@ -10,7 +10,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.List;
 import java.util.Random;
 
@@ -94,6 +93,7 @@ public class Course extends HubObject {
             statement.setString(3, this.id);
             statement.setString(4, Application.STATUS_INCOMPLETE);
             statement.executeUpdate();
+            Application application = this.service.getApplication(applicationId);
 
             // Bewertung für jedes Kriterium der Verteilungsregel erstellen
             // NOTE: Query kann noch optimiert werden
@@ -106,17 +106,25 @@ public class Course extends HubObject {
                 statement.setString(1, id);
                 statement.setString(2, applicationId);
                 statement.setString(3, criterion.getId());
-                statement.setNull(4, Types.VARCHAR);
-                statement.setNull(5, Types.DOUBLE);
+                statement.setString(4, null);
+                statement.setObject(5, null);
                 statement.setString(6, Evaluation.STATUS_INFORMATION_MISSING);
                 statement.executeUpdate();
+            }
+
+            // Vorhandene Informationen der Bewerbung zuordnen
+            // NOTE: Query kann noch optimiert werden
+            List<Information> informationSet =
+                this.service.getUser(userId).getInformationSet(null);
+            for (Information information : informationSet) {
+                application.assignInformation(information);
             }
 
             service.getJournal().record(ActionType.COURSE_APPLIED, ObjectType.COURSE,
                 this.id, HubObject.getId(agent), applicationId);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);
-            return service.getApplication(applicationId);
+            return application;
 
         } catch (SQLException e) {
             throw new IOError(e);
