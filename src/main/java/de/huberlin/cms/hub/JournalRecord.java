@@ -19,7 +19,7 @@ public class JournalRecord extends HubObject {
     public static final String ACTION_TYPE_USER_CREATED = "user_created";
     /** Aktionstyp: eine neue Information für einen Benutzer angelegt. */
     public static final String ACTION_TYPE_INFORMATION_CREATED = "information_created";
-    /** Aktionstyp: eine Bewerbung fuer den Studiengang angelegt. */
+    /** Aktionstyp: eine Bewerbung für den Studiengang angelegt. */
     public static final String ACTION_TYPE_COURSE_APPLIED = "course_applied";
     /** Aktionstyp: den Bewerbungstatus bearbeitet. */
     public static final String ACTION_TYPE_APPLICATION_STATUS_SET = "application_status_set";
