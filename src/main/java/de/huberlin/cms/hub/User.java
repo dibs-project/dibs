@@ -51,7 +51,14 @@ public class User extends HubObject {
         if (type == null) {
             throw new IllegalArgumentException("illegal typeId: unknown");
         }
-        return type.create(args, this, agent);
+        Information information = type.create(args, this, agent);
+
+        // Pseudo-Ereignis auslösen
+        for (Application application : this.getApplications(null)) {
+            application.userInformationCreated(this, information);
+        }
+
+        return information;
     }
 
     /**

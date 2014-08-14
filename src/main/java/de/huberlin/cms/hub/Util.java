@@ -9,7 +9,6 @@ package de.huberlin.cms.hub;
  * TODO: dokumentieren
  *
  * @author Sven Pfaller
- * @author Phuong Anh Ha
  */
 public class Util {
     /**
@@ -23,13 +22,5 @@ public class Util {
      */
     public static <T extends Comparable<T>> boolean isInRange(T value, T min, T max) {
         return value.compareTo(min) >= 0 && value.compareTo(max) <= 0;
-    }
-
-    /**
-     * TODO: dokumentieren
-     * @see Enum#valueOf
-     */
-    public static <T extends Enum<T>> T valueOfEnum(Class<T> enumType, String name) {
-        return name != null ? Enum.valueOf(enumType, name) : null;
     }
 }
