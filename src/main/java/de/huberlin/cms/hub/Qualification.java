@@ -43,6 +43,11 @@ public class Qualification extends Information {
         return this.grade;
     }
 
+    @Override
+    public Information.Type getType() {
+        return this.service.getInformationTypes().get("qualification");
+    }
+
     /**
      * Beschreibung des Informationstyps Hochschulreife.
      *
