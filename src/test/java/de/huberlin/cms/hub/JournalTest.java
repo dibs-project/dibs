@@ -13,9 +13,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.huberlin.cms.hub.JournalRecord.ActionType;
-import de.huberlin.cms.hub.JournalRecord.ObjectType;
-
 public class JournalTest extends HubTest {
     private Journal journal;
 
@@ -27,14 +24,14 @@ public class JournalTest extends HubTest {
     @Test
     public void testRecord() {
         JournalRecord record =
-            journal.record(ActionType.USER_CREATED, null, null, null, null);
-        assertEquals(ActionType.USER_CREATED, record.getActionType());
+            journal.record(ApplicationService.ACTION_TYPE_USER_CREATED, null, null, null);
+        assertEquals(ApplicationService.ACTION_TYPE_USER_CREATED, record.getActionType());
     }
 
     @Test
     public void testGetRecord() {
         JournalRecord record =
-            journal.record(ActionType.USER_CREATED, null, null, null, null);
+            journal.record(ApplicationService.ACTION_TYPE_USER_CREATED, null, null, null);
         assertEquals(record, journal.getRecord(record.getId()));
     }
 
@@ -46,27 +43,25 @@ public class JournalTest extends HubTest {
     }
 
     @Test
-    public void testGetRecordsUser() {
+    public void testGetRecordsByAgentId() {
         JournalRecord record =
-            journal.record(ActionType.USER_CREATED, null, null, this.user.getId(), null);
-        List<JournalRecord> records = journal.getRecords(this.user.getId());
+            journal.record(ApplicationService.ACTION_TYPE_USER_CREATED, null, this.user.getId(), null);
+        List<JournalRecord> records = journal.getRecordsByAgentId(this.user.getId());
         assertTrue(records.contains(record));
         for (JournalRecord r : records) {
-            assertEquals(this.user.getId(), r.getUserId());
+            assertEquals(this.user, r.getAgent());
         }
     }
 
     @Test
-    public void testGetRecordsObjectNonNullObjectId() {
-        this.exception.expect(IllegalArgumentException.class);
-        this.exception.expectMessage("objectId");
-        journal.getRecords(null, "foo");
-    }
-
-    @Test
-    public void testGetRecordsObjectNullObjectId() {
-        this.exception.expect(NullPointerException.class);
-        this.exception.expectMessage("objectId");
-        journal.getRecords(ObjectType.USER, null);
+    public void testGetRecordsByObjectId() {
+        String objectId = "application:1";
+        JournalRecord record =
+            journal.record(ApplicationService.ACTION_TYPE_APPLICATION_STATUS_SET, objectId, null, null);
+        List<JournalRecord> records = journal.getRecordsByObjectId(objectId);
+        assertTrue(records.contains(record));
+        for (JournalRecord r : records) {
+            assertEquals(objectId, r.getObjectId());
+        }
     }
 }

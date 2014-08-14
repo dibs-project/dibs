@@ -14,9 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import de.huberlin.cms.hub.JournalRecord.ActionType;
-import de.huberlin.cms.hub.JournalRecord.ObjectType;
-
 /**
  * Quote, welche die Kriterien für die Ranglistenerstellung für einen Teil der Plätze
  * eines Studiengangs beinhaltet.
@@ -48,8 +45,8 @@ public class Quota extends HubObject {
             statement.setString(1, id);
             statement.setString(2, criterionId);
             statement.executeUpdate();
-            service.getJournal().record(ActionType.QUOTA_RANKING_CRITERION_ADDED,
-                ObjectType.QUOTA, this.id, HubObject.getId(agent), criterionId);
+            service.getJournal().record(ApplicationService.ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED,
+                this.id, HubObject.getId(agent), criterionId);
             db.commit();
             db.setAutoCommit(true);
         } catch (SQLException e) {
