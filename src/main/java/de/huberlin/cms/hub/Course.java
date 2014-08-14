@@ -122,7 +122,7 @@ public class Course extends HubObject {
                 HubObject.getId(agent), applicationId);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);
-            return service.getApplication(applicationId);
+            return application;
 
         } catch (SQLException e) {
             throw new IOError(e);
