@@ -22,10 +22,6 @@ import java.util.Random;
  * @author Markus Michler
  */
 public class AllocationRule extends HubObject {
-    /** Aktionstyp: Quote erstellt und mit der Vergaberegel verknüpft. */
-    public static final String ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED =
-        "allocation_rule_quota_created";
-
     private String quotaId;
 
     AllocationRule(String id, ApplicationService service) {
@@ -69,7 +65,7 @@ public class AllocationRule extends HubObject {
             statement.setString(2, this.id);
             statement.executeUpdate();
             this.quotaId = quotaId;
-            service.getJournal().record(ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED,
+            service.getJournal().record(ApplicationService.ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED,
                 this.id, HubObject.getId(agent), quotaId);
             db.commit();
             db.setAutoCommit(true);

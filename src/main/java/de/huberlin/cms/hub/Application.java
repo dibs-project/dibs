@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Sven Pfaller
  */
 public class Application extends HubObject {
+
     // Konstanten für den Bewerbungsstatus
     public static final String STATUS_INCOMPLETE = "incomplete";
     public static final String STATUS_COMPLETE = "complete";
