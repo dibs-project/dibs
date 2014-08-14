@@ -21,6 +21,9 @@ import java.util.List;
  * @author Markus Michler
  */
 public class Quota extends HubObject {
+    /** Aktionstyp: Kriterium zur Sortierung von Bewerbern mit Quote verknüpft. */
+    public static final String ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED =
+        "quota_ranking_criterion_added";
     private final String name;
     private final int percentage;
 
@@ -45,7 +48,7 @@ public class Quota extends HubObject {
             statement.setString(1, id);
             statement.setString(2, criterionId);
             statement.executeUpdate();
-            service.getJournal().record(JournalRecord.ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED,
+            service.getJournal().record(ApplicationService.ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED,
                 this.id, HubObject.getId(agent), criterionId);
             db.commit();
             db.setAutoCommit(true);

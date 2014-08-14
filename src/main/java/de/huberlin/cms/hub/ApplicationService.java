@@ -36,6 +36,26 @@ import org.apache.commons.collections4.Predicate;
  * @author Sven Pfaller
  */
 public class ApplicationService {
+    /** Aktionstyp: neuer Benutzer angelegt. */
+    public static final String ACTION_TYPE_USER_CREATED = "user_created";
+    /** Aktionstyp: neue Information für einen Benutzer angelegt. */
+    public static final String ACTION_TYPE_INFORMATION_CREATED = "information_created";
+    /** Aktionstyp: neuer Studiengang angelegt. */
+    public static final String ACTION_TYPE_COURSE_CREATED = "course_created";
+    /** Aktionstyp: neue Vergaberegel angelegt und mit dem Studiengang verknüpft. */
+    public static final String ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED =
+        "course_allocation_rule_created";
+    /** Aktionstyp: Bewerbung für den Studiengang angelegt. */
+    public static final String ACTION_TYPE_COURSE_APPLIED = "course_applied";
+    /** Aktionstyp: Bewerbungstatus bearbeitet. */
+    public static final String ACTION_TYPE_APPLICATION_STATUS_SET = "application_status_set";
+    /** Aktionstyp: Quote erstellt und mit der Vergaberegel verknüpft. */
+    public static final String ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED =
+        "allocation_rule_quota_created";
+    /** Aktionstyp: Kriterium zur Sortierung von Bewerbern mit Quote verknüpft. */
+    public static final String ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED =
+        "quota_ranking_criterion_added";
+
     /** Unterstützte Filter für {@link #getCriteria(Map, User)}. */
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =
         new HashSet<String>(Arrays.asList("required_information_type_id"));
@@ -125,7 +145,7 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setString(3, email);
             statement.executeUpdate();
-            journal.record(JournalRecord.ACTION_TYPE_USER_CREATED, null, null, id);
+            journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getUser(id);
@@ -357,7 +377,7 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setInt(3, capacity);
             statement.executeUpdate();
-            journal.record(JournalRecord.ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
+            journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
                 name);
             this.db.commit();
             this.db.setAutoCommit(true);

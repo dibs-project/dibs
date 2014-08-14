@@ -10,7 +10,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.List;
 import java.util.Random;
 
@@ -60,7 +59,8 @@ public class Course extends HubObject {
             statement.setString(2, this.id);
             statement.executeUpdate();
             this.allocationRuleId = ruleId;
-            service.getJournal().record(JournalRecord.ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED,
+            service.getJournal().record(
+                ApplicationService.ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED,
                 this.id, HubObject.getId(agent), ruleId);
             db.commit();
             db.setAutoCommit(true);
@@ -118,8 +118,8 @@ public class Course extends HubObject {
                 application.assignInformation(information);
             }
 
-            service.getJournal().record(JournalRecord.ACTION_TYPE_COURSE_APPLIED, this.id,
-                HubObject.getId(agent), applicationId);
+            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_APPLIED,
+                this.id, HubObject.getId(agent), applicationId);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);
             return application;
