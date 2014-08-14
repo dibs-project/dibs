@@ -21,7 +21,6 @@ import java.util.List;
  * @author Markus Michler
  */
 public class Quota extends HubObject {
-
     private final String name;
     private final int percentage;
 
