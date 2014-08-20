@@ -9,8 +9,9 @@ import static java.util.Collections.unmodifiableMap;
 import static org.apache.commons.collections4.CollectionUtils.filter;
 
 import java.io.IOError;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -56,6 +57,9 @@ public class ApplicationService {
     public static final String ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED =
         "quota_ranking_criterion_added";
 
+    // TODO: document
+    public static final String STORAGE_FORMAT = "0";
+
     /** Unterstützte Filter für {@link #getCriteria(Map, User)}. */
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =
         new HashSet<String>(Arrays.asList("required_information_type_id"));
@@ -66,29 +70,61 @@ public class ApplicationService {
     private HashMap<String, Information.Type> informationTypes;
     private HashMap<String, Criterion> criteria;
 
-    /**
-     * Stellt eine Verbindung zur Datenbank her.
-     *
-     * @param config Konfiguration. Folgende Einstellungen können gesetzt werden:
-     *     <ul>
-     *         <li>
-     *             db_url: Datenbank-URL in JDBC-Form (siehe
-     *             {@link DriverManager#getConnection}). Der Standardwert ist
-     *             "jdbc:postgresql://localhost:5432/hub".
-     *         </li>
-     *         <li>db_user: Benutzername für die Datenbank. Der Standardwert ist "".</li>
-     *         <li>db_password: Passwort für die Datenbank. Der Standardwert ist "".</li>
-     *     </ul>
-     * @return geöffnete Datenbankverbindung
-     * @throws SQLException falls die Verbindung zur Datenbank fehlschlägt
-     * @see DriverManager#getConnection
-     */
-    public static Connection openDatabase(Properties config) throws SQLException {
-        String url = config.getProperty("db_url", "jdbc:postgresql://localhost:5432/hub");
-        String user = config.getProperty("db_user", "");
-        String password = config.getProperty("db_password", "");
-        Connection db = DriverManager.getConnection(url, user, password);
-        return db;
+    // TODO: document
+    public static void setupDatabase(Connection db, boolean clear) {
+        try {
+
+            db.setAutoCommit(false);
+            PreparedStatement statement;
+
+            if (clear) {
+                // TODO: Tabellen automatisch aus hub.sql lesen
+                String[] tables = {"user", "settings", "quota", "quota_ranking_criteria",
+                    "allocation_rule", "course", "journal_record", "qualification",
+                    "application", "evaluation"};
+                for (String table : tables) {
+                    statement = db.prepareStatement(
+                        String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
+                    statement.executeUpdate();
+                }
+            }
+
+            InputStreamReader reader = new InputStreamReader(
+                ApplicationService.class.getResourceAsStream("/hub.sql"));
+            StringBuilder str = new StringBuilder();
+            char[] buffer = new char[4096];
+            int n = 0;
+            while ((n = reader.read(buffer)) != -1) {
+                str.append(buffer, 0, n);
+            }
+            String sql = str.toString();
+
+            try {
+                statement = db.prepareStatement(sql);
+                statement.execute();
+            } catch (SQLException e) {
+                // Syntax Error or Access Rule Violation
+                if (e.getSQLState().startsWith("42")) {
+                    db.rollback();
+                    db.setAutoCommit(true);
+                    throw new IllegalStateException("database not empty");
+                } else {
+                    throw e;
+                }
+            }
+
+            db.commit();
+            db.setAutoCommit(true);
+
+        } catch (IOException e) {
+            throw new IOError(e);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    public static void setupDatabase(Connection db) {
+        ApplicationService.setupDatabase(db, false);
     }
 
     /**

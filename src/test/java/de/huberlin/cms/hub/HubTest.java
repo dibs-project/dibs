@@ -7,11 +7,9 @@ package de.huberlin.cms.hub;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOError;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -71,8 +69,10 @@ public abstract class HubTest {
             // ignorieren
         }
 
-        this.db = ApplicationService.openDatabase(this.config);
-        this.initDatabase();
+        this.db = DriverManager.getConnection((String) config.getProperty("db_url"),
+            (String) config.getProperty("db_user"),
+            (String) config.getProperty("db_password"));
+        ApplicationService.setupDatabase(this.db, true);
 
         this.service = new ApplicationService(this.db, this.config);
         this.user = this.service.createUser("Jen", "barber@example.org");
@@ -86,44 +86,6 @@ public abstract class HubTest {
     public void commonAfter() throws SQLException {
         if (this.db != null) {
             this.db.close();
-        }
-    }
-
-    private void initDatabase() {
-        try {
-
-            this.db.setAutoCommit(false);
-            PreparedStatement statement;
-
-            // TODO: Tabellen automatisch aus hub.sql lesen
-            String[] tables = {"user", "settings", "quota", "quota_ranking_criteria",
-                "allocation_rule", "course", "journal_record", "qualification",
-                 "application", "evaluation"};
-            for (String table : tables) {
-                statement = this.db.prepareStatement(
-                    String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
-                statement.executeUpdate();
-            }
-
-            InputStreamReader reader =
-                new InputStreamReader(this.getClass().getResourceAsStream("/hub.sql"));
-            StringBuilder str = new StringBuilder();
-            char[] buffer = new char[4096];
-            int n = 0;
-            while ((n = reader.read(buffer)) != -1) {
-                str.append(buffer, 0, n);
-            }
-            String sql = str.toString();
-
-            statement = this.db.prepareStatement(sql);
-            statement.execute();
-            this.db.commit();
-            this.db.setAutoCommit(true);
-
-        } catch (IOException e) {
-            throw new IOError(e);
-        } catch (SQLException e) {
-            throw new IOError(e);
         }
     }
 }

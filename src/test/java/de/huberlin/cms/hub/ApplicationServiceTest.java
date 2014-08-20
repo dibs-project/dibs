@@ -15,6 +15,12 @@ import org.junit.Test;
 
 public class ApplicationServiceTest extends HubTest {
     @Test
+    public void testSetupDatabaseNonEmpty() {
+        this.exception.expect(IllegalStateException.class);
+        ApplicationService.setupDatabase(this.db);
+    }
+
+    @Test
     public void testCreateUser() {
         String email = "moss@example.org";
         User user = this.service.createUser("Maurice", email);
