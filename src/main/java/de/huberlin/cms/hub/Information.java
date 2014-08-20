@@ -23,11 +23,16 @@ public abstract class Information extends HubObject {
     }
 
     /**
-     * ID des zugehörigen Benutzers.
+     * Zugehöriger Benutzer.
      */
-    public String getUserId() {
-        return this.userId;
+    public User getUser() {
+        return this.service.getUser(this.userId);
     }
+
+    /**
+     * Typ dieser Information.
+     */
+    public abstract Information.Type getType();
 
     /**
      * Beschreibung eines Informationstyps.

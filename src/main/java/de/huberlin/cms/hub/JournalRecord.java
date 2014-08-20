@@ -15,47 +15,19 @@ import java.sql.Timestamp;
  * @author Phuong Anh Ha
  */
 public class JournalRecord extends HubObject {
-    /**
-     * Typ der Aktion des Dienstes.
-     */
-    public enum ActionType {
-        USER_CREATED,
-        INFORMATION_CREATED,
-        COURSE_APPLIED,
-        APPLICATION_STATUS_SET,
-        COURSE_CREATED,
-        COURSE_ALLOCATION_RULE_CREATED,
-        ALLOCATION_RULE_QUOTA_CREATED,
-        QUOTA_RANKING_CRITERION_ADDED
-    };
 
-    /**
-     * Typ des Objekts des Dienstes.
-     */
-    public enum ObjectType {
-        USER,
-        INFORMATION,
-        APPLICATION,
-        COURSE,
-        ALLOCATION_RULE,
-        QUOTA
-    };
-
-    private ActionType actionType;
-    private ObjectType objectType;
+    private String actionType;
     private String objectId;
-    private String userId;
+    private String agentId;
     private Timestamp time;
     private String detail;
 
-    JournalRecord(String id, ActionType actionType, ObjectType objectType,
-            String objectId, String userId, Timestamp time, String detail,
-            ApplicationService service) {
+    JournalRecord(String id, String actionType, String objectId, String userId,
+            Timestamp time, String detail, ApplicationService service) {
         super(id, service);
         this.actionType = actionType;
-        this.objectType = objectType;
         this.objectId = objectId;
-        this.userId = userId;
+        this.agentId = userId;
         this.time = time;
         this.detail = detail;
     }
@@ -64,10 +36,9 @@ public class JournalRecord extends HubObject {
         // initialisiert den Eintrag über den Datenbankcursor
         this(
             results.getString("id"),
-            ActionType.valueOf(results.getString("action_type")),
-            Util.valueOfEnum(ObjectType.class, results.getString("object_type")),
+            results.getString("action_type"),
             results.getString("object_id"),
-            results.getString("user_id"),
+            results.getString("agent_id"),
             results.getTimestamp("time"),
             results.getString("detail"),
             service
@@ -77,15 +48,8 @@ public class JournalRecord extends HubObject {
     /**
      * Typ der Aktion.
      */
-    public ActionType getActionType() {
+    public String getActionType() {
         return this.actionType;
-    }
-
-    /**
-     * Typ des Objekts, das die Aktion ausführt.
-     */
-    public ObjectType getObjectType() {
-        return this.objectType;
     }
 
     /**
@@ -96,10 +60,10 @@ public class JournalRecord extends HubObject {
     }
 
     /**
-     * ID des Nutzers, der die Aktion ausführt.
+     * Ausführender Benutzer.
      */
-    public String getUserId() {
-        return this.userId;
+    public User getAgent() {
+        return this.agentId != null ? this.service.getUser(this.agentId) : null;
     }
 
     /**
