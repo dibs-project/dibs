@@ -15,7 +15,6 @@ import java.util.Properties;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
@@ -65,8 +64,8 @@ public class Main implements Closeable {
     }
 
     @GET
-    @Path("applications/{id}")
-    public String application(@PathParam("id") String id) {
-        return "foo " + id + " bar";
+    @Path("courses")
+    public String courses() {
+        return this.service.getCourses().toString();
     }
 }
