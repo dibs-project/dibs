@@ -16,6 +16,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+
 /**
  * Respräsentiert das Protokollbuch, welches die gesamten Prozessaktionen des
  * Bewerbungsdienstes erfasst.
@@ -73,7 +75,7 @@ public class Journal {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException("illegal id: record does not exist");
+                throw new ObjectNotFoundException(id);
             }
             return new JournalRecord(results, this.service);
         } catch (SQLException e) {

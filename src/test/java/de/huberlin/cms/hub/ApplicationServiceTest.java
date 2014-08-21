@@ -13,6 +13,8 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
+import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+
 public class ApplicationServiceTest extends HubTest {
     @Test
     public void testCreateUser() {
@@ -36,8 +38,7 @@ public class ApplicationServiceTest extends HubTest {
 
     @Test
     public void testGetUserNonExisting() {
-        this.exception.expect(IllegalArgumentException.class);
-        this.exception.expectMessage("id");
+        this.exception.expect(ObjectNotFoundException.class);
         this.service.getUser("foo");
     }
 
@@ -82,8 +83,7 @@ public class ApplicationServiceTest extends HubTest {
 
     @Test
     public void testGetCourseNonExisting() {
-        this.exception.expect(IllegalArgumentException.class);
-        this.exception.expectMessage("id");
+        this.exception.expect(ObjectNotFoundException.class);
         this.service.getCourse("foo");
     }
 
