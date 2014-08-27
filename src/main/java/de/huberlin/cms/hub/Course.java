@@ -19,6 +19,7 @@ import java.util.Random;
 
 import de.huberlin.cms.hub.HubException.CannotPublishException;
 import de.huberlin.cms.hub.HubException.CannotRetractException;
+import de.huberlin.cms.hub.HubException.PublishedModificationException;
 import de.huberlin.cms.hub.HubException.UnpublishedException;
 
 /**
@@ -56,6 +57,12 @@ public class Course extends HubObject {
      * @return angelegte und verknüpfte Vergaberegel
      */
     public AllocationRule createAllocationRule(User agent) {
+        //FIXME auch das anlegen neuer quoten verhindern?
+        if (published) {
+            throw new PublishedModificationException(getId());
+            //FIXME ändern in Datenbankabfrage, transaktion serializable
+            //oder: locking-mechanismus auf objektebene für publish, siehe methode
+        }
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -170,6 +177,7 @@ public class Course extends HubObject {
      * Publiziert den Studiengang.
      */
     public void publish(User agent) {
+        //FIXME Strategien zum concurrent editing bzgl. publishing in die doku
         if (getAllocationRule() == null) {
             throw new CannotPublishException(getId(), "AllocationRule missing");
         }
