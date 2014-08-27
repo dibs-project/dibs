@@ -11,11 +11,10 @@ package de.huberlin.cms.hub;
  * @author Markus Michler
  */
 @SuppressWarnings("serial")
-public class HubException extends RuntimeException {
+public abstract class HubException extends RuntimeException {
     protected String code;
 
-    public HubException(String code, String message) {
-        super(message);
+    public HubException(String code) {
         this.code = code;
     }
 
@@ -24,15 +23,25 @@ public class HubException extends RuntimeException {
     }
 
     /**
-     * Wird von get-Methoden ausgelöst, wenn kein Objekt mit der übergebenen ID in der
-     * Datenbank existiert.
+     * Fehler, der anzeigt, dass ein Objekt nicht im System existiert.
+     * Wird vorallem von get-Methoden ausgelöst.
      *
      * @author Markus Michler
      */
     public static class ObjectNotFoundException extends HubException {
+        private String objectId;
+
         public ObjectNotFoundException(String objectId) {
-            super("object_not_found", "Object '" + objectId
-                + "' does not exist in the database.");
+            super("object_not_found");
+            this.objectId = objectId;
+        }
+
+        public String getObjectId() {
+            return objectId;
+        }
+
+        public String getMessage() {
+            return "Object '" + objectId + "' does not exist.";
         }
     }
 }
