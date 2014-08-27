@@ -13,6 +13,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+
 public class JournalTest extends HubTest {
     private Journal journal;
 
@@ -37,8 +39,7 @@ public class JournalTest extends HubTest {
 
     @Test
     public void testGetRecordNonExisting() {
-        this.exception.expect(IllegalArgumentException.class);
-        this.exception.expectMessage("id");
+        this.exception.expect(ObjectNotFoundException.class);
         journal.getRecord("foo");
     }
 
