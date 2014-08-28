@@ -23,13 +23,10 @@ import javax.ws.rs.core.UriBuilder;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.ServerProperties;
 
 public class Ui extends ResourceConfig {
     public Ui(@Context ServletContext servletContext) {
         // Jersey konfigurieren
-        // TODO: Tracing konfigurierbar machen
-        this.property(ServerProperties.TRACING, "ALL");
         this.packages(this.getClass().getPackage().getName());
 
         // Standardwerte der Konfiguration laden
