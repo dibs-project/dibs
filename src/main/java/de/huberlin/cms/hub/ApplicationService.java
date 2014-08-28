@@ -27,6 +27,8 @@ import java.util.Set;
 
 import org.apache.commons.collections4.Predicate;
 
+import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
  * <p>
@@ -205,7 +207,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException("illegal id: user does not exist");
+                throw new ObjectNotFoundException(id);
             }
             return new User(results, this);
         } catch (SQLException e) {
@@ -254,7 +256,7 @@ public class ApplicationService {
         String typeId = id.split(":")[0];
         Information.Type type = this.informationTypes.get(typeId);
         if (type == null) {
-            throw new IllegalArgumentException("illegal id: information does not exist");
+            throw new ObjectNotFoundException(id);
         }
 
         try {
@@ -263,8 +265,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException(
-                    "illegal id: information does not exist");
+                throw new ObjectNotFoundException(id);
             }
             return type.newInstance(results, this);
         } catch (SQLException e) {
@@ -285,8 +286,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException(
-                    "illegal id: application does not exist");
+                throw new ObjectNotFoundException(id);
             }
             HashMap<String, Object> args = new HashMap<String, Object>();
             args.put("id", results.getString("id"));
@@ -314,8 +314,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException(
-                    "illegal id: evaluation does not exist");
+                throw new ObjectNotFoundException(id);
             }
             HashMap<String, Object> args = new HashMap<String, Object>();
             args.put("id", results.getString("id"));
@@ -438,7 +437,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException("illegal id: course does not exist");
+                throw new ObjectNotFoundException(id);
             }
             return new Course(results, this);
         } catch (SQLException e) {
@@ -479,8 +478,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException(
-                    "illegal id: allocation rule does not exist");
+                throw new ObjectNotFoundException(id);
             }
             return new AllocationRule(results, this);
         } catch (SQLException e) {
@@ -501,7 +499,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException("illegal id: quota does not exist");
+                throw new ObjectNotFoundException(id);
             }
             HashMap<String, Object> args = new HashMap<String, Object>();
             args.put("id", id);

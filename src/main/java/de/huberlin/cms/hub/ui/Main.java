@@ -60,7 +60,7 @@ public class Main implements Closeable {
 
     @GET
     public String index() {
-        return "Hello World! " + this.service.toString();
+        return "HUB\n";
     }
 
     @GET
