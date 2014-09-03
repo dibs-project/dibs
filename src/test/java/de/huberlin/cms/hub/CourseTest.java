@@ -67,10 +67,17 @@ public class CourseTest extends HubTest {
     }
 
     @Test
-    public void testModifyPublished() {
+    public void testCreateAllocationRulePublished() {
         exception.expect(PublishedModificationException.class);
         course.publish(null);
         course.createAllocationRule(null);
+    }
+
+    @Test
+    public void testCreateQuotaPublished() {
+        exception.expect(PublishedModificationException.class);
+        course.publish(null);
+        course.getAllocationRule().createQuota("Performance", 100, null);
     }
 
     @Test

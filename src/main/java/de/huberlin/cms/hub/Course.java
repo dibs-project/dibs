@@ -57,11 +57,8 @@ public class Course extends HubObject {
      * @return angelegte und verknüpfte Vergaberegel
      */
     public AllocationRule createAllocationRule(User agent) {
-        //FIXME auch das anlegen neuer quoten verhindern?
         if (published) {
             throw new PublishedModificationException(getId());
-            //FIXME ändern in Datenbankabfrage, transaktion serializable
-            //oder: locking-mechanismus auf objektebene für publish, siehe methode
         }
         try {
             Connection db = service.getDb();
@@ -177,7 +174,6 @@ public class Course extends HubObject {
      * Publiziert den Studiengang.
      */
     public void publish(User agent) {
-        //FIXME Strategien zum concurrent editing bzgl. publishing in die doku
         if (getAllocationRule() == null) {
             throw new CannotPublishException(getId(), "AllocationRule missing");
         }

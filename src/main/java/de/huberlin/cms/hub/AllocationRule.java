@@ -14,6 +14,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
 
+import de.huberlin.cms.hub.HubException.PublishedModificationException;
+
 /**
  * Regel, nach der Studienplätze für einen Studiengang an die Bewerber vergeben werden
  * (Vergabeschema).
@@ -49,6 +51,10 @@ public class AllocationRule extends HubObject {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
+        Course course = getCourse();
+        if (course.isPublished()) {
+            throw new PublishedModificationException(course.getId());
+        }
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -80,5 +86,21 @@ public class AllocationRule extends HubObject {
      */
     public Quota getQuota() {
         return quotaId != null ? service.getQuota(quotaId) : null;
+    }
+
+    /**
+     * Studiengang, zu dem diese Vergaberegel gehört.
+     */
+    public Course getCourse() {
+        try {
+            String sql = "SELECT * FROM Course WHERE allocation_rule_id = ?";
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            results.next();
+            return new Course(results, service);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 }
