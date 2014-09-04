@@ -46,62 +46,89 @@ public abstract class HubException extends RuntimeException {
     }
 
     /**
-     * Basisklasse für Exceptions bezüglich Publikationsoperationen.
+     * Basisklasse für Exceptions im Zusammenhang mit Publikationsoperationen.
      *
      * @author Markus Michler
      */
     public abstract static class PublicationException extends HubException {
-        public PublicationException(String code, String message) {
-            super(code, message);
+        protected String objectId;
+
+        public PublicationException(String code, String objectId) {
+            super(code);
+            this.objectId = objectId;
+        }
+
+        public String getObjectId() {
+            return objectId;
         }
     }
 
     /**
-     * Wird geworfen, wenn versucht wird, ein publiziertes Objekt zu verändern.
+     * Exception die auftritt, wenn versucht wurde, ein publiziertes Objekt zu verändern.
      *
      * @author Markus Michler
      */
     public static class PublishedModificationException extends PublicationException {
         public PublishedModificationException(String objectId) {
-            super("cannot_modify_published_object", "Object '" + objectId +
-                "' has already been published. Retract publication before modification.");
+            super("cannot_modify_published_object", objectId);
+        }
+
+        public String getMessage() {
+            return "Object '" + objectId + "' has already been published."
+                + " Retract publication before modification.";
         }
     }
 
     /**
-     * Wird geworfen, wenn versucht wird, auf einem unpubliziertem Objekt eine nur für
-     * publizierte Objekte vorgesehene Operation durchzuführen.
+     * Exception die auftritt, wenn versucht wird, auf einem unpubliziertem Objekt eine
+     * nur für publizierte Objekte vorgesehene Operation durchzuführen.
      *
      * @author Markus Michler
      */
     public static class UnpublishedException extends PublicationException {
         public UnpublishedException(String objectId) {
-            super("not_published", "Object '" + objectId +
-                "' is unpublished: Cannot perform requested action.");
+            super("not_published", objectId);
+        }
+
+        public String getMessage() {
+            return "Object '" + objectId + "' is unpublished: Cannot perform requested action.";
         }
     }
 
     /**
-     * Wird geworfen, wenn versucht wird, ein unvollständiges Objekt zu publizieren.
+     * Exception die auftritt, wenn versucht wird, ein unvollständiges Objekt zu publizieren.
      *
      * @author Markus Michler
      */
     public static class CannotPublishException extends PublicationException {
+        private String reason;
+
         public CannotPublishException(String objectId, String reason) {
-            super("unable_to_publish", "Unable to publish object '" + objectId +
-                "' in its present state. Reason: " + reason + ".");
+            super("unable_to_publish", objectId);
+            this.reason = reason;
+        }
+
+        public String getMessage() {
+            return "Unable to publish object '" + objectId +
+                "' in its present state. Reason: " + reason + ".";
         }
     }
 
     /**
-     * Wird geworfen, wenn eine Publikation nicht mehr rückgängig gemacht werden kann.
+     * Exception die auftritt, wenn eine Publikation nicht mehr rückgängig gemacht werden kann.
      *
      * @author Markus Michler
      */
     public static class CannotRetractException extends PublicationException {
+        private String reason;
+
         public CannotRetractException(String objectId, String reason) {
-            super("unable_to_retract", "Unable to retract publication of object '"
-                + objectId + "'. Reason: " + reason + ".");
+            super("unable_to_retract", objectId);
+        }
+
+        public String getMessage() {
+            return "Unable to retract publication of object '"
+                + objectId + "'. Reason: " + reason + ".";
         }
     }
 }
