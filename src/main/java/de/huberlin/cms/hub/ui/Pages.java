@@ -37,7 +37,7 @@ import de.huberlin.cms.hub.User;
 
 @Path("/")
 @Produces("text/plain")
-public class Main implements Closeable {
+public class Pages implements Closeable {
 
     private static final Set<String> CREATE_COURSE_FORM_KEYS =
         new HashSet<String>(Arrays.asList("name", "capacity"));
@@ -46,7 +46,7 @@ public class Main implements Closeable {
     private ApplicationService service;
     private User agent;
 
-    public Main(@Context Configuration config, @Context CloseableService closeables) {
+    public Pages(@Context Configuration config, @Context CloseableService closeables) {
         // NOTE: can be optimized a lot
 
         closeables.add(this);
