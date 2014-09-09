@@ -12,10 +12,12 @@ import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -23,6 +25,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
@@ -35,6 +38,10 @@ import de.huberlin.cms.hub.User;
 @Path("/")
 @Produces("text/plain")
 public class Main implements Closeable {
+
+    private static final Set<String> CREATE_COURSE_FORM_KEYS =
+        new HashSet<String>(Arrays.asList("name", "capacity"));
+
     private Connection db;
     private ApplicationService service;
     private User agent;
@@ -89,15 +96,20 @@ public class Main implements Closeable {
     @GET
     @Path("create-course")
     public String createCourse() {
-        return this.createCourse(null);
+        return this.createCourse((IllegalArgumentException) null);
     }
 
     @POST
     @Path("create-course")
-    public Response createCourse(@DefaultValue("") @FormParam("name") String name,
-            @FormParam("capacity") int capacity) {
+    public Response createCourse(MultivaluedMap<String, String> form) {
+        if (!form.keySet().containsAll(CREATE_COURSE_FORM_KEYS)) {
+            throw new BadRequestException();
+        }
+
         try {
-            Course course = this.service.createCourse(name, capacity, this.agent);
+            int capacity = Integer.parseInt(form.getFirst("capacity"));
+            Course course =
+                this.service.createCourse(form.getFirst("name"), capacity, this.agent);
             URI url = UriBuilder.fromUri("/courses/{id}").build(course.getId());
             return Response.seeOther(url).build();
         } catch (IllegalArgumentException e) {
