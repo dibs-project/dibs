@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -30,13 +31,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.jersey.server.CloseableService;
+import org.glassfish.jersey.server.mvc.Viewable;
 
 import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.User;
 
 @Path("/")
-@Produces("text/plain")
+@Produces("text/html")
 public class Pages implements Closeable {
 
     private static final Set<String> CREATE_COURSE_FORM_KEYS =
@@ -45,6 +47,7 @@ public class Pages implements Closeable {
     private Connection db;
     private ApplicationService service;
     private User agent;
+    private HashMap<String, Object> model;
 
     public Pages(@Context Configuration config, @Context CloseableService closeables) {
         // NOTE: can be optimized a lot
@@ -63,6 +66,10 @@ public class Pages implements Closeable {
         p.putAll(config.getProperties());
         this.service = new ApplicationService(this.db, p);
         this.agent = null;
+
+        this.model = new HashMap<String, Object>();
+        this.model.put("service", this.service);
+        this.model.put("agent", this.agent);
     }
 
     @Override
@@ -77,26 +84,27 @@ public class Pages implements Closeable {
     }
 
     @GET
-    public String index() {
-        return "HUB\n";
+    public Viewable index() {
+        return new Viewable("/index.ftl", this.model);
     }
 
     @GET
     @Path("courses")
-    public String courses() {
-        return this.service.getCourses().toString() + "\n";
+    public Viewable courses() {
+        return new Viewable("/courses.ftl", this.model);
     }
 
     @GET
     @Path("courses/{id}")
-    public String course(@PathParam("id") String id) {
-        return this.service.getCourse(id).toString() + "\n";
+    public Viewable course(@PathParam("id") String id) {
+        this.model.put("course", this.service.getCourse(id));
+        return new Viewable("/course.ftl", this.model);
     }
 
     @GET
     @Path("create-course")
-    public String createCourse() {
-        return this.createCourse((IllegalArgumentException) null);
+    public Viewable createCourse() {
+        return this.createCourse(null, null);
     }
 
     @POST
@@ -113,12 +121,14 @@ public class Pages implements Closeable {
             URI url = UriBuilder.fromUri("/courses/{id}").build(course.getId());
             return Response.seeOther(url).build();
         } catch (IllegalArgumentException e) {
-            return Response.status(400).entity(this.createCourse(e)).build();
+            return Response.status(400).entity(this.createCourse(form, e)).build();
         }
     }
 
-    private String createCourse(IllegalArgumentException error) {
-        return String.format("create-course-view\n%s",
-            error != null ? error.toString() + "\n" : "");
+    private Viewable createCourse(MultivaluedMap<String, String> form,
+            IllegalArgumentException error) {
+        this.model.put("form", form);
+        this.model.put("error", error);
+        return new Viewable("/create-course.ftl", this.model);
     }
 }
