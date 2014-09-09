@@ -26,6 +26,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 
 import de.huberlin.cms.hub.ApplicationService;
 
@@ -35,6 +36,8 @@ public class Ui extends ResourceConfig {
     public Ui(@Context ServletContext servletContext) {
         // Jersey konfigurieren
         this.packages(this.getClass().getPackage().getName());
+        this.register(FreemarkerMvcFeature.class);
+        this.property(FreemarkerMvcFeature.TEMPLATES_BASE_PATH, "/templates");
 
         // Standardwerte der Konfiguration laden
         try {
