@@ -9,8 +9,9 @@ import static java.util.Collections.unmodifiableMap;
 import static org.apache.commons.collections4.CollectionUtils.filter;
 
 import java.io.IOError;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,7 +27,7 @@ import java.util.Set;
 
 import org.apache.commons.collections4.Predicate;
 
-import de.huberlin.cms.hub.JournalRecord.ActionType;
+import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
@@ -38,6 +39,29 @@ import de.huberlin.cms.hub.JournalRecord.ActionType;
  * @author Sven Pfaller
  */
 public class ApplicationService {
+    /** Aktionstyp: neuer Benutzer angelegt. */
+    public static final String ACTION_TYPE_USER_CREATED = "user_created";
+    /** Aktionstyp: neue Information für einen Benutzer angelegt. */
+    public static final String ACTION_TYPE_INFORMATION_CREATED = "information_created";
+    /** Aktionstyp: neuer Studiengang angelegt. */
+    public static final String ACTION_TYPE_COURSE_CREATED = "course_created";
+    /** Aktionstyp: neue Vergaberegel angelegt und mit dem Studiengang verknüpft. */
+    public static final String ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED =
+        "course_allocation_rule_created";
+    /** Aktionstyp: Bewerbung für den Studiengang angelegt. */
+    public static final String ACTION_TYPE_COURSE_APPLIED = "course_applied";
+    /** Aktionstyp: Bewerbungstatus bearbeitet. */
+    public static final String ACTION_TYPE_APPLICATION_STATUS_SET = "application_status_set";
+    /** Aktionstyp: Quote erstellt und mit der Vergaberegel verknüpft. */
+    public static final String ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED =
+        "allocation_rule_quota_created";
+    /** Aktionstyp: Kriterium zur Sortierung von Bewerbern mit Quote verknüpft. */
+    public static final String ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED =
+        "quota_ranking_criterion_added";
+
+    // TODO: document
+    public static final String STORAGE_FORMAT = "0";
+
     /** Unterstützte Filter für {@link #getCriteria(Map, User)}. */
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =
         new HashSet<String>(Arrays.asList("required_information_type_id"));
@@ -48,29 +72,61 @@ public class ApplicationService {
     private HashMap<String, Information.Type> informationTypes;
     private HashMap<String, Criterion> criteria;
 
-    /**
-     * Stellt eine Verbindung zur Datenbank her.
-     *
-     * @param config Konfiguration. Folgende Einstellungen können gesetzt werden:
-     *     <ul>
-     *         <li>
-     *             db_url: Datenbank-URL in JDBC-Form (siehe
-     *             {@link DriverManager#getConnection}). Der Standardwert ist
-     *             "jdbc:postgresql://localhost:5432/hub".
-     *         </li>
-     *         <li>db_user: Benutzername für die Datenbank. Der Standardwert ist "".</li>
-     *         <li>db_password: Passwort für die Datenbank. Der Standardwert ist "".</li>
-     *     </ul>
-     * @return geöffnete Datenbankverbindung
-     * @throws SQLException falls die Verbindung zur Datenbank fehlschlägt
-     * @see DriverManager#getConnection
-     */
-    public static Connection openDatabase(Properties config) throws SQLException {
-        String url = config.getProperty("db_url", "jdbc:postgresql://localhost:5432/hub");
-        String user = config.getProperty("db_user", "");
-        String password = config.getProperty("db_password", "");
-        Connection db = DriverManager.getConnection(url, user, password);
-        return db;
+    // TODO: document
+    public static void setupDatabase(Connection db, boolean clear) {
+        try {
+
+            db.setAutoCommit(false);
+            PreparedStatement statement;
+
+            if (clear) {
+                // TODO: Tabellen automatisch aus hub.sql lesen
+                String[] tables = {"user", "settings", "quota", "quota_ranking_criteria",
+                    "allocation_rule", "course", "journal_record", "qualification",
+                    "application", "evaluation"};
+                for (String table : tables) {
+                    statement = db.prepareStatement(
+                        String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
+                    statement.executeUpdate();
+                }
+            }
+
+            InputStreamReader reader = new InputStreamReader(
+                ApplicationService.class.getResourceAsStream("/hub.sql"));
+            StringBuilder str = new StringBuilder();
+            char[] buffer = new char[4096];
+            int n = 0;
+            while ((n = reader.read(buffer)) != -1) {
+                str.append(buffer, 0, n);
+            }
+            String sql = str.toString();
+
+            try {
+                statement = db.prepareStatement(sql);
+                statement.execute();
+            } catch (SQLException e) {
+                // Syntax Error or Access Rule Violation
+                if (e.getSQLState().startsWith("42")) {
+                    db.rollback();
+                    db.setAutoCommit(true);
+                    throw new IllegalStateException("database not empty");
+                } else {
+                    throw e;
+                }
+            }
+
+            db.commit();
+            db.setAutoCommit(true);
+
+        } catch (IOException e) {
+            throw new IOError(e);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    public static void setupDatabase(Connection db) {
+        ApplicationService.setupDatabase(db, false);
     }
 
     /**
@@ -127,7 +183,7 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setString(3, email);
             statement.executeUpdate();
-            journal.record(ActionType.USER_CREATED, null, null, null, id);
+            journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getUser(id);
@@ -151,7 +207,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException("illegal id: user does not exist");
+                throw new ObjectNotFoundException(id);
             }
             return new User(results, this);
         } catch (SQLException e) {
@@ -200,7 +256,7 @@ public class ApplicationService {
         String typeId = id.split(":")[0];
         Information.Type type = this.informationTypes.get(typeId);
         if (type == null) {
-            throw new IllegalArgumentException("illegal id: information does not exist");
+            throw new ObjectNotFoundException(id);
         }
 
         try {
@@ -209,8 +265,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException(
-                    "illegal id: information does not exist");
+                throw new ObjectNotFoundException(id);
             }
             return type.newInstance(results, this);
         } catch (SQLException e) {
@@ -231,8 +286,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException(
-                    "illegal id: application does not exist");
+                throw new ObjectNotFoundException(id);
             }
             HashMap<String, Object> args = new HashMap<String, Object>();
             args.put("id", results.getString("id"));
@@ -260,15 +314,14 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException(
-                    "illegal id: evaluation does not exist");
+                throw new ObjectNotFoundException(id);
             }
             HashMap<String, Object> args = new HashMap<String, Object>();
             args.put("id", results.getString("id"));
             args.put("application_id", results.getString("application_id"));
             args.put("criterion_id", results.getString("criterion_id"));
             args.put("information_id", results.getString("information_id"));
-            args.put("value", results.getDouble("value"));
+            args.put("value", results.getObject("value"));
             args.put("status", results.getString("status"));
             args.put("service", this);
             return new Evaluation(args);
@@ -359,7 +412,7 @@ public class ApplicationService {
             statement.setString(2, name);
             statement.setInt(3, capacity);
             statement.executeUpdate();
-            journal.record(ActionType.COURSE_CREATED, null, null, HubObject.getId(agent),
+            journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
                 name);
             this.db.commit();
             this.db.setAutoCommit(true);
@@ -384,7 +437,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException("illegal id: course does not exist");
+                throw new ObjectNotFoundException(id);
             }
             return new Course(results, this);
         } catch (SQLException e) {
@@ -425,8 +478,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException(
-                    "illegal id: allocation rule does not exist");
+                throw new ObjectNotFoundException(id);
             }
             return new AllocationRule(results, this);
         } catch (SQLException e) {
@@ -447,7 +499,7 @@ public class ApplicationService {
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             if (!results.next()) {
-                throw new IllegalArgumentException("illegal id: quota does not exist");
+                throw new ObjectNotFoundException(id);
             }
             HashMap<String, Object> args = new HashMap<String, Object>();
             args.put("id", id);
@@ -513,7 +565,7 @@ public class ApplicationService {
     /**
      * Verfügbare Kriterien (indiziert nach ID).
      */
-    public Map<String, Criterion> getCriteria() { 
-        return unmodifiableMap(this.criteria); 
+    public Map<String, Criterion> getCriteria() {
+        return unmodifiableMap(this.criteria);
     }
 }
