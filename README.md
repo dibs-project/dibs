@@ -15,7 +15,7 @@ HUB bauen
 
 Führe einfach folgenden Befehl aus um HUB zu bauen:
 
-    mvn package
+    mvn compile
 
 HUB einrichten
 --------------
