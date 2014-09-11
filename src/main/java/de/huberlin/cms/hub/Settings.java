@@ -16,16 +16,16 @@ import java.util.Date;
  */
 public class Settings extends HubObject {
     private String semester;
-    private String storageFormat;
+    private String storageVersion;
     private Date dosvApplicantsUpdateTime;
     private Date dosvApplicationsUpdateTime;
 
-    Settings(String id, String semester, String storageFormat,
+    Settings(String id, String semester, String storageVersion,
             Date dosvApplicantsUpdateTime, Date dosvApplicationsUpdateTime,
             ApplicationService service) {
         super(id, service);
         this.semester = semester;
-        this.storageFormat = storageFormat;
+        this.storageVersion = storageVersion;
         this.dosvApplicantsUpdateTime = dosvApplicantsUpdateTime;
         this.dosvApplicationsUpdateTime = dosvApplicationsUpdateTime;
     }
@@ -33,7 +33,7 @@ public class Settings extends HubObject {
     Settings(ResultSet results, ApplicationService service) throws SQLException {
         // initialisiert die Einstellungen über den Datenbankcursor
         this(results.getString("id"), results.getString("semester"),
-            results.getString("storage_format"),
+            results.getString("storage_version"),
             results.getTimestamp("dosv_applicants_update_time"),
             results.getTimestamp("dosv_applications_update_time"), service);
     }
@@ -47,9 +47,11 @@ public class Settings extends HubObject {
         return semester;
     }
 
-    // TODO: document
-    public String getStorageFormat() {
-        return storageFormat;
+    /**
+     * Aktuelle Version des Datenspeichers.
+     */
+    public String getStorageVersion() {
+        return storageVersion;
     }
 
     /**

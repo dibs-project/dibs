@@ -72,7 +72,7 @@ public abstract class HubTest {
         this.db = DriverManager.getConnection((String) config.getProperty("db_url"),
             (String) config.getProperty("db_user"),
             (String) config.getProperty("db_password"));
-        ApplicationService.setupDatabase(this.db, true);
+        ApplicationService.setupStorage(this.db, true);
 
         this.service = new ApplicationService(this.db, this.config);
         this.user = this.service.createUser("Jen", "barber@example.org");
