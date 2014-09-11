@@ -9,6 +9,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOError;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.ConsoleHandler;
@@ -24,10 +27,14 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.glassfish.jersey.server.ResourceConfig;
 
+import de.huberlin.cms.hub.ApplicationService;
+
 /**
  * @author Sven Pfaller
  */
 public class Ui extends ResourceConfig {
+    private static Logger logger = Logger.getLogger(Ui.class.getPackage().getName());
+
     public Ui(@Context ServletContext servletContext) {
         // Jersey konfigurieren
         this.packages(this.getClass().getPackage().getName());
@@ -48,6 +55,31 @@ public class Ui extends ResourceConfig {
         while (names.hasMoreElements()) {
             String name = names.nextElement();
             this.property(name, servletContext.getInitParameter(name));
+        }
+
+        // Datenbank einrichten
+        Connection db;
+        try {
+            db = DriverManager.getConnection((String) this.getProperty("db_url"),
+                (String) this.getProperty("db_user"),
+                (String) this.getProperty("db_password"));
+        } catch (SQLException e) {
+            logger.severe("failed to connect to database");
+            throw new RuntimeException(e);
+        }
+
+        logger.info("setting up storage…");
+        try {
+            ApplicationService.setupStorage(db);
+            logger.info("storage set up");
+        } catch (IllegalStateException e) {
+            logger.info("storage already set up");
+        }
+
+        try {
+            db.close();
+        } catch (SQLException e) {
+            throw new IOError(e);
         }
     }
 

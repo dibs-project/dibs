@@ -64,4 +64,10 @@ public class Pages implements Closeable {
     public String index() {
         return "HUB\n";
     }
+
+    @GET
+    @Path("courses")
+    public String courses() {
+        return this.service.getCourses().toString() + '\n';
+    }
 }
