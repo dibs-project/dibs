@@ -68,12 +68,12 @@ public class Ui extends ResourceConfig {
             throw new RuntimeException(e);
         }
 
-        logger.info("setting up database…");
+        logger.info("setting up storage…");
         try {
-            ApplicationService.setupDatabase(db);
-            logger.info("database set up");
+            ApplicationService.setupStorage(db);
+            logger.info("storage set up");
         } catch (IllegalStateException e) {
-            logger.info("database already set up");
+            logger.info("storage already set up");
         }
 
         try {

@@ -17,9 +17,9 @@ import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 
 public class ApplicationServiceTest extends HubTest {
     @Test
-    public void testSetupDatabaseNonEmpty() {
+    public void testSetupStorageNonEmpty() {
         this.exception.expect(IllegalStateException.class);
-        ApplicationService.setupDatabase(this.db);
+        ApplicationService.setupStorage(this.db);
     }
 
     @Test
