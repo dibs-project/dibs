@@ -39,6 +39,9 @@ import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
  * @author Sven Pfaller
  */
 public class ApplicationService {
+    /** Benötigte Version des Datenspeichers. */
+    public static final String STORAGE_VERSION = "0";
+
     /** Aktionstyp: neuer Benutzer angelegt. */
     public static final String ACTION_TYPE_USER_CREATED = "user_created";
     /** Aktionstyp: neue Information für einen Benutzer angelegt. */
@@ -59,9 +62,6 @@ public class ApplicationService {
     public static final String ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED =
         "quota_ranking_criterion_added";
 
-    // TODO: document
-    public static final String STORAGE_FORMAT = "0";
-
     /** Unterstützte Filter für {@link #getCriteria(Map, User)}. */
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =
         new HashSet<String>(Arrays.asList("required_information_type_id"));
@@ -72,14 +72,14 @@ public class ApplicationService {
     private HashMap<String, Information.Type> informationTypes;
     private HashMap<String, Criterion> criteria;
 
-    // TODO: document
-    public static void setupDatabase(Connection db, boolean clear) {
+    // TODO: dokumentieren
+    public static void setupStorage(Connection db, boolean overwrite) {
         try {
 
             db.setAutoCommit(false);
             PreparedStatement statement;
 
-            if (clear) {
+            if (overwrite) {
                 // TODO: Tabellen automatisch aus hub.sql lesen
                 String[] tables = {"user", "settings", "quota", "quota_ranking_criteria",
                     "allocation_rule", "course", "journal_record", "qualification",
@@ -125,8 +125,9 @@ public class ApplicationService {
         }
     }
 
-    public static void setupDatabase(Connection db) {
-        ApplicationService.setupDatabase(db, false);
+    // TODO: dokumentieren
+    public static void setupStorage(Connection db) {
+        ApplicationService.setupStorage(db, false);
     }
 
     /**
