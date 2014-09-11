@@ -68,6 +68,6 @@ public class Pages implements Closeable {
     @GET
     @Path("courses")
     public String courses() {
-        return this.service.getCourses().toString();
+        return this.service.getCourses().toString() + '\n';
     }
 }
