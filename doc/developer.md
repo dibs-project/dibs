@@ -17,3 +17,10 @@ HUB testen
 Führe einfach folgenden Befehl aus um alle Testfälle durch zu spielen:
 
     mvn test
+
+HUB-Entwicklungsserver ausführen
+--------------------------------
+
+Starte den HUB-Entwicklungsserver mit:
+
+    ./hub.sh
