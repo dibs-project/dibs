@@ -5,13 +5,14 @@
 
 package de.huberlin.cms.hub.ui;
 
+import static org.apache.commons.collections4.MapUtils.toProperties;
+
 import java.io.Closeable;
 import java.io.IOError;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -23,6 +24,9 @@ import org.glassfish.jersey.server.CloseableService;
 
 import de.huberlin.cms.hub.ApplicationService;
 
+/**
+ * @author Sven Pfaller
+ */
 @Path("/")
 @Produces("text/plain")
 public class Pages implements Closeable {
@@ -30,10 +34,9 @@ public class Pages implements Closeable {
     private ApplicationService service;
 
     public Pages(@Context Configuration config, @Context CloseableService closeables) {
-        // NOTE: can be optimized a lot
-
         closeables.add(this);
 
+        // NOTE: kann deutlich optimiert werden
         try {
             this.db = DriverManager.getConnection((String) config.getProperty("db_url"),
                 (String) config.getProperty("db_user"),
@@ -42,9 +45,8 @@ public class Pages implements Closeable {
             throw new IOError(e);
         }
 
-        Properties p = new Properties();
-        p.putAll(config.getProperties());
-        this.service = new ApplicationService(this.db, p);
+        this.service =
+            new ApplicationService(this.db, toProperties(config.getProperties()));
     }
 
     @Override

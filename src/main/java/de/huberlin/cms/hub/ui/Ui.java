@@ -24,6 +24,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.glassfish.jersey.server.ResourceConfig;
 
+/**
+ * @author Sven Pfaller
+ */
 public class Ui extends ResourceConfig {
     public Ui(@Context ServletContext servletContext) {
         // Jersey konfigurieren
@@ -50,6 +53,7 @@ public class Ui extends ResourceConfig {
 
     public static void main(String[] args) throws Exception {
         // Logging konfigurieren
+        // Format: "$Zeit $Level $Logger: $Nachricht[\n$Fehler]\n"
         System.setProperty("java.util.logging.SimpleFormatter.format",
             "%1$tT %4$s %3$s: %5$s%6$s%n");
         LogManager.getLogManager().reset();
@@ -60,13 +64,6 @@ public class Ui extends ResourceConfig {
         // Jetty-Logging konfigurieren
         System.setProperty("org.eclipse.jetty.util.log.class",
             "org.eclipse.jetty.util.log.JavaUtilLog");
-        Logger jettyLogger = Logger.getLogger("org.eclipse.jetty");
-        jettyLogger.setLevel(Level.INFO);
-
-        // Jersey-Logging konfigurieren
-        Logger jerseyTracingLogger =
-            Logger.getLogger("org.glassfish.jersey.tracing.general");
-        jerseyTracingLogger.setLevel(Level.FINE);
 
         Properties config = new Properties();
         try {
@@ -78,14 +75,13 @@ public class Ui extends ResourceConfig {
 
         int port = 8080;
         Server server = new Server(port);
-        // TODO: WebApp-Pfad konfigurierbar machen
+        // TODO: Pfad zur WebApp aus args lesen
         WebAppContext webapp = new WebAppContext("src/main/webapp", "/");
         for (String name : config.stringPropertyNames()) {
             webapp.setInitParameter(name, config.getProperty(name));
         }
         server.setHandler(webapp);
 
-        // TODO: HUB-Version ausgeben
         System.err.println("HUB");
         System.err.println(UriBuilder.fromUri("http://localhost:{port}/").build(port));
         server.start();
