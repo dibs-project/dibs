@@ -29,6 +29,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import de.huberlin.cms.hub.ApplicationService;
 
+/**
+ * @author Sven Pfaller
+ */
 public class Ui extends ResourceConfig {
     private static Logger logger = Logger.getLogger(Ui.class.getPackage().getName());
 
@@ -65,12 +68,12 @@ public class Ui extends ResourceConfig {
             throw new RuntimeException(e);
         }
 
-        logger.info("setting up database…");
+        logger.info("setting up storage…");
         try {
-            ApplicationService.setupDatabase(db);
-            logger.info("database set up");
+            ApplicationService.setupStorage(db);
+            logger.info("storage set up");
         } catch (IllegalStateException e) {
-            logger.info("database already set up");
+            logger.info("storage already set up");
         }
 
         try {
@@ -82,6 +85,7 @@ public class Ui extends ResourceConfig {
 
     public static void main(String[] args) throws Exception {
         // Logging konfigurieren
+        // Format: "$Zeit $Level $Logger: $Nachricht[\n$Fehler]\n"
         System.setProperty("java.util.logging.SimpleFormatter.format",
             "%1$tT %4$s %3$s: %5$s%6$s%n");
         LogManager.getLogManager().reset();
@@ -92,13 +96,6 @@ public class Ui extends ResourceConfig {
         // Jetty-Logging konfigurieren
         System.setProperty("org.eclipse.jetty.util.log.class",
             "org.eclipse.jetty.util.log.JavaUtilLog");
-        Logger jettyLogger = Logger.getLogger("org.eclipse.jetty");
-        jettyLogger.setLevel(Level.INFO);
-
-        // Jersey-Logging konfigurieren
-        Logger jerseyTracingLogger =
-            Logger.getLogger("org.glassfish.jersey.tracing.general");
-        jerseyTracingLogger.setLevel(Level.FINE);
 
         Properties config = new Properties();
         try {
@@ -110,14 +107,13 @@ public class Ui extends ResourceConfig {
 
         int port = 8080;
         Server server = new Server(port);
-        // TODO: WebApp-Pfad konfigurierbar machen
+        // TODO: Pfad zur WebApp aus args lesen
         WebAppContext webapp = new WebAppContext("src/main/webapp", "/");
         for (String name : config.stringPropertyNames()) {
             webapp.setInitParameter(name, config.getProperty(name));
         }
         server.setHandler(webapp);
 
-        // TODO: HUB-Version ausgeben
         System.err.println("HUB");
         System.err.println(UriBuilder.fromUri("http://localhost:{port}/").build(port));
         server.start();

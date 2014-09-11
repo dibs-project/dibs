@@ -5,6 +5,8 @@
 
 package de.huberlin.cms.hub.ui;
 
+import static org.apache.commons.collections4.MapUtils.toProperties;
+
 import java.io.Closeable;
 import java.io.IOError;
 import java.io.IOException;
@@ -35,6 +37,9 @@ import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.User;
 
+/**
+ * @author Sven Pfaller
+ */
 @Path("/")
 @Produces("text/plain")
 public class Pages implements Closeable {
@@ -47,10 +52,9 @@ public class Pages implements Closeable {
     private User agent;
 
     public Pages(@Context Configuration config, @Context CloseableService closeables) {
-        // NOTE: can be optimized a lot
-
         closeables.add(this);
 
+        // NOTE: kann deutlich optimiert werden
         try {
             this.db = DriverManager.getConnection((String) config.getProperty("db_url"),
                 (String) config.getProperty("db_user"),
@@ -59,9 +63,8 @@ public class Pages implements Closeable {
             throw new IOError(e);
         }
 
-        Properties p = new Properties();
-        p.putAll(config.getProperties());
-        this.service = new ApplicationService(this.db, p);
+        this.service =
+            new ApplicationService(this.db, toProperties(config.getProperties()));
         this.agent = null;
     }
 
