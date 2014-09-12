@@ -30,6 +30,12 @@ PostgreSQL-Superuser (oft `postgres`) folgende Befehle ausführst:
 Hier sind für den Benutzernamen, das Passwort und den Datenbanknamen "hub" gewählt, die
 Werte sind aber beliebig.
 
+Browser-Support
+---------------
+
+Wir unterstützen jeweils die aktuelle und eine vorhergende Version der bekannten Browser
+(Firefox, Chrome, Safari, Internet Explorer).
+
 Hergestellt mit
 ---------------
 
@@ -47,5 +53,6 @@ Hergestellt mit
  * FreeMarker (2.3) von Attila Szegedi, Daniel Dekany, Jonathan Revusky -
    http://freemarker.org/
  * Jetty (9.2) von Mort Bay Consulting Pty Ltd. - https://www.eclipse.org/jetty/
+ * Open Sans (1.1) von Google - http://opensans.com/
  * JUnit (4.11) von JUnit - http://junit.org/
  * Apache Maven (3.0) von The Apache Software Foundation - https://maven.apache.org/
