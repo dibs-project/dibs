@@ -24,3 +24,18 @@ HUB-Entwicklungsserver ausführen
 Starte den HUB-Entwicklungsserver mit:
 
     ./hub.sh
+
+Style-Richtlinien
+-----------------
+
+Farben:
+
+ * Text / Primär: #333
+ * Hintergrund:   #fff
+
+Größen:
+
+ * Zeilenhöhe:             1.50rem
+ * Margin / Padding:       1.50rem
+ * Enges Margin / Padding: 0.25rem
+ * Rahmenradius:           0.25rem
