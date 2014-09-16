@@ -3,4 +3,4 @@
  * der Stiftung für Hochsculzulassung (hochschulstart.de) befinden.
  *
  */
-package dosv;
+package de.huberlin.cms.dosv;
