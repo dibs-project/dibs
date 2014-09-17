@@ -26,7 +26,7 @@ import java.util.Set;
 
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.dbutils.handlers.MapHandler;
 
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
@@ -67,6 +67,7 @@ public class ApplicationService {
     private Journal journal;
     private HashMap<String, Information.Type> informationTypes;
     private HashMap<String, Criterion> criteria;
+    private QueryRunner query;
 
     /**
      * Stellt eine Verbindung zur Datenbank her.
@@ -118,6 +119,7 @@ public class ApplicationService {
         this.criteria = new HashMap<String, Criterion>();
         this.criteria.put("qualification", new QualificationCriterion("qualification",
             informationTypes.get("qualification"), this));
+        this.query =  new QueryRunner();
     }
 
     /**
@@ -462,15 +464,10 @@ public class ApplicationService {
      */
     public Quota getQuota(String id) {
         try {
-            QueryRunner query = new QueryRunner();
             String sql = "SELECT * FROM quota WHERE id = ?";
-            List mapList = (List) query.query(this.db, sql, new MapListHandler(), id);
-            HashMap<String, Object> map = (HashMap<String, Object>) mapList.get(0);
-            map.put("id", id);
-            map.put("name", map.get("name"));
-            map.put("percentage", map.get("percentage"));
-            map.put("service", this);
-            return new Quota(map);
+            HashMap<String, Object> args = (HashMap)this.query.query(this.db, sql, new MapHandler(), id);
+            args.put("service", this);
+            return new Quota(args);
         } catch (SQLException e) {
             throw new IOError(e);
         }

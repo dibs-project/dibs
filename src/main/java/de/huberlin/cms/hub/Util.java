@@ -23,4 +23,8 @@ public class Util {
     public static <T extends Comparable<T>> boolean isInRange(T value, T min, T max) {
         return value.compareTo(min) >= 0 && value.compareTo(max) <= 0;
     }
+    
+    public void setHubObjectHanlder(ApplicationService service) {
+        String id;
+    }
 }

@@ -46,10 +46,17 @@ public class AllocationRuleTest extends HubTest {
     }
 
     @Test
-    public void getQuotatest() {
+    public void testGetQuota() {
         Quota quota = rule.createQuota("Performance", 100, null);
         Quota quotaErg = this.service.getQuota(quota.getId());
         assertEquals(quota, quotaErg);
         assertEquals(100, quotaErg.getPercentage());
+    }
+
+    @Test()
+    public void testGetQuotaNotFound() {
+        this.exception.expect(NullPointerException.class);
+        this.exception.expectMessage("id");
+        this.service.getQuota("foo");
     }
 }
