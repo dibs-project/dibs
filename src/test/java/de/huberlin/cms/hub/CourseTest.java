@@ -14,10 +14,7 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
-import de.huberlin.cms.hub.HubException.CannotPublishException;
-import de.huberlin.cms.hub.HubException.CannotRetractException;
-import de.huberlin.cms.hub.HubException.PublishedModificationException;
-import de.huberlin.cms.hub.HubException.UnpublishedException;
+import de.huberlin.cms.hub.HubException.HubObjectIllegalStateException;
 
 public class CourseTest extends HubTest {
     @Test
@@ -54,38 +51,37 @@ public class CourseTest extends HubTest {
 
     @Test
     public void testApplyUnpublished() {
-        exception.expect(UnpublishedException.class);
+        exception.expect(HubObjectIllegalStateException.class);
         course.apply(user.getId(), null);
     }
 
     @Test
     public void testPublishIncomplete() {
-        exception.expect(CannotPublishException.class);
+        exception.expect(HubObjectIllegalStateException.class);
         Course course = this.service.createCourse("Computer Science", 500, null);
         course.publish(null);
-
     }
 
     @Test
     public void testCreateAllocationRulePublished() {
-        exception.expect(PublishedModificationException.class);
+        exception.expect(HubObjectIllegalStateException.class);
         course.publish(null);
         course.createAllocationRule(null);
     }
 
     @Test
     public void testCreateQuotaPublished() {
-        exception.expect(PublishedModificationException.class);
+        exception.expect(HubObjectIllegalStateException.class);
         course.publish(null);
         course.getAllocationRule().createQuota("Performance", 100, null);
     }
 
     @Test
-    public void testRetractApplied() {
-        exception.expect(CannotRetractException.class);
+    public void testUnpublishApplied() {
+        exception.expect(HubObjectIllegalStateException.class);
         course.publish(null);
         course.apply(user.getId(), null);
-        course.retractPublication(null);
+        course.unpublish(null);
     }
 
 

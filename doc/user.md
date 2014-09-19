@@ -12,7 +12,7 @@ Struktur:
   |--------------------| '----------' |-------------------|
   | register           |              | createInformation |
   | createUser         |              '-------------------'
-  | createCourse       | 
+  | createCourse       |
   '--------------------'
 
   .-------------. .-------------. .------------.
@@ -24,6 +24,8 @@ Struktur:
   |----------------------| |----------------| |---------------------| |-----------|
   | createAllocationRule | | createQuota    | | addRankingCriterion | | evaluate  |
   | apply                | '----------------' '---------------------' '-----------'
+  | publish              |
+  | retractPublication   |
   '----------------------'
 
   .---------.
@@ -41,6 +43,7 @@ Ablauf:
    .                   | createAllocationRule |
    .                   | createQuota          |
    .                   | addRankingCriterion  |
+   .                   | Course.publish       |
    . register          |                      |
    . createInformation |                      |
    . apply             |                      |

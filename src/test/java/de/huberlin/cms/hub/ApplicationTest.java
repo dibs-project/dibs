@@ -16,6 +16,7 @@ public class ApplicationTest extends HubTest {
 
     @Before
     public void before() throws Exception {
+        course.publish(null);
         application = course.apply(user.getId(), user);
     }
 
