@@ -14,7 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
 
-import de.huberlin.cms.hub.HubException.PublishedModificationException;
+import de.huberlin.cms.hub.HubException.HubObjectIllegalStateException;
 
 /**
  * Regel, nach der Studienplätze für einen Studiengang an die Bewerber vergeben werden
@@ -53,7 +53,7 @@ public class AllocationRule extends HubObject {
         }
         Course course = getCourse();
         if (course.isPublished()) {
-            throw new PublishedModificationException(course.getId());
+            throw new HubObjectIllegalStateException(course.getId());
         }
         try {
             Connection db = service.getDb();

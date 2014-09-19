@@ -43,6 +43,7 @@ Ablauf:
    .                   | createAllocationRule |
    .                   | createQuota          |
    .                   | addRankingCriterion  |
+   .                   | Course.publish       |
    . register          |                      |
    . createInformation |                      |
    . apply             |                      |
