@@ -60,7 +60,7 @@ public class ApplicationService {
     /** Aktionstyp: Kurs publiziert (zur Bewerbung freigegeben). */
     public static final String ACTION_TYPE_COURSE_PUBLISHED = "course_published";
     /** Aktionstyp: Kurspublikation zurückgezogen. */
-    public static final String COURSE_PUBLICATION_RETRACTED = "publication_retracted";
+    public static final String ACTION_TYPE_COURSE_UNPUBLISHED = "course_unpublished";
 
     /** Unterstützte Filter für {@link #getCriteria(Map, User)}. */
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =

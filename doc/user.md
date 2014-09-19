@@ -25,7 +25,7 @@ Struktur:
   | createAllocationRule | | createQuota    | | addRankingCriterion | | evaluate  |
   | apply                | '----------------' '---------------------' '-----------'
   | publish              |
-  | retractPublication   |
+  | unpublish            |
   '----------------------'
 
   .---------.
