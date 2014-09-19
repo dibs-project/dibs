@@ -210,7 +210,7 @@ public class Course extends HubObject {
             PreparedStatement statement = service.getDb().prepareStatement(sql);
             statement.setString(1, getId());
             statement.executeUpdate();
-            service.getJournal().record(ApplicationService.COURSE_PUBLICATION_RETRACTED,
+            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_UNPUBLISHED,
                 this.id, HubObject.getId(agent), null);
             db.commit();
             db.setAutoCommit(true);
