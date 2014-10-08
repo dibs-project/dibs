@@ -42,6 +42,13 @@ public class ApplicationServiceTest extends HubTest {
     }
 
     @Test
+    public void testGetApplicationNonExisting() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("id");
+        this.service.getApplication("foo");
+    }
+
+    @Test
     public void testSetSemester() {
         String semester = "2222SS";
         service.setSemester(semester);
@@ -85,6 +92,13 @@ public class ApplicationServiceTest extends HubTest {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("id");
         this.service.getCourse("foo");
+    }
+
+    @Test()
+    public void testGetQuotaNonExisting() {
+        this.exception.expect(IllegalArgumentException.class);
+        this.exception.expectMessage("id");
+        this.service.getQuota("foo");
     }
 
     @Test

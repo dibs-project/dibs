@@ -67,7 +67,7 @@ public class ApplicationService {
     private Journal journal;
     private HashMap<String, Information.Type> informationTypes;
     private HashMap<String, Criterion> criteria;
-    private QueryRunner query;
+    private QueryRunner queryRunner;
 
     /**
      * Stellt eine Verbindung zur Datenbank her.
@@ -119,7 +119,7 @@ public class ApplicationService {
         this.criteria = new HashMap<String, Criterion>();
         this.criteria.put("qualification", new QualificationCriterion("qualification",
             informationTypes.get("qualification"), this));
-        this.query =  new QueryRunner();
+        this.queryRunner =  new QueryRunner();
     }
 
     /**
@@ -249,19 +249,14 @@ public class ApplicationService {
     public Application getApplication(String id) {
         try {
             String sql = "SELECT * FROM application WHERE id = ?";
-            PreparedStatement statement = this.db.prepareStatement(sql);
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            HashMap<String, Object> args =
+                (HashMap<String, Object>)this.queryRunner.query(this.db, sql,
+                    new MapHandler(), id);
+            if (args == null) {
                 throw new IllegalArgumentException(
                     "illegal id: application does not exist");
             }
-            HashMap<String, Object> args = new HashMap<String, Object>();
-            args.put("id", results.getString("id"));
             args.put("service", this);
-            args.put("user_id", results.getString("user_id"));
-            args.put("course_id", results.getString("course_id"));
-            args.put("status", results.getString("status"));
             return new Application(args);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -277,21 +272,13 @@ public class ApplicationService {
      */
     public Evaluation getEvaluation(String id, User agent) {
         try {
-            PreparedStatement statement =
-                this.db.prepareStatement("SELECT * FROM evaluation WHERE id = ?");
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
-                throw new IllegalArgumentException(
-                    "illegal id: evaluation does not exist");
+            String sql = "SELECT * FROM evaluation WHERE id = ?";
+            HashMap<String, Object> args =
+                (HashMap<String, Object>) this.queryRunner.query(this.db, sql,
+                    new MapHandler(), id);
+            if (args == null) {
+                throw new IllegalArgumentException("illegal id: quota does not exist");
             }
-            HashMap<String, Object> args = new HashMap<String, Object>();
-            args.put("id", results.getString("id"));
-            args.put("application_id", results.getString("application_id"));
-            args.put("criterion_id", results.getString("criterion_id"));
-            args.put("information_id", results.getString("information_id"));
-            args.put("value", results.getObject("value"));
-            args.put("status", results.getString("status"));
             args.put("service", this);
             return new Evaluation(args);
         } catch (SQLException e) {
@@ -465,7 +452,12 @@ public class ApplicationService {
     public Quota getQuota(String id) {
         try {
             String sql = "SELECT * FROM quota WHERE id = ?";
-            HashMap<String, Object> args = (HashMap)this.query.query(this.db, sql, new MapHandler(), id);
+            HashMap<String, Object> args =
+                (HashMap<String, Object>)this.queryRunner.query(this.db, sql,
+                    new MapHandler(), id);
+            if (args == null) {
+                throw new IllegalArgumentException("illegal id: quota does not exist");
+            }
             args.put("service", this);
             return new Quota(args);
         } catch (SQLException e) {
