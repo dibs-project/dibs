@@ -7,6 +7,7 @@ CREATE TABLE "user" (
 CREATE TABLE settings (
     id VARCHAR(256) PRIMARY KEY,
     semester VARCHAR(6),
+    storage_version VARCHAR(256),
     dosv_applicants_update_time TIMESTAMP,
     dosv_applications_update_time TIMESTAMP
 );
@@ -67,4 +68,4 @@ CREATE TABLE evaluation (
     status VARCHAR(256) NOT NULL
 );
 
-INSERT INTO settings (id, semester) VALUES ('settings', '2014WS');
+INSERT INTO settings (id, semester, storage_version) VALUES ('settings', '2014WS', '0');
