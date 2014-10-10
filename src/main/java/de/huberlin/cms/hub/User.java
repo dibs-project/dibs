@@ -6,12 +6,16 @@
 package de.huberlin.cms.hub;
 
 import java.io.IOError;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import de.huberlin.cms.dosv.DosvAuthenticationException;
+import de.huberlin.cms.dosv.DosvSync;
 
 /**
  * Benutzer, der mit dem Bewerbungssystem interagiert.
@@ -22,17 +26,23 @@ import java.util.List;
 public class User extends HubObject {
     private String name;
     private String email;
+    private String dosvBid;
+    private String dosvBan;
 
-    User(String id, String name, String email, ApplicationService service) {
+    User(String id, String name, String email, String dosvBid, String dosvBan,
+        ApplicationService service) {
         super(id, service);
         this.name = name;
         this.email = email;
+        this.dosvBid = dosvBid;
+        this.dosvBan = dosvBan;
     }
 
     User(ResultSet results, ApplicationService service) throws SQLException {
         // initialisiert den Benutzer über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
-            results.getString("email"), service);
+            results.getString("email"), results.getString("dosv_bid"),
+            results.getString("dosv_ban"), service);
     }
 
     /**
@@ -115,6 +125,41 @@ public class User extends HubObject {
     }
 
     /**
+     * Verbindet den Benutzer mit dem System des DoSV. Schreibt bei Erfolg BID und BAN
+     * in die Datenbank.
+     *
+     * @param dosvBid DoSV Benutzer-ID
+     * @param dosvBan DOSV Benutzer-Autorisierungsnummer
+     *
+     * @return
+     * @throws DosvAuthenticationException
+     * @see {@link de.huberlin.cms.dosv.DosvSync#getUserStatus(String, String)}
+     */
+    public void connectToDosv(String dosvBid, String dosvBan, User agent)
+        throws DosvAuthenticationException {
+        DosvSync dosvSync = new DosvSync(service);
+        dosvSync.getUserStatus(dosvBid, dosvBan);
+        try {
+            Connection db = service.getDb();
+            db.setAutoCommit(false);
+            String sql = "UPDATE \"user\" SET dosv_bid = ?, dosv_ban = ? WHERE id = ?";
+            PreparedStatement statement = db.prepareStatement(sql);
+            statement.setString(1, dosvBid);
+            statement.setString(2, dosvBan);
+            statement.setString(3, id);
+            statement.executeUpdate();
+            this.dosvBid = dosvBid;
+            this.dosvBan = dosvBan;
+            service.getJournal().record(ApplicationService.APPLICATION_TYPE_USER_CONNECTED_TO_DOSV,
+                id, HubObject.getId(agent), null);
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
      * Name, mit dem der Benutzer von HUB angesprochen wird.
      */
     public String getName() {
@@ -126,5 +171,19 @@ public class User extends HubObject {
      */
     public String getEmail() {
         return this.email;
+    }
+
+    /**
+     * Bewerber-ID für das DoSV.
+     */
+    public String getDosvBid() {
+        return dosvBid;
+    }
+
+    /**
+     *  Bewerber-Authentifizierungs-Nummer für das DoSV.
+     */
+    public String getDosvBan() {
+        return dosvBan;
     }
 }

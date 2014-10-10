@@ -65,6 +65,8 @@ public class ApplicationService {
     public static final String ACTION_TYPE_COURSE_PUBLISHED = "course_published";
     /** Aktionstyp: Kurspublikation zurückgezogen. */
     public static final String ACTION_TYPE_COURSE_UNPUBLISHED = "course_unpublished";
+    /** Aktionstyp: Benutzer ist mit dem DoSV verbunden. */
+    public static final String APPLICATION_TYPE_USER_CONNECTED_TO_DOSV = "user_connected_to_dosv";
 
     /** Unterstützte Filter für {@link #getCriteria(Map, User)}. */
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =
@@ -144,12 +146,7 @@ public class ApplicationService {
     public ApplicationService(Connection db, Properties config) {
         this.db = db;
 
-        Properties defaults = new Properties();
-        defaults.setProperty("dosv_url",
-            "https://hsst.hochschulstart.de/hochschule/webservice/2/");
-        defaults.setProperty("dosv_user", "");
-        defaults.setProperty("dosv_password", "");
-        this.config = new Properties(defaults);
+        this.config = new Properties();
         this.config.putAll(config);
         this.journal = new Journal(this);
 
@@ -366,8 +363,9 @@ public class ApplicationService {
      *         dosv_url: URL zur DoSV-API. Der Standardwert ist
      *         "https://hsst.hochschulstart.de/hochschule/webservice/2/" (Testumgebung).
      *     </li>
-     *     <li>dosv_user: Benutzername für die DoSV-API. Der Standardwert ist "".</li>
-     *     <li>dosv_password: Passwort für die DoSV-API. Der Standardwert ist "".</li>
+     *     <li>dosv_user: Benutzername für die DoSV-API.</li>
+     *     <li>dosv_password: Passwort für die DoSV-API.</li>
+     *     <li>university_id: StaBu-Nummer der Universität für das DoSV</li>
      * </ul>
      */
     public Properties getConfig() {
