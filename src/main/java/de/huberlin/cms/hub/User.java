@@ -12,6 +12,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 
 /**
  * Benutzer, der mit dem Bewerbungssystem interagiert.
@@ -22,11 +26,13 @@ import java.util.List;
 public class User extends HubObject {
     private String name;
     private String email;
+    private QueryRunner queryRunner;
 
     User(String id, String name, String email, ApplicationService service) {
         super(id, service);
         this.name = name;
         this.email = email;
+        this.queryRunner = new QueryRunner();  
     }
 
     User(ResultSet results, ApplicationService service) throws SQLException {
@@ -96,18 +102,14 @@ public class User extends HubObject {
         try {
             List<Application> applications = new ArrayList<Application>();
             String sql = "SELECT * FROM application WHERE user_id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                HashMap<String, Object> args = new HashMap<String, Object>();
-                args.put("id", results.getString("id"));
-                args.put("service", this.getService());
-                args.put("user_id", results.getString("user_id"));
-                args.put("course_id", results.getString("course_id"));
-                args.put("status", results.getString("status"));
-                applications.add(new Application(args));
-            }
+            List<Map<String, Object>> queryResults =
+                this.queryRunner.query(this.getService().getDb(), sql,
+                    new MapListHandler(), this.getId());
+            for(Map<String, Object> map : queryResults) {
+               HashMap<String, Object> args = Util.convertMapToHashMap(map);
+               args.put("service", this.getService());
+               applications.add(new Application(args));
+           }
             return applications;
         } catch (SQLException e) {
             throw new IOError(e);

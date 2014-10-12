@@ -3,6 +3,7 @@ package de.huberlin.cms.hub;
 import static org.apache.commons.collections4.ListUtils.select;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,15 @@ public class ApplicationTest extends HubTest {
         assertEquals(Evaluation.STATUS_EVALUATED, evaluation.getStatus());
         assertEquals(information, evaluation.getInformation());
         assertNotNull(evaluation.getValue());
+    }
+
+    @Test
+    public final void testGetEvaluation() {
+        Evaluation evaluation =
+            this.application.getEvaluationByCriterionId("qualification");
+        assertEquals(evaluation, this.service.getEvaluation(evaluation.getId(), null));
+        assertTrue(this.application.getEvaluations(null).contains(
+            this.service.getEvaluation(evaluation.getId(), null)));
     }
 
     @Test

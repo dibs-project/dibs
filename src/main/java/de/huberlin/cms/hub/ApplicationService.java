@@ -250,7 +250,7 @@ public class ApplicationService {
         try {
             String sql = "SELECT * FROM application WHERE id = ?";
             HashMap<String, Object> args =
-                (HashMap<String, Object>)this.queryRunner.query(this.db, sql,
+                (HashMap<String, Object>) this.queryRunner.query(this.db, sql,
                     new MapHandler(), id);
             if (args == null) {
                 throw new IllegalArgumentException(
@@ -453,7 +453,7 @@ public class ApplicationService {
         try {
             String sql = "SELECT * FROM quota WHERE id = ?";
             HashMap<String, Object> args =
-                (HashMap<String, Object>)this.queryRunner.query(this.db, sql,
+                (HashMap<String, Object>) this.queryRunner.query(this.db, sql,
                     new MapHandler(), id);
             if (args == null) {
                 throw new IllegalArgumentException("illegal id: quota does not exist");

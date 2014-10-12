@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -51,6 +52,7 @@ public class Application extends HubObject {
         this.userId = (String) args.get("user_id");
         this.courseId = (String) args.get("course_id");
         this.status = (String) args.get("status");
+        this.queryRunner =  new QueryRunner();
     }
 
     /**
@@ -59,47 +61,24 @@ public class Application extends HubObject {
      * @param criterionId ID des Kriteriums
      * @return Bewertung, die sich auf das angegebene Kriterium bezieht
      */
-//    public Evaluation getEvaluationByCriterionId(String criterionId) {
-//        try {
-//            String sql =
-//                "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?";
-////            HashMap<String, Object> args = (HashMap)this.queryRunner.query(
-////                this.service.getDb(), sql, new MapHandler(), id, criterionId);
-////            if (args == null) {
-////                throw new IllegalArgumentException(
-////                    "illegal criterionId: evaluation does not exist");
-////            }
-////            args.put("service", this);
-//            return new Evaluation(args);
-//        } catch (SQLException e) {
-//            throw new IOError(e);
-//        }
-//    }
-    
     public Evaluation getEvaluationByCriterionId(String criterionId) {
+
         try {
-        PreparedStatement statement = this.service.getDb().prepareStatement(
-        "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?");
-        statement.setString(1, this.id);
-        statement.setString(2, criterionId);
-        ResultSet results = statement.executeQuery();
-        if (!results.next()) {
-        throw new IllegalArgumentException(
-        "illegal criterionId: evaluation does not exist");
-        }
-        HashMap<String, Object> args = new HashMap<String, Object>();
-        args.put("id", results.getString("id"));
-        args.put("application_id", results.getString("application_id"));
-        args.put("criterion_id", results.getString("criterion_id"));
-        args.put("information_id", results.getString("information_id"));
-        args.put("value", results.getObject("value"));
-        args.put("status", results.getString("status"));
-        args.put("service", this.service);
-        return new Evaluation(args);
+            String sql =
+                "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?";
+            HashMap<String, Object> args =
+                (HashMap<String, Object>) this.queryRunner.query(
+                    this.service.getDb(), sql, new MapHandler(), this.getId(), criterionId);
+            if (args == null) {
+                throw new IllegalArgumentException(
+                    "illegal criterionId: evaluation does not exist");
+            }
+            args.put("service", this.getService());
+            return new Evaluation(args);
         } catch (SQLException e) {
-        throw new IOError(e);
+            throw new IOError(e);
         }
-        }
+    }
 
     /**
      * Gibt eine Liste aller Bewertungen, die zu dieser Bewerbung gehören, zurück.
@@ -130,20 +109,16 @@ public class Application extends HubObject {
             ArrayList<Evaluation> evaluations = new ArrayList<Evaluation>();
             // NOTE: optimierter Query
             PreparedStatement statement = this.service.getDb().prepareStatement(
-                String.format("SELECT * FROM evaluation %s", filterSql));
+                    String.format("SELECT * FROM evaluation %s", filterSql));
             for (int i = 0; i < filterValues.size(); i++) {
                 statement.setObject(i + 1, filterValues.get(i));
             }
             ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                HashMap<String, Object> args = new HashMap<String, Object>();
-                args.put("id", results.getString("id"));
-                args.put("application_id", results.getString("application_id"));
-                args.put("criterion_id", results.getString("criterion_id"));
-                args.put("information_id", results.getString("information_id"));
-                args.put("value", results.getObject("value"));
-                args.put("status", results.getString("status"));
-                args.put("service", this.service);
+            MapListHandler mapListHandler = new MapListHandler();
+            List<Map<String, Object>> resultMaps = mapListHandler.handle(results);
+            for (Map<String, Object> map : resultMaps) {
+                HashMap<String, Object> args = Util.convertMapToHashMap(map);
+                args.put("service", this.getService());
                 evaluations.add(new Evaluation(args));
             }
             return evaluations;
