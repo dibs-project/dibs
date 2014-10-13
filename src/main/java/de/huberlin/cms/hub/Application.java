@@ -67,8 +67,8 @@ public class Application extends HubObject {
             String sql =
                 "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?";
             HashMap<String, Object> args =
-                (HashMap<String, Object>) this.queryRunner.query(
-                    this.service.getDb(), sql, new MapHandler(), this.getId(), criterionId);
+                (HashMap<String, Object>) this.queryRunner.query(this.service.getDb(),
+                    sql, new MapHandler(), this.getId(), criterionId);
             if (args == null) {
                 throw new IllegalArgumentException(
                     "illegal criterionId: evaluation does not exist");
