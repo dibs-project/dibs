@@ -13,7 +13,15 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
+import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+
 public class ApplicationServiceTest extends HubTest {
+    @Test
+    public void testSetupStorageNonEmptyDatabase() {
+        this.exception.expect(IllegalStateException.class);
+        ApplicationService.setupStorage(this.db);
+    }
+
     @Test
     public void testCreateUser() {
         String email = "moss@example.org";
@@ -36,15 +44,13 @@ public class ApplicationServiceTest extends HubTest {
 
     @Test
     public void testGetUserNonExisting() {
-        this.exception.expect(IllegalArgumentException.class);
-        this.exception.expectMessage("id");
+        this.exception.expect(ObjectNotFoundException.class);
         this.service.getUser("foo");
     }
 
     @Test
     public void testGetApplicationNonExisting() {
-        this.exception.expect(IllegalArgumentException.class);
-        this.exception.expectMessage("id");
+        this.exception.expect(ObjectNotFoundException.class);
         this.service.getApplication("foo");
     }
 
@@ -89,15 +95,13 @@ public class ApplicationServiceTest extends HubTest {
 
     @Test
     public void testGetCourseNonExisting() {
-        this.exception.expect(IllegalArgumentException.class);
-        this.exception.expectMessage("id");
+        this.exception.expect(ObjectNotFoundException.class);
         this.service.getCourse("foo");
     }
 
     @Test()
     public void testGetQuotaNonExisting() {
-        this.exception.expect(IllegalArgumentException.class);
-        this.exception.expectMessage("id");
+        this.exception.expect(ObjectNotFoundException.class);
         this.service.getQuota("foo");
     }
 
