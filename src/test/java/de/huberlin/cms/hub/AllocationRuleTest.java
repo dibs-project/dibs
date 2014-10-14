@@ -37,6 +37,4 @@ public class AllocationRuleTest extends HubTest {
         exception.expectMessage("name");
         rule.createQuota("", 100, null);
     }
-
-
 }

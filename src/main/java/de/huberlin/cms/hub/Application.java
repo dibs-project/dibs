@@ -62,7 +62,6 @@ public class Application extends HubObject {
      * @return Bewertung, die sich auf das angegebene Kriterium bezieht
      */
     public Evaluation getEvaluationByCriterionId(String criterionId) {
-
         try {
             String sql =
                 "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?";
@@ -109,7 +108,7 @@ public class Application extends HubObject {
             ArrayList<Evaluation> evaluations = new ArrayList<Evaluation>();
             // NOTE: optimierter Query
             PreparedStatement statement = this.service.getDb().prepareStatement(
-                    String.format("SELECT * FROM evaluation %s", filterSql));
+                String.format("SELECT * FROM evaluation %s", filterSql));
             for (int i = 0; i < filterValues.size(); i++) {
                 statement.setObject(i + 1, filterValues.get(i));
             }

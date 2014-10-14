@@ -14,7 +14,7 @@ import java.util.Map;
  * @author Sven Pfaller
  */
 public class Util {
-    
+
     /**
      * Prüft ob ein Wert in einem bestimmten Bereich liegt.
      *
@@ -30,9 +30,9 @@ public class Util {
 
     /**
      * Wandelt ein Instanz von {@code Map<String, Object>} zu
-     * {@code HashMap<String, Object>} um.Erzeugt ein Koppie von original Objekt 
+     * {@code HashMap<String, Object>} um. Erzeugt ein Kopie des originalen Objektes
      * wenn es kein Instanz von HashMap ist.
-     * 
+     *
      * @param map instanz von Map<String, Object>
      * @return {@code HashMap<String, Object}
      */
