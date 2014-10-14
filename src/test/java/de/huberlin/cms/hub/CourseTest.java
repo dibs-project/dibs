@@ -10,7 +10,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -44,4 +46,19 @@ public class CourseTest extends HubTest {
         assertEquals(information, evaluation.getInformation());
         assertNotNull(evaluation.getValue());
     }
+
+    @Test
+    public void testGetApplications() {
+        User user1 = this.service.createUser("Maurice", "maurice@moss.net");
+        User user2 = this.service.createUser("Peter", "peter@pan.com");
+        Application a1 = course.apply(user1.getId(), null);
+        Application a2 = course.apply(user2.getId(), null);
+        List<Application> applications = new ArrayList<Application>();
+        applications.add(a1);
+        applications.add(a2);
+        assertEquals(applications, this.service.getCourse(this.course.getId()).getApplications());
+        assertTrue(this.service.getCourse(this.course.getId()).getApplications().contains(a1));
+        assertTrue(this.service.getCourse(this.course.getId()).getApplications().contains(a2));
+    }
+
 }

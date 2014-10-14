@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -124,6 +126,33 @@ public class Course extends HubObject {
             service.getDb().setAutoCommit(true);
             return application;
 
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Gibt alle Bewerbungen für den Studiengang zurück.
+     *
+     * @return Liste mit Bewerbungen
+     */
+    public List<Application> getApplications() {
+        ArrayList<Application> applications = new ArrayList<Application>();
+        try {
+            String sql = "SELECT * FROM application WHERE course_id = ?";
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
+            statement.setString(1, this.id);
+            ResultSet results = statement.executeQuery();
+            while (results.next()) {
+                HashMap<String, Object> args = new HashMap<String, Object>();
+                args.put("id", results.getString("id"));
+                args.put("user_id", results.getString("user_id"));
+                args.put("course_id", results.getString("course_id"));
+                args.put("status", results.getString("status"));
+                args.put("service", this.service);
+                applications.add(new Application(args));
+            }
+            return applications;
         } catch (SQLException e) {
             throw new IOError(e);
         }
