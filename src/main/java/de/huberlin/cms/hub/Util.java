@@ -14,7 +14,6 @@ import java.util.Map;
  * @author Sven Pfaller
  */
 public class Util {
-
     /**
      * Prüft ob ein Wert in einem bestimmten Bereich liegt.
      *
