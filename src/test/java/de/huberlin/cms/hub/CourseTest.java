@@ -83,7 +83,4 @@ public class CourseTest extends HubTest {
         course.apply(user.getId(), null);
         course.unpublish(null);
     }
-
-
-    //TODO test publish unvollständig
 }
