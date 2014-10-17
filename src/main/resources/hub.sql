@@ -36,7 +36,10 @@ CREATE TABLE course (
     name VARCHAR(256) NOT NULL,
     capacity INT NOT NULL,
     allocation_rule_id VARCHAR(256) REFERENCES allocation_rule,
-    published BOOLEAN DEFAULT FALSE
+    published BOOLEAN DEFAULT FALSE,
+    dosv_subject_key VARCHAR(256) NOT NULL,
+    dosv_degree_key VARCHAR(256) NOT NULL,
+    dosv_pushed BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE journal_record (

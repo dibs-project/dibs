@@ -69,15 +69,15 @@ public abstract class HubTest {
             // ignorieren
         }
 
-        this.db = DriverManager.getConnection((String) config.getProperty("db_url"),
-            (String) config.getProperty("db_user"),
-            (String) config.getProperty("db_password"));
+        this.db = DriverManager.getConnection(config.getProperty("db_url"),
+            config.getProperty("db_user"),
+            config.getProperty("db_password"));
         ApplicationService.setupStorage(this.db, true);
 
         this.service = new ApplicationService(this.db, this.config);
         this.user = this.service.createUser("Jen", "barber@example.org");
 
-        this.course = this.service.createCourse("Computer Science", 500, null);
+        this.course = this.service.createCourse("Computer Science", 500, "cs", "bsc", null);
         this.course.createAllocationRule(null).createQuota("Standard", 100, null).
             addRankingCriterion("qualification", null);
     }

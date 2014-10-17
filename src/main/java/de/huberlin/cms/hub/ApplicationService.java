@@ -398,22 +398,27 @@ public class ApplicationService {
      * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
      *     <code>capacity</code> nicht positiv ist
      */
-    public Course createCourse(String name, int capacity, User agent) {
+    public Course createCourse(String name, int capacity, String dosvSubject,
+        String dosvDegree, User agent) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
         if (capacity <= 0) {
             throw new IllegalArgumentException("illegal capacity: nonpositive number");
         }
+        //FIXME Validation dosv-subject: nicht leer; eindeutig
+        //FIXME validation dosv-degree: nicht leer
 
         try {
             this.db.setAutoCommit(false);
             String id = "course:" + Integer.toString(new Random().nextInt());
             PreparedStatement statement =
-                db.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
+                db.prepareStatement("INSERT INTO course(id, name, capacity, dosv_subject_key, dosv_degree_key) VALUES(?, ?, ?, ? ,?)");
             statement.setString(1, id);
             statement.setString(2, name);
             statement.setInt(3, capacity);
+            statement.setString(4, dosvSubject);
+            statement.setString(5, dosvDegree);
             statement.executeUpdate();
             journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
                 name);

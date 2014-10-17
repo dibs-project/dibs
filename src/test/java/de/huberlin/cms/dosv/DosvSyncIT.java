@@ -1,18 +1,23 @@
 package de.huberlin.cms.dosv;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.util.Random;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import de.hu_berlin.dosv.DosvClient;
+import de.huberlin.cms.hub.Application;
+import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.HubTest;
 import de.huberlin.cms.hub.User;
 
 public class DosvSyncIT extends HubTest {
+    private DosvSync dosvSync;
 
     @Before
     public void before() throws Exception {
@@ -35,5 +40,18 @@ public class DosvSyncIT extends HubTest {
         exception.expect(DosvAuthenticationException.class);
         User dosvUser = service.createUser("dosv-testuser", "test@example.org");
         dosvUser.connectToDosv("B189069116325x", "603475", null);
+    }
+
+    @Test
+    public void testDosvCoursePublish() {
+        String randomStr = Integer.toString(new Random().nextInt());
+        Course testCourse = service.createCourse("test-" + randomStr, 500, randomStr,
+            "test-dosv-degree", null);
+        testCourse.createAllocationRule(null).createQuota("Standard", 100, null).
+            addRankingCriterion("qualification", null);
+        testCourse.publish(null);
+        dosvSync = new DosvSync(service);
+        dosvSync.synchronize();
+        assertTrue(service.getCourse(testCourse.getId()).isDosvPushed());
     }
 }
