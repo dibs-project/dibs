@@ -17,10 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import de.huberlin.cms.hub.HubException.CannotPublishException;
-import de.huberlin.cms.hub.HubException.CannotRetractException;
-import de.huberlin.cms.hub.HubException.PublishedModificationException;
-import de.huberlin.cms.hub.HubException.UnpublishedException;
+import de.huberlin.cms.hub.HubException.HubObjectIllegalStateException;
 
 /**
  * Studiengang.
@@ -58,7 +55,7 @@ public class Course extends HubObject {
      */
     public AllocationRule createAllocationRule(User agent) {
         if (published) {
-            throw new PublishedModificationException(getId());
+            throw new HubObjectIllegalStateException(getId());
         }
         try {
             Connection db = service.getDb();
@@ -94,7 +91,7 @@ public class Course extends HubObject {
      */
     public Application apply(String userId, User agent) {
         if (!published) {
-            throw new UnpublishedException(getId());
+            throw new HubObjectIllegalStateException(getId());
         }
         try {
             service.getDb().setAutoCommit(false);
@@ -173,12 +170,11 @@ public class Course extends HubObject {
     /**
      * Publiziert den Studiengang.
      */
+    /* NB: Race conditions rund um publish() werden momentan ignoriert, da Studiengänge
+       meist nur von einer Person bearbeitet werden.*/
     public void publish(User agent) {
-        if (getAllocationRule() == null) {
-            throw new CannotPublishException(getId(), "AllocationRule missing");
-        }
-        if (getAllocationRule().getQuota() == null) {
-            throw new CannotPublishException(getId(), "Quota missing");
+        if (getAllocationRule() == null || getAllocationRule().getQuota() == null) {
+            throw new HubObjectIllegalStateException(getId());
         }
         try {
             Connection db = service.getDb();
@@ -201,20 +197,20 @@ public class Course extends HubObject {
      * Zieht die Publikation zurück. Kann nur erfolgen, wenn noch keine Bewerbungen auf
      * diesen Studiengang vorliegen.
      */
-    public void retractPublication(User agent) {
+    public void unpublish(User agent) {
         try {
             Connection db = service.getDb();
             int initialIsolationLevel = db.getTransactionIsolation();
             db.setTransactionIsolation(TRANSACTION_SERIALIZABLE);
             if (!getApplications().isEmpty()) {
-                throw new CannotRetractException(getId(), "applications present");
+                throw new HubObjectIllegalStateException(getId());
             }
             db.setAutoCommit(false);
             String sql = "UPDATE course SET published = FALSE WHERE id = ?";
             PreparedStatement statement = service.getDb().prepareStatement(sql);
             statement.setString(1, getId());
             statement.executeUpdate();
-            service.getJournal().record(ApplicationService.COURSE_PUBLICATION_RETRACTED,
+            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_UNPUBLISHED,
                 this.id, HubObject.getId(agent), null);
             db.commit();
             db.setAutoCommit(true);

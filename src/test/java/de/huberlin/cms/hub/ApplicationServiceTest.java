@@ -17,6 +17,12 @@ import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 
 public class ApplicationServiceTest extends HubTest {
     @Test
+    public void testSetupStorageNonEmptyDatabase() {
+        this.exception.expect(IllegalStateException.class);
+        ApplicationService.setupStorage(this.db);
+    }
+
+    @Test
     public void testCreateUser() {
         String email = "moss@example.org";
         User user = this.service.createUser("Maurice", email);

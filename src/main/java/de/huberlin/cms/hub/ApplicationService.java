@@ -9,8 +9,9 @@ import static java.util.Collections.unmodifiableMap;
 import static org.apache.commons.collections4.CollectionUtils.filter;
 
 import java.io.IOError;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,6 +39,9 @@ import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
  * @author Sven Pfaller
  */
 public class ApplicationService {
+    /** Benötigte Version des Datenspeichers. */
+    public static final String STORAGE_VERSION = "0";
+
     /** Aktionstyp: neuer Benutzer angelegt. */
     public static final String ACTION_TYPE_USER_CREATED = "user_created";
     /** Aktionstyp: neue Information für einen Benutzer angelegt. */
@@ -60,7 +64,9 @@ public class ApplicationService {
     /** Aktionstyp: Kurs publiziert (zur Bewerbung freigegeben). */
     public static final String ACTION_TYPE_COURSE_PUBLISHED = "course_published";
     /** Aktionstyp: Kurspublikation zurückgezogen. */
-    public static final String COURSE_PUBLICATION_RETRACTED = "publication_retracted";
+    public static final String ACTION_TYPE_COURSE_UNPUBLISHED = "course_unpublished";
+    /** Aktionstyp: Benutzer ist mit dem DoSV verbunden. */
+    public static final String APPLICATION_TYPE_USER_CONNECTED_TO_DOSV = "user_connected_to_dosv";
 
     /** Unterstützte Filter für {@link #getCriteria(Map, User)}. */
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =
@@ -72,29 +78,62 @@ public class ApplicationService {
     private HashMap<String, Information.Type> informationTypes;
     private HashMap<String, Criterion> criteria;
 
-    /**
-     * Stellt eine Verbindung zur Datenbank her.
-     *
-     * @param config Konfiguration. Folgende Einstellungen können gesetzt werden:
-     *     <ul>
-     *         <li>
-     *             db_url: Datenbank-URL in JDBC-Form (siehe
-     *             {@link DriverManager#getConnection}). Der Standardwert ist
-     *             "jdbc:postgresql://localhost:5432/hub".
-     *         </li>
-     *         <li>db_user: Benutzername für die Datenbank. Der Standardwert ist "".</li>
-     *         <li>db_password: Passwort für die Datenbank. Der Standardwert ist "".</li>
-     *     </ul>
-     * @return geöffnete Datenbankverbindung
-     * @throws SQLException falls die Verbindung zur Datenbank fehlschlägt
-     * @see DriverManager#getConnection
-     */
-    public static Connection openDatabase(Properties config) throws SQLException {
-        String url = config.getProperty("db_url", "jdbc:postgresql://localhost:5432/hub");
-        String user = config.getProperty("db_user", "");
-        String password = config.getProperty("db_password", "");
-        Connection db = DriverManager.getConnection(url, user, password);
-        return db;
+    // TODO: dokumentieren
+    public static void setupStorage(Connection db, boolean overwrite) {
+        try {
+
+            db.setAutoCommit(false);
+            PreparedStatement statement;
+
+            if (overwrite) {
+                // TODO: Tabellen automatisch aus hub.sql lesen
+                String[] tables = {"user", "settings", "quota", "quota_ranking_criteria",
+                    "allocation_rule", "course", "journal_record", "qualification",
+                    "application", "evaluation"};
+                for (String table : tables) {
+                    statement = db.prepareStatement(
+                        String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
+                    statement.executeUpdate();
+                }
+            }
+
+            InputStreamReader reader = new InputStreamReader(
+                ApplicationService.class.getResourceAsStream("/hub.sql"));
+            StringBuilder str = new StringBuilder();
+            char[] buffer = new char[4096];
+            int n = 0;
+            while ((n = reader.read(buffer)) != -1) {
+                str.append(buffer, 0, n);
+            }
+            String sql = str.toString();
+
+            try {
+                statement = db.prepareStatement(sql);
+                statement.execute();
+            } catch (SQLException e) {
+                // Syntax Error or Access Rule Violation
+                if (e.getSQLState().startsWith("42")) {
+                    db.rollback();
+                    db.setAutoCommit(true);
+                    throw new IllegalStateException("database not empty");
+                } else {
+                    throw e;
+                }
+            }
+
+            db.commit();
+            db.setAutoCommit(true);
+
+        } catch (IOException e) {
+            throw new IOError(e);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    // TODO: dokumentieren
+    public static void setupStorage(Connection db) {
+        ApplicationService.setupStorage(db, false);
     }
 
     /**
@@ -107,12 +146,7 @@ public class ApplicationService {
     public ApplicationService(Connection db, Properties config) {
         this.db = db;
 
-        Properties defaults = new Properties();
-        defaults.setProperty("dosv_url",
-            "https://hsst.hochschulstart.de/hochschule/webservice/2/");
-        defaults.setProperty("dosv_user", "");
-        defaults.setProperty("dosv_password", "");
-        this.config = new Properties(defaults);
+        this.config = new Properties();
         this.config.putAll(config);
         this.journal = new Journal(this);
 
@@ -329,8 +363,9 @@ public class ApplicationService {
      *         dosv_url: URL zur DoSV-API. Der Standardwert ist
      *         "https://hsst.hochschulstart.de/hochschule/webservice/2/" (Testumgebung).
      *     </li>
-     *     <li>dosv_user: Benutzername für die DoSV-API. Der Standardwert ist "".</li>
-     *     <li>dosv_password: Passwort für die DoSV-API. Der Standardwert ist "".</li>
+     *     <li>dosv_user: Benutzername für die DoSV-API.</li>
+     *     <li>dosv_password: Passwort für die DoSV-API.</li>
+     *     <li>university_id: StaBu-Nummer der Universität für das DoSV</li>
      * </ul>
      */
     public Properties getConfig() {

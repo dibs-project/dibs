@@ -8,9 +8,10 @@ package de.huberlin.cms.dosv;
 import de.huberlin.cms.hub.HubException;
 
 /**
- * @author Markus Michler
- * TODO
+ * Fehler, der bei Problemen mit der Authentifikation im System des DoSV mittels BID und BAN
+ * ausgelöst wird.
  *
+ * @author Markus Michler
  */
 @SuppressWarnings("serial")
 public class DosvAuthenticationException extends HubException {
