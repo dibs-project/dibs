@@ -98,7 +98,6 @@ public class DosvSync {
         this.service = service;
         Properties dosvConfig = service.getConfig();
         Settings settings = service.getSettings();
-        System.out.println(service.getConfig().getProperty(DosvClient.URL));
         dosvConfig.setProperty(DosvClient.SEMESTER, settings.getSemester().substring(4, 6));
         dosvConfig.setProperty(DosvClient.YEAR, settings.getSemester().substring(0, 4));
         dosvClient = new DosvClient(dosvConfig);
