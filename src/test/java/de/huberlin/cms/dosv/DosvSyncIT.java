@@ -1,3 +1,8 @@
+/*
+ * HUB
+ * Copyright (C) 2014 Humboldt-Universität zu Berlin
+ */
+
 package de.huberlin.cms.dosv;
 
 import static org.junit.Assert.assertEquals;
@@ -11,7 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.hu_berlin.dosv.DosvClient;
-import de.huberlin.cms.hub.Application;
 import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.HubTest;
 import de.huberlin.cms.hub.User;
@@ -43,15 +47,17 @@ public class DosvSyncIT extends HubTest {
     }
 
     @Test
-    public void testDosvCoursePublish() {
-        String randomStr = Integer.toString(new Random().nextInt());
-        Course testCourse = service.createCourse("test-" + randomStr, 500, randomStr,
-            "test-dosv-degree", null);
-        testCourse.createAllocationRule(null).createQuota("Standard", 100, null).
-            addRankingCriterion("qualification", null);
-        testCourse.publish(null);
+    public void testCoursePushUnpublished() {
         dosvSync = new DosvSync(service);
         dosvSync.synchronize();
-        assertTrue(service.getCourse(testCourse.getId()).isDosvPushed());
+        assertTrue(service.getCourse(course.getId()).isDosvPushed());
+    }
+
+    @Test
+    public void testCoursePushPublished() {
+        course.publish(null);
+        dosvSync = new DosvSync(service);
+        dosvSync.synchronize();
+        assertTrue(service.getCourse(course.getId()).isDosvPushed());
     }
 }

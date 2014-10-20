@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -77,7 +78,8 @@ public abstract class HubTest {
         this.service = new ApplicationService(this.db, this.config);
         this.user = this.service.createUser("Jen", "barber@example.org");
 
-        this.course = this.service.createCourse("Computer Science", 500, "cs", "bsc", null);
+        String randomStr = Integer.toString(new Random().nextInt());
+        course = service.createCourse("test-" + randomStr, 500, randomStr, "degree", null);
         this.course.createAllocationRule(null).createQuota("Standard", 100, null).
             addRankingCriterion("qualification", null);
     }

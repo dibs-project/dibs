@@ -46,7 +46,8 @@ import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.Settings;
 
 /**
- * FIXME Prämisse/ Frontend: Ein Status wird nur von HUB oder dem DoSV geschrieben.
+ * Synchronisiert Studiengänge, Bewerbungen und Ranglisten mit dem DoSV. Jedes Datum
+ * wird entweder nur im System des DoSV oder lokal geschrieben.
  *
  * @author Markus Michler
  */
@@ -147,16 +148,17 @@ public class DosvSync {
         List<Studienangebot> studiangebote = new ArrayList<>();
         List<Studienpaket> studienpakete = new ArrayList<>();
         for (Course course : service.getCourses()) {
-            if (!course.isPublished() ^ course.isDosvPushed()) {
+            if (course.isDosvPushed()) {
                 continue;
             }
             StudienangebotsStatus studienangebotsStatus;
-            if (!course.isPublished() && course.isDosvPushed()) {
+            if (!course.isPublished()) {
                 studienangebotsStatus = IN_VORBEREITUNG;
             } else {
                 studienangebotsStatus = OEFFENTLICH_SICHTBAR;
             }
-            /* Studienangebot - SAF 101 */
+
+            /** Studienangebot - SAF 101 */
             Studienfach studienfach = new Studienfach();
             studienfach.setSchluessel(course.getDosvSubjectKey());
             studienfach.setNameDe(course.getName()); //TODO Feld Course.subject
@@ -165,7 +167,7 @@ public class DosvSync {
             abschluss.setNameDe(course.getDosvDegreeKey()); //TODO Feld Course.degree
 
             Studiengang studiengang = new Studiengang();
-//            studiengang.setNameDe(course.getName()); // nicht notwendig
+            studiengang.setNameDe(course.getName());
             studiengang.setIstNCStudiengang(true);
             studiengang.setStudienfach(studienfach);
             studiengang.setAbschluss(abschluss);
@@ -199,7 +201,7 @@ public class DosvSync {
             koordinierungsangebotsdaten.setUrlHSBewerbungsportal("http://studienplatz.hu-berlin.de/");
 
             Einfachstudienangebot einfachstudienangebot = new Einfachstudienangebot();
-//            einfachstudienangebot.setNameDe(course.getName()); // nicht notwendig
+            einfachstudienangebot.setNameDe(course.getName());
             einfachstudienangebot.setBeschreibungDe(course.getName()); //TODO Feld Course.description
             einfachstudienangebot.setStudiengang(studiengang);
             einfachstudienangebot.setIntegrationseinstellungen(integrationseinstellungen);
@@ -208,7 +210,12 @@ public class DosvSync {
 
             studiangebote.add(einfachstudienangebot);
 
-            /* Studienpaket - SAF 401 */
+            /** Nur öffentlich sichtbare Studienangebote dürfen mit einem Paket verknüpft werden */
+            if (!course.isPublished()) {
+                continue;
+            }
+
+            /** Studienpaket - SAF 401 */
             EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
                 new EinfachstudienangebotsSchluessel();
             einfachstudienangebotsSchluessel.setStudienfachSchluessel(course
@@ -260,7 +267,7 @@ public class DosvSync {
             throw new RuntimeException(e);
         }
         try {
-            String sql = "UPDATE course SET dosv_pushed = published";
+            String sql = "UPDATE course SET dosv_pushed = TRUE";
             PreparedStatement statement = service.getDb().prepareStatement(sql);
             statement.executeUpdate();
         } catch (SQLException e) {
