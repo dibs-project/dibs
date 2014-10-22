@@ -175,7 +175,7 @@ public class Course extends HubObject {
         if (getAllocationRule() == null || getAllocationRule().getQuota() == null) {
             throw new HubObjectIllegalStateException(getId());
         }
-        // NOTE Race Condition zwischen SELECT published und INSERT INTO application
+        // NOTE Race Condition zwischen SELECT allocation_rule.* und UPDATE published
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
