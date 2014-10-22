@@ -51,6 +51,10 @@ public class ApplicationService {
     /** Aktionstyp: neue Vergaberegel angelegt und mit dem Studiengang verknüpft. */
     public static final String ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED =
         "course_allocation_rule_created";
+    /** Aktionstyp: Kurs publiziert (zur Bewerbung freigegeben). */
+    public static final String ACTION_TYPE_COURSE_PUBLISHED = "course_published";
+    /** Aktionstyp: Kurspublikation zurückgezogen. */
+    public static final String ACTION_TYPE_COURSE_UNPUBLISHED = "course_unpublished";
     /** Aktionstyp: Bewerbung für den Studiengang angelegt. */
     public static final String ACTION_TYPE_COURSE_APPLIED = "course_applied";
     /** Aktionstyp: Bewerbungstatus bearbeitet. */
@@ -61,10 +65,6 @@ public class ApplicationService {
     /** Aktionstyp: Kriterium zur Sortierung von Bewerbern mit Quote verknüpft. */
     public static final String ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED =
         "quota_ranking_criterion_added";
-    /** Aktionstyp: Kurs publiziert (zur Bewerbung freigegeben). */
-    public static final String ACTION_TYPE_COURSE_PUBLISHED = "course_published";
-    /** Aktionstyp: Kurspublikation zurückgezogen. */
-    public static final String ACTION_TYPE_COURSE_UNPUBLISHED = "course_unpublished";
 
     /** Unterstützte Filter für {@link #getCriteria(Map, User)}. */
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =

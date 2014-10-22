@@ -5,8 +5,6 @@
 
 package de.huberlin.cms.hub;
 
-import static java.sql.Connection.TRANSACTION_SERIALIZABLE;
-
 import java.io.IOError;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -54,9 +52,10 @@ public class Course extends HubObject {
      * @return angelegte und verknüpfte Vergaberegel
      */
     public AllocationRule createAllocationRule(User agent) {
-        if (published) {
+        if (service.getCourse(id).isPublished()) {
             throw new HubObjectIllegalStateException(getId());
         }
+        //NOTE Race Condition zwischen SELECT published und UPDATE allocation_rule_id
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -65,8 +64,7 @@ public class Course extends HubObject {
             PreparedStatement statement = db.prepareStatement(sql);
             statement.setString(1, ruleId);
             statement.executeUpdate();
-            sql = "UPDATE course SET allocation_rule_id = ? WHERE id = ?";
-            statement = db.prepareStatement(sql);
+            statement = db.prepareStatement("UPDATE course SET allocation_rule_id = ? WHERE id = ?");
             statement.setString(1, ruleId);
             statement.setString(2, this.id);
             statement.executeUpdate();
@@ -90,9 +88,10 @@ public class Course extends HubObject {
      * @return angelegte Bewerbung
      */
     public Application apply(String userId, User agent) {
-        if (!published) {
+        if (!service.getCourse(id).isPublished()) {
             throw new HubObjectIllegalStateException(getId());
         }
+        // NOTE Race Condition zwischen SELECT published und INSERT INTO application
         try {
             service.getDb().setAutoCommit(false);
             String applicationId =
@@ -176,6 +175,7 @@ public class Course extends HubObject {
         if (getAllocationRule() == null || getAllocationRule().getQuota() == null) {
             throw new HubObjectIllegalStateException(getId());
         }
+        // NOTE Race Condition zwischen SELECT published und INSERT INTO application
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -200,11 +200,10 @@ public class Course extends HubObject {
     public void unpublish(User agent) {
         try {
             Connection db = service.getDb();
-            int initialIsolationLevel = db.getTransactionIsolation();
-            db.setTransactionIsolation(TRANSACTION_SERIALIZABLE);
             if (!getApplications().isEmpty()) {
                 throw new HubObjectIllegalStateException(getId());
             }
+            // NOTE Race Condition zwischen SELECT application.* und UPDATE published
             db.setAutoCommit(false);
             String sql = "UPDATE course SET published = FALSE WHERE id = ?";
             PreparedStatement statement = service.getDb().prepareStatement(sql);
@@ -214,7 +213,6 @@ public class Course extends HubObject {
                 this.id, HubObject.getId(agent), null);
             db.commit();
             db.setAutoCommit(true);
-            db.setTransactionIsolation(initialIsolationLevel);
         } catch (SQLException e) {
             throw new IOError(e);
         }

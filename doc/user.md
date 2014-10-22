@@ -36,16 +36,16 @@ Struktur:
 Ablauf:
 
 ```
-   . Applicant         | Employee             | System
-  ---------------------+----------------------+-------
-   .                   | createUser           |
-   .                   | createCourse         |
-   .                   | createAllocationRule |
-   .                   | createQuota          |
-   .                   | addRankingCriterion  |
-   .                   | Course.publish       |
-   . register          |                      |
-   . createInformation |                      |
-   . apply             |                      |
+   . Applicant                            | Employee                        | System
+  ----------------------------------------+---------------------------------+-------
+   .                                      | ApplicationService.createUser   |
+   .                                      | ApplicationService.createCourse |
+   .                                      | Course.createAllocationRule     |
+   .                                      | AllocationRule.createQuota      |
+   .                                      | Quota.addRankingCriterion       |
+   .                                      | Course.publish                  |
+   . ApplicationService.register          |                                 |
+   . ApplicationService.createInformation |                                 |
+   . Course.apply                         |                                 |
 
 ```

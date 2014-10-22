@@ -55,6 +55,7 @@ public class AllocationRule extends HubObject {
         if (course.isPublished()) {
             throw new HubObjectIllegalStateException(course.getId());
         }
+        // NOTE Race Condition zwischen SELECT course_id und UPDATE quota_id
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
