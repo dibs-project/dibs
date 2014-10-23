@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import de.huberlin.cms.hub.HubException.HubObjectIllegalStateException;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
  * Quote, welche die Kriterien für die Ranglistenerstellung für einen Teil der Plätze
@@ -40,7 +40,7 @@ public class Quota extends HubObject {
      */
     public void addRankingCriterion(String criterionId, User agent) {
         if (getAllocationRule().getCourse().isPublished()) {
-            throw new HubObjectIllegalStateException(id);
+            throw new IllegalStateException("course_published");
         }
         // NOTE Race Condition: SELECT-INSERT
         Connection db = service.getDb();

@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import de.huberlin.cms.hub.HubException.HubObjectIllegalStateException;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
  * Studiengang.
@@ -53,7 +53,7 @@ public class Course extends HubObject {
      */
     public AllocationRule createAllocationRule(User agent) {
         if (service.getCourse(id).isPublished()) {
-            throw new HubObjectIllegalStateException(getId());
+            throw new IllegalStateException("course_published");
         }
         //NOTE Race Condition: SELECT-UPDATE
         try {
@@ -89,7 +89,7 @@ public class Course extends HubObject {
      */
     public Application apply(String userId, User agent) {
         if (!service.getCourse(id).isPublished()) {
-            throw new HubObjectIllegalStateException(getId());
+            throw new IllegalStateException("course_published");
         }
         // NOTE Race Condition: SELECT-INSERT
         try {
@@ -172,7 +172,7 @@ public class Course extends HubObject {
     public void publish(User agent) {
         AllocationRule allocationRule = getAllocationRule();
         if (allocationRule == null || allocationRule.getQuota() == null) {
-            throw new HubObjectIllegalStateException(getId());
+            throw new IllegalStateException("course_incomplete");
         }
         // NOTE Race Condition: SELECT-UPDATE
         try {
@@ -197,8 +197,9 @@ public class Course extends HubObject {
      * diesen Studiengang vorliegen.
      */
     public void unpublish(User agent) {
+        // NOTE Bewerbungsabfrage kann noch optimiert werden
         if (!getApplications().isEmpty()) {
-            throw new HubObjectIllegalStateException(getId());
+            throw new IllegalStateException("applications_present");
         }
         try {
             Connection db = service.getDb();

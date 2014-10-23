@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.commons.collections4.Predicate;
 
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
@@ -113,7 +114,7 @@ public class ApplicationService {
                 if (e.getSQLState().startsWith("42")) {
                     db.rollback();
                     db.setAutoCommit(true);
-                    throw new IllegalStateException("database not empty");
+                    throw new IllegalStateException("database_not_empty");
                 } else {
                     throw e;
                 }

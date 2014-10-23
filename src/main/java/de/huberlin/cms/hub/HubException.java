@@ -46,29 +46,17 @@ public abstract class HubException extends RuntimeException {
     }
 
     /**
-     * Exception die auftritt, wenn versucht wird, ein Objekt zu verändern, das sich in
+     * Exception die auftritt, wenn versucht wird, eine Entität zu verändern, die sich in
      * einem mit der Aktion inkompatiblen Zustand befindet.
      *
      * @author Markus Michler
      * @see java.lang.IllegalStateException
      */
-    public static class HubObjectIllegalStateException extends HubException {
-        /*TODO nicht alle in Frage kommenden Entitäten haben eine objectId, diese muss evtl.
-          später entfernt werden. Dann existiert aber kein Unterschied zu
-          java.lang.IllegalStateException */
+    public static class IllegalStateException extends HubException {
         protected String objectId;
 
-        public HubObjectIllegalStateException(String objectId) {
-            super("object_illegal_state");
-            this.objectId = objectId;
-        }
-
-        public String getObjectId() {
-            return objectId;
-        }
-
-        public String getMessage() {
-            return "The attempted action on object '" + objectId + "' cannot be performed.";
+        public IllegalStateException(String code) {
+            super(code);
         }
     }
 }

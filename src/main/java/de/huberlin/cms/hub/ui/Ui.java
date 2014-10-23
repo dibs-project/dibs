@@ -29,6 +29,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 
 import de.huberlin.cms.hub.ApplicationService;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
  * @author Sven Pfaller

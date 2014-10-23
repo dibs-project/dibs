@@ -14,12 +14,12 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
-import de.huberlin.cms.hub.HubException.HubObjectIllegalStateException;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 public class CourseTest extends HubTest {
     @Test
     public void testCreateAllocationRulePublished() {
-        exception.expect(HubObjectIllegalStateException.class);
+        exception.expect(IllegalStateException.class);
         course.createAllocationRule(null);
     }
 
@@ -50,27 +50,21 @@ public class CourseTest extends HubTest {
     @Test
     public void testApplyUnpublished() {
         course.unpublish(null);
-        exception.expect(HubObjectIllegalStateException.class);
+        exception.expect(IllegalStateException.class);
         course.apply(user.getId(), null);
     }
 
     @Test
     public void testPublishIncomplete() {
         course.unpublish(null);
-        exception.expect(HubObjectIllegalStateException.class);
+        exception.expect(IllegalStateException.class);
         Course course = this.service.createCourse("Computer Science", 500, null);
         course.publish(null);
     }
 
     @Test
-    public void testCreateQuotaPublished() {
-        exception.expect(HubObjectIllegalStateException.class);
-        course.getAllocationRule().createQuota("Performance", 100, null);
-    }
-
-    @Test
     public void testUnpublishApplied() {
-        exception.expect(HubObjectIllegalStateException.class);
+        exception.expect(IllegalStateException.class);
         course.apply(user.getId(), null);
         course.unpublish(null);
     }

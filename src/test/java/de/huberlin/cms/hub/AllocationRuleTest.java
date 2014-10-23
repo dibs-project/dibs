@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.huberlin.cms.hub.HubException.HubObjectIllegalStateException;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 public class AllocationRuleTest extends HubTest {
     private AllocationRule rule;
@@ -30,7 +30,7 @@ public class AllocationRuleTest extends HubTest {
     @Test
     public void testCreateQuotaPublished() {
         course.publish(null);
-        exception.expect(HubObjectIllegalStateException.class);
+        exception.expect(IllegalStateException.class);
         course.getAllocationRule().createQuota("Performance", 100, null);
     }
 
