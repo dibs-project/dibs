@@ -50,8 +50,7 @@ public abstract class HubException extends RuntimeException {
      * einem mit der Aktion inkompatiblen Zustand befindet.
      *
      * @author Markus Michler
-     * @see <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/IllegalStateException.html">
-     * java.lang.IllegalStateException</a>
+     * @see java.lang.IllegalStateException
      */
     public static class HubObjectIllegalStateException extends HubException {
         /*TODO nicht alle in Frage kommenden Entitäten haben eine objectId, diese muss evtl.

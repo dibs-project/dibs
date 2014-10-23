@@ -42,8 +42,7 @@ public class Quota extends HubObject {
         if (getAllocationRule().getCourse().isPublished()) {
             throw new HubObjectIllegalStateException(id);
         }
-        // NOTE Race Condition zwischen SELECT course.published und INSERT INTO
-        // quota_ranking_criteria
+        // NOTE Race Condition: SELECT-INSERT
         Connection db = service.getDb();
         try {
             db.setAutoCommit(false);
@@ -108,6 +107,9 @@ public class Quota extends HubObject {
         return percentage;
     }
 
+    /**
+     * Vergaberegel, zu der diese Quote gehört.
+     */
     public AllocationRule getAllocationRule() {
         try {
             String sql = "SELECT * FROM allocation_rule WHERE quota_id = ?";

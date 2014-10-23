@@ -45,7 +45,7 @@ Ablauf:
    .                                      | Quota.addRankingCriterion       |
    .                                      | Course.publish                  |
    . ApplicationService.register          |                                 |
-   . ApplicationService.createInformation |                                 |
+   . User.createInformation               |                                 |
    . Course.apply                         |                                 |
 
 ```

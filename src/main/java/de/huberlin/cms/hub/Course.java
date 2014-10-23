@@ -55,7 +55,7 @@ public class Course extends HubObject {
         if (service.getCourse(id).isPublished()) {
             throw new HubObjectIllegalStateException(getId());
         }
-        //NOTE Race Condition zwischen SELECT published und UPDATE allocation_rule_id
+        //NOTE Race Condition: SELECT-UPDATE
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -91,7 +91,7 @@ public class Course extends HubObject {
         if (!service.getCourse(id).isPublished()) {
             throw new HubObjectIllegalStateException(getId());
         }
-        // NOTE Race Condition zwischen SELECT published und INSERT INTO application
+        // NOTE Race Condition: SELECT-INSERT
         try {
             service.getDb().setAutoCommit(false);
             String applicationId =
@@ -142,7 +142,7 @@ public class Course extends HubObject {
     }
 
     /**
-     * Gibt alle Bewerbungen aus, die für diesen Studiengang abgegeben wurden.
+     * Liste aller Bewerbungen, die für diesen Studiengang abgegeben wurden.
      */
     public List<Application> getApplications() {
         try {
@@ -169,13 +169,12 @@ public class Course extends HubObject {
     /**
      * Publiziert den Studiengang.
      */
-    /* NB: Race conditions rund um publish() werden momentan ignoriert, da Studiengänge
-       meist nur von einer Person bearbeitet werden.*/
     public void publish(User agent) {
-        if (getAllocationRule() == null || getAllocationRule().getQuota() == null) {
+        AllocationRule allocationRule = getAllocationRule();
+        if (allocationRule == null || allocationRule.getQuota() == null) {
             throw new HubObjectIllegalStateException(getId());
         }
-        // NOTE Race Condition zwischen SELECT allocation_rule.* und UPDATE published
+        // NOTE Race Condition: SELECT-UPDATE
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -198,12 +197,12 @@ public class Course extends HubObject {
      * diesen Studiengang vorliegen.
      */
     public void unpublish(User agent) {
+        if (!getApplications().isEmpty()) {
+            throw new HubObjectIllegalStateException(getId());
+        }
         try {
             Connection db = service.getDb();
-            if (!getApplications().isEmpty()) {
-                throw new HubObjectIllegalStateException(getId());
-            }
-            // NOTE Race Condition zwischen SELECT application.* und UPDATE published
+            // NOTE Race Condition: SELECT-UPDATE
             db.setAutoCommit(false);
             String sql = "UPDATE course SET published = FALSE WHERE id = ?";
             PreparedStatement statement = service.getDb().prepareStatement(sql);
