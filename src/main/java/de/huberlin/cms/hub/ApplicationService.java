@@ -398,16 +398,25 @@ public class ApplicationService {
      * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
      *     <code>capacity</code> nicht positiv ist
      */
-    public Course createCourse(String name, int capacity, String dosvSubject,
-        String dosvDegree, User agent) {
+    public Course createCourse(String name, int capacity, String dosvSubjectKey,
+        String dosvDegreeKey, User agent) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
         if (capacity <= 0) {
             throw new IllegalArgumentException("illegal capacity: nonpositive number");
         }
-        //FIXME Validation dosv-subject: nicht leer; eindeutig
-        //FIXME validation dosv-degree: nicht leer
+        if (dosvSubjectKey.isEmpty()) {
+            throw new IllegalArgumentException("illegal dosv subject key: empty");
+        }
+        for (Course course : getCourses()) {
+            if (course.getDosvSubjectKey().equals(dosvSubjectKey)) {
+                throw new IllegalArgumentException("illegal dosv subject key: must be unique");
+            }
+        }
+        if (dosvDegreeKey.isEmpty()) {
+            throw new IllegalArgumentException("illegal dosv degree key: empty");
+        }
 
         try {
             this.db.setAutoCommit(false);
@@ -417,8 +426,8 @@ public class ApplicationService {
             statement.setString(1, id);
             statement.setString(2, name);
             statement.setInt(3, capacity);
-            statement.setString(4, dosvSubject);
-            statement.setString(5, dosvDegree);
+            statement.setString(4, dosvSubjectKey);
+            statement.setString(5, dosvDegreeKey);
             statement.executeUpdate();
             journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
                 name);

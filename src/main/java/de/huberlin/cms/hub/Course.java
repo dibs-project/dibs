@@ -35,14 +35,14 @@ public class Course extends HubObject {
     private boolean dosvPushed;
 
     Course(String id, String name, int capacity, String allocationRuleId, boolean published,
-        String dosvSubject, String dosvDegree, boolean dosvPushed, ApplicationService service) {
+        String dosvSubjectKey, String dosvDegreeKey, boolean dosvPushed, ApplicationService service) {
         super(id, service);
         this.name = name;
         this.capacity = capacity;
         this.allocationRuleId = allocationRuleId;
         this.published = published;
-        this.dosvSubjectKey = dosvSubject;
-        this.dosvDegreeKey = dosvDegree;
+        this.dosvSubjectKey = dosvSubjectKey;
+        this.dosvDegreeKey = dosvDegreeKey;
         this.dosvPushed = dosvPushed;
     }
 
