@@ -62,7 +62,7 @@ public class CourseTest extends HubTest {
     }
 
     @Test
-    public void testUnpublishApplied() {
+    public void testUnpublishApplicationPresent() {
         exception.expect(IllegalStateException.class);
         course.apply(user.getId(), null);
         course.unpublish(null);
