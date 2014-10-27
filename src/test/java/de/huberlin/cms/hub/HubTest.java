@@ -82,6 +82,7 @@ public abstract class HubTest {
         course = service.createCourse("test-" + randomStr, 500, randomStr, "degree", null);
         this.course.createAllocationRule(null).createQuota("Standard", 100, null).
             addRankingCriterion("qualification", null);
+        this.course.publish(null);
     }
 
     @After

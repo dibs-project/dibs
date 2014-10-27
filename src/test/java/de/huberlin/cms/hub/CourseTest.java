@@ -14,18 +14,17 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
-import de.huberlin.cms.hub.HubException.HubObjectIllegalStateException;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 public class CourseTest extends HubTest {
     @Test
-    public void testCreateAllocationRule() {
-        AllocationRule rule = course.createAllocationRule(null);
-        assertEquals(rule, course.getAllocationRule());
+    public void testCreateAllocationRulePublished() {
+        exception.expect(IllegalStateException.class);
+        course.createAllocationRule(null);
     }
 
     @Test
     public void testApply() {
-        course.publish(null);
         Application application = course.apply(user.getId(), null);
         Evaluation evaluation = application.getEvaluationByCriterionId("qualification");
         assertTrue(user.getApplications(null).contains(application));
@@ -36,7 +35,6 @@ public class CourseTest extends HubTest {
 
     @Test
     public void testApplyExistingInformation() {
-        course.publish(null);
         HashMap<String, Object> args = new HashMap<String, Object>();
         args.put("grade", 4.0);
         Information information =
@@ -51,35 +49,21 @@ public class CourseTest extends HubTest {
 
     @Test
     public void testApplyUnpublished() {
-        exception.expect(HubObjectIllegalStateException.class);
+        course.unpublish(null);
+        exception.expect(IllegalStateException.class);
         course.apply(user.getId(), null);
     }
 
     @Test
     public void testPublishIncomplete() {
-        exception.expect(HubObjectIllegalStateException.class);
-        Course course = this.service.createCourse("Computer Science", 500, "cs", "bsc", null);
+        exception.expect(IllegalStateException.class);
+        course = this.service.createCourse("Computer Science", 500, "cs", "bsc", null);
         course.publish(null);
-    }
-
-    @Test
-    public void testCreateAllocationRulePublished() {
-        exception.expect(HubObjectIllegalStateException.class);
-        course.publish(null);
-        course.createAllocationRule(null);
-    }
-
-    @Test
-    public void testCreateQuotaPublished() {
-        exception.expect(HubObjectIllegalStateException.class);
-        course.publish(null);
-        course.getAllocationRule().createQuota("Performance", 100, null);
     }
 
     @Test
     public void testUnpublishApplied() {
-        exception.expect(HubObjectIllegalStateException.class);
-        course.publish(null);
+        exception.expect(IllegalStateException.class);
         course.apply(user.getId(), null);
         course.unpublish(null);
     }
