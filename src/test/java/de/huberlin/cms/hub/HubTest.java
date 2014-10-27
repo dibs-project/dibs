@@ -79,7 +79,7 @@ public abstract class HubTest {
         this.user = this.service.createUser("Jen", "barber@example.org");
 
         String randomStr = Integer.toString(new Random().nextInt());
-        course = service.createCourse("test-" + randomStr, 500, randomStr, "degree", null);
+        course = service.createCourse("test-" + randomStr, 500, randomStr, randomStr, null);
         this.course.createAllocationRule(null).createQuota("Standard", 100, null).
             addRankingCriterion("qualification", null);
         this.course.publish(null);
