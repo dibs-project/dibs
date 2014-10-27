@@ -36,7 +36,7 @@ CREATE TABLE course (
     name VARCHAR(256) NOT NULL,
     capacity INT NOT NULL,
     allocation_rule_id VARCHAR(256) REFERENCES allocation_rule,
-    published BOOLEAN DEFAULT FALSE
+    published BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE journal_record (

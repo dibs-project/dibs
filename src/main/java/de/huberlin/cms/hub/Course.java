@@ -5,8 +5,6 @@
 
 package de.huberlin.cms.hub;
 
-import static java.sql.Connection.TRANSACTION_SERIALIZABLE;
-
 import java.io.IOError;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import de.huberlin.cms.hub.HubException.HubObjectIllegalStateException;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
  * Studiengang.
@@ -54,9 +52,10 @@ public class Course extends HubObject {
      * @return angelegte und verknüpfte Vergaberegel
      */
     public AllocationRule createAllocationRule(User agent) {
-        if (published) {
-            throw new HubObjectIllegalStateException(getId());
+        if (service.getCourse(id).isPublished()) {
+            throw new IllegalStateException("course_published");
         }
+        //NOTE Race Condition: SELECT-UPDATE
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -65,8 +64,7 @@ public class Course extends HubObject {
             PreparedStatement statement = db.prepareStatement(sql);
             statement.setString(1, ruleId);
             statement.executeUpdate();
-            sql = "UPDATE course SET allocation_rule_id = ? WHERE id = ?";
-            statement = db.prepareStatement(sql);
+            statement = db.prepareStatement("UPDATE course SET allocation_rule_id = ? WHERE id = ?");
             statement.setString(1, ruleId);
             statement.setString(2, this.id);
             statement.executeUpdate();
@@ -90,9 +88,10 @@ public class Course extends HubObject {
      * @return angelegte Bewerbung
      */
     public Application apply(String userId, User agent) {
-        if (!published) {
-            throw new HubObjectIllegalStateException(getId());
+        if (!service.getCourse(id).isPublished()) {
+            throw new IllegalStateException("course_published");
         }
+        // NOTE Race Condition: SELECT-INSERT
         try {
             service.getDb().setAutoCommit(false);
             String applicationId =
@@ -143,7 +142,7 @@ public class Course extends HubObject {
     }
 
     /**
-     * Gibt alle Bewerbungen aus, die für diesen Studiengang abgegeben wurden.
+     * Liste aller Bewerbungen, die für diesen Studiengang abgegeben wurden.
      */
     public List<Application> getApplications() {
         try {
@@ -170,12 +169,12 @@ public class Course extends HubObject {
     /**
      * Publiziert den Studiengang.
      */
-    /* NB: Race conditions rund um publish() werden momentan ignoriert, da Studiengänge
-       meist nur von einer Person bearbeitet werden.*/
     public void publish(User agent) {
-        if (getAllocationRule() == null || getAllocationRule().getQuota() == null) {
-            throw new HubObjectIllegalStateException(getId());
+        AllocationRule allocationRule = getAllocationRule();
+        if (allocationRule == null || allocationRule.getQuota() == null) {
+            throw new IllegalStateException("course_incomplete");
         }
+        // NOTE Race Condition: SELECT-UPDATE
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -198,13 +197,13 @@ public class Course extends HubObject {
      * diesen Studiengang vorliegen.
      */
     public void unpublish(User agent) {
+        // NOTE Bewerbungsabfrage kann noch optimiert werden
+        if (!getApplications().isEmpty()) {
+            throw new IllegalStateException("applications_present");
+        }
         try {
             Connection db = service.getDb();
-            int initialIsolationLevel = db.getTransactionIsolation();
-            db.setTransactionIsolation(TRANSACTION_SERIALIZABLE);
-            if (!getApplications().isEmpty()) {
-                throw new HubObjectIllegalStateException(getId());
-            }
+            // NOTE Race Condition: SELECT-UPDATE
             db.setAutoCommit(false);
             String sql = "UPDATE course SET published = FALSE WHERE id = ?";
             PreparedStatement statement = service.getDb().prepareStatement(sql);
@@ -214,7 +213,6 @@ public class Course extends HubObject {
                 this.id, HubObject.getId(agent), null);
             db.commit();
             db.setAutoCommit(true);
-            db.setTransactionIsolation(initialIsolationLevel);
         } catch (SQLException e) {
             throw new IOError(e);
         }
