@@ -7,11 +7,13 @@ package de.huberlin.cms.hub;
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.MapHandler;
 
 /**
  * Studiengang.
@@ -23,19 +25,14 @@ public class Course extends HubObject {
     private String name;
     private int capacity;
     private String allocationRuleId;
+    private QueryRunner queryRunner;
 
-    Course(String id, String name, int capacity, String allocationRuleId,
-        ApplicationService service) {
-        super(id, service);
-        this.name = name;
-        this.capacity = capacity;
-        this.allocationRuleId = allocationRuleId;
-    }
-
-    Course(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert den Studiengang über den Datenbankcursor
-        this(results.getString("id"), results.getString("name"),
-            results.getInt("capacity"), results.getString("allocation_rule_id"), service);
+    Course(Map<String, Object> args) {
+        super((String) args.get("id"), (ApplicationService) args.get("service"));
+        this.name = (String) args.get("name");
+        this.capacity = (Integer) args.get("capacity");
+        this.allocationRuleId = (String) args.get("allocation_rule_id");
+        this.queryRunner =  new QueryRunner();
     }
 
     /**
@@ -49,15 +46,10 @@ public class Course extends HubObject {
             Connection db = service.getDb();
             db.setAutoCommit(false);
             String ruleId = "allocation_rule:" + Integer.toString(new Random().nextInt());
-            String sql = "INSERT INTO allocation_rule VALUES (?)";
-            PreparedStatement statement = db.prepareStatement(sql);
-            statement.setString(1, ruleId);
-            statement.executeUpdate();
-            sql = "UPDATE course SET allocation_rule_id = ? WHERE id = ?";
-            statement = db.prepareStatement(sql);
-            statement.setString(1, ruleId);
-            statement.setString(2, this.id);
-            statement.executeUpdate();
+            this.queryRunner.insert(this.service.getDb(),
+                "INSERT INTO allocation_rule VALUES (?)", new MapHandler(), ruleId);
+            this.queryRunner.update(this.service.getDb(),
+                "UPDATE course SET allocation_rule_id = ? WHERE id = ?", ruleId, this.id);
             this.allocationRuleId = ruleId;
             service.getJournal().record(
                 ApplicationService.ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED,
@@ -84,30 +76,20 @@ public class Course extends HubObject {
             service.getDb().setAutoCommit(false);
             String applicationId =
                 String.format("application:%s", new Random().nextInt());
-            String sql = "INSERT INTO application VALUES (?, ?, ?, ?)";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, applicationId);
-            statement.setString(2, userId);
-            statement.setString(3, this.id);
-            statement.setString(4, Application.STATUS_INCOMPLETE);
-            statement.executeUpdate();
+            this.queryRunner.insert(this.service.getDb(),
+                "INSERT INTO application VALUES (?, ?, ?, ?)", new MapHandler(),
+                applicationId, userId, this.id, Application.STATUS_INCOMPLETE);
             Application application = this.service.getApplication(applicationId);
-
             // Bewertung für jedes Kriterium der Verteilungsregel erstellen
             // NOTE: Query kann noch optimiert werden
             List<Criterion> criteria =
                 this.getAllocationRule().getQuota().getRankingCriteria();
             for (Criterion criterion : criteria) {
                 String id = String.format("evaluation:%s", new Random().nextInt());
-                statement = this.service.getDb().prepareStatement(
-                    "INSERT INTO evaluation VALUES (?, ?, ?, ?, ?, ?)");
-                statement.setString(1, id);
-                statement.setString(2, applicationId);
-                statement.setString(3, criterion.getId());
-                statement.setString(4, null);
-                statement.setObject(5, null);
-                statement.setString(6, Evaluation.STATUS_INFORMATION_MISSING);
-                statement.executeUpdate();
+                this.queryRunner.insert(this.service.getDb(),
+                    "INSERT INTO evaluation VALUES (?, ?, ?, ?, ?, ?)", new MapHandler(),
+                    id, applicationId, criterion.getId(), null, null,
+                    Evaluation.STATUS_INFORMATION_MISSING);
             }
 
             // Vorhandene Informationen der Bewerbung zuordnen

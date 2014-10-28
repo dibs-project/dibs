@@ -7,7 +7,7 @@ package de.huberlin.cms.hub;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Information eines Benutzers.
@@ -50,13 +50,16 @@ public abstract class Information extends HubObject {
          * Extension API: Erstellt eine neue Instanz dieses Informationstyps und
          * initialisiert sie über einen Datenbankcursor.
          *
-         * @param results Datenbankcursor, der auf ein passendes Abfrageergebnis verweist
+         * @param args Datenbankcursor, der auf ein passendes Abfrageergebnis verweist
          * @param service Bewerbungsdienst
          * @return neue Information
          * @throws SQLException wenn ein Datenbankzugriffsfehler auftritt
          */
+//        public abstract Information newInstance(Map<String, Object> args,
+//            ApplicationService service) throws SQLException;
+        
         public abstract Information newInstance(ResultSet results,
-            ApplicationService service) throws SQLException;
+                ApplicationService service) throws SQLException;
 
         /**
          * Legt eine neue Information für einen Benutzer an.
@@ -67,7 +70,7 @@ public abstract class Information extends HubObject {
          * @param agent ausführender Benutzer
          * @return angelegte Information
          */
-        public abstract Information create(HashMap<String, Object> args, User user,
+        public abstract Information create(Map<String, Object> args, User user,
             User agent);
 
         /**

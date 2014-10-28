@@ -15,7 +15,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
+
+import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 
 /**
  * Benutzer, der mit dem Bewerbungssystem interagiert.
@@ -28,17 +31,11 @@ public class User extends HubObject {
     private String email;
     private QueryRunner queryRunner;
 
-    User(String id, String name, String email, ApplicationService service) {
-        super(id, service);
-        this.name = name;
-        this.email = email;
-        this.queryRunner = new QueryRunner();  
-    }
-
-    User(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert den Benutzer über den Datenbankcursor
-        this(results.getString("id"), results.getString("name"),
-            results.getString("email"), service);
+    User(Map<String, Object> args) {
+        super((String)args.get("id"), (ApplicationService)args.get("service"));
+        this.name = (String)args.get("name");
+        this.email = (String)args.get("email");
+        this.queryRunner = new QueryRunner();
     }
 
     /**
@@ -76,6 +73,17 @@ public class User extends HubObject {
     public List<Information> getInformationSet(User agent) {
         ArrayList<Information> informationSet = new ArrayList<Information>();
         for (Information.Type type : this.service.getInformationTypes().values()) {
+//            try {
+//                Map<String, Object> args = this.queryRunner.query(this.service.getDb(),
+//                    "SELECT * FROM \"%s\" WHERE user_id = ?",
+//                    new MapHandler(), type.getId(), id);
+//                if (args == null) {
+//                    throw new ObjectNotFoundException(id);
+//                }
+//                informationSet.add(type.newInstance(args, this.service));
+//            } catch (SQLException e) {
+//                throw new IOError(e);
+//            }
             try {
                 PreparedStatement statement = this.service.getDb().prepareStatement(
                     String.format("SELECT * FROM \"%s\" WHERE user_id = ?",
@@ -101,12 +109,10 @@ public class User extends HubObject {
     public List<Application> getApplications(User agent) {
         try {
             List<Application> applications = new ArrayList<Application>();
-            String sql = "SELECT * FROM application WHERE user_id = ?";
-            List<Map<String, Object>> queryResults =
-                this.queryRunner.query(this.getService().getDb(), sql,
-                    new MapListHandler(), this.getId());
-            for(Map<String, Object> map : queryResults) {
-               HashMap<String, Object> args = Util.convertMapToHashMap(map);
+            List<Map<String, Object>> queryResults = this.queryRunner.query(
+                this.service.getDb(), "SELECT * FROM application WHERE user_id = ?",
+                new MapListHandler(), this.getId());
+            for(Map<String, Object> args : queryResults) {
                args.put("service", this.getService());
                applications.add(new Application(args));
            }

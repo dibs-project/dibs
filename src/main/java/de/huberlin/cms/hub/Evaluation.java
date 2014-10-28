@@ -8,7 +8,9 @@ package de.huberlin.cms.hub;
 import java.io.IOError;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.dbutils.QueryRunner;
 
 /**
  * Bewertung eines Bewerbers (bzw.&nbsp;von Informationen eines Bewerbers) anhand eines
@@ -27,14 +29,16 @@ public class Evaluation extends HubObject {
     private String informationId;
     private Double value;
     private String status;
+    private QueryRunner queryRunner;
 
-    Evaluation(HashMap<String, Object> args) {
+    Evaluation(Map<String, Object> args) {
         super((String) args.get("id"), (ApplicationService) args.get("service"));
         this.applicationId = (String) args.get("application_id");
         this.criterionId = (String) args.get("criterion_id");
         this.informationId = (String) args.get("information_id");
         this.value = (Double) args.get("value");
         this.status = (String) args.get("status");
+        this.queryRunner =  new QueryRunner();
     }
 
     void assignInformation(Information information) {
@@ -43,13 +47,9 @@ public class Evaluation extends HubObject {
         this.status = STATUS_EVALUATED;
 
         try {
-            PreparedStatement statement = this.service.getDb().prepareStatement(
-                "UPDATE evaluation SET information_id = ?, value = ?, status = ? WHERE id = ?");
-            statement.setString(1, this.informationId);
-            statement.setObject(2, this.value);
-            statement.setString(3, this.status);
-            statement.setString(4, this.id);
-            statement.executeUpdate();
+            this.queryRunner.update(this.service.getDb(),
+                "UPDATE evaluation SET information_id = ?, value = ?, status = ? WHERE id = ?",
+                this.informationId, this.value, this.status, this.id);
         } catch (SQLException e) {
             throw new IOError(e);
         }

@@ -47,7 +47,7 @@ public class Application extends HubObject {
     private String status;
     private QueryRunner queryRunner;
 
-    Application(HashMap<String, Object> args) {
+    Application(Map<String, Object> args) {
         super((String) args.get("id"), (ApplicationService) args.get("service"));
         this.userId = (String) args.get("user_id");
         this.courseId = (String) args.get("course_id");
@@ -63,11 +63,9 @@ public class Application extends HubObject {
      */
     public Evaluation getEvaluationByCriterionId(String criterionId) {
         try {
-            String sql =
-                "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?";
-            HashMap<String, Object> args =
-                (HashMap<String, Object>) this.queryRunner.query(this.service.getDb(),
-                    sql, new MapHandler(), this.getId(), criterionId);
+            Map<String, Object> args = this.queryRunner.query(this.service.getDb(),
+                "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?",
+                new MapHandler(), this.getId(), criterionId);
             if (args == null) {
                 throw new IllegalArgumentException(
                     "illegal criterionId: evaluation does not exist");
@@ -116,15 +114,15 @@ public class Application extends HubObject {
             MapListHandler mapListHandler = new MapListHandler();
             List<Map<String, Object>> resultMaps = mapListHandler.handle(results);
             for (Map<String, Object> map : resultMaps) {
-                HashMap<String, Object> args = Util.convertMapToHashMap(map);
-                args.put("service", this.getService());
-                evaluations.add(new Evaluation(args));
+                map.put("service", this.getService());
+                evaluations.add(new Evaluation(map));
             }
             return evaluations;
         } catch (SQLException e) {
             throw new IOError(e);
         }
     }
+
 
     /**
      * Gibt eine Liste aller Bewertungen, die zu dieser Bewerbung gehören, zurück.
@@ -139,11 +137,8 @@ public class Application extends HubObject {
         this.status = status;
         try {
             service.getDb().setAutoCommit(false);
-            String sql = "UPDATE application SET status = ? WHERE id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, status);
-            statement.setString(2, this.id);
-            statement.executeUpdate();
+            this.queryRunner.update(this.service.getDb(),
+                "UPDATE application SET status = ? WHERE id = ?", status, this.id);
             service.getJournal().record(ApplicationService.ACTION_TYPE_APPLICATION_STATUS_SET,
                 this.id, HubObject.getId(agent), status);
             service.getDb().commit();

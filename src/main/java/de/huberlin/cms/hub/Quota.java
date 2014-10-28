@@ -11,8 +11,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.MapHandler;
 
 /**
  * Quote, welche die Kriterien für die Ranglistenerstellung für einen Teil der Plätze
@@ -23,11 +26,13 @@ import java.util.List;
 public class Quota extends HubObject {
     private final String name;
     private final int percentage;
+    private QueryRunner queryRunner;
 
-    Quota(HashMap<String, Object> args) {
+    Quota(Map<String, Object> args) {
         super((String) args.get("id"), (ApplicationService) args.get("service"));
         this.name = (String) args.get("name");
         this.percentage = (Integer) args.get("percentage");
+        this.queryRunner =  new QueryRunner();
     }
 
     /**
@@ -40,11 +45,9 @@ public class Quota extends HubObject {
         Connection db = service.getDb();
         try {
             db.setAutoCommit(false);
-            String sql = "INSERT INTO quota_ranking_criteria VALUES(?, ?)";
-            PreparedStatement statement = db.prepareStatement(sql);
-            statement.setString(1, id);
-            statement.setString(2, criterionId);
-            statement.executeUpdate();
+            this.queryRunner.insert(this.service.getDb(),
+                "INSERT INTO quota_ranking_criteria VALUES(?, ?)", new MapHandler(),
+                id, criterionId);
             service.getJournal().record(ApplicationService.ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED,
                 this.id, HubObject.getId(agent), criterionId);
             db.commit();
