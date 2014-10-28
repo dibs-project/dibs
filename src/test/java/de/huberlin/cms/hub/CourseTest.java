@@ -57,7 +57,7 @@ public class CourseTest extends HubTest {
     @Test
     public void testPublishIncomplete() {
         exception.expect(IllegalStateException.class);
-        course = this.service.createCourse("Computer Science", 500, "cs", "bsc", null);
+        course = this.service.createCourse("Computer Science", 500, null);
         course.publish(null);
     }
 

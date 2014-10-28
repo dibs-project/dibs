@@ -64,7 +64,7 @@ public class ApplicationServiceTest extends HubTest {
     @Test
     public void testCreateCourse() {
         String name = "Computer Science";
-        Course course = this.service.createCourse(name, 200, "cs", "bsc", null);
+        Course course = this.service.createCourse(name, 200, null);
         assertEquals(name, course.getName());
         assertTrue(this.service.getCourses().contains(course));
     }
@@ -73,14 +73,14 @@ public class ApplicationServiceTest extends HubTest {
     public void testCreateCourseEmptyName() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("name");
-        this.service.createCourse("", 200, "cs", "bsc", null);
+        this.service.createCourse("", 200, null);
     }
 
     @Test
     public void testCreateCourseNonpositiveCapacity() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("capacity");
-        this.service.createCourse("Computer Science", -3, "cs", "bsc", null);
+        this.service.createCourse("Computer Science", -3, null);
     }
 
     @Test

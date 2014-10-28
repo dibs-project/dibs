@@ -28,19 +28,15 @@ public class Course extends HubObject {
     private int capacity;
     private String allocationRuleId;
     private boolean published;
-    private String dosvSubjectKey; // muss eindeutig sein
-    private String dosvDegreeKey;
     private boolean dosvPushed;
 
     Course(String id, String name, int capacity, String allocationRuleId, boolean published,
-        String dosvSubjectKey, String dosvDegreeKey, boolean dosvPushed, ApplicationService service) {
+        boolean dosvPushed, ApplicationService service) {
         super(id, service);
         this.name = name;
         this.capacity = capacity;
         this.allocationRuleId = allocationRuleId;
         this.published = published;
-        this.dosvSubjectKey = dosvSubjectKey;
-        this.dosvDegreeKey = dosvDegreeKey;
         this.dosvPushed = dosvPushed;
     }
 
@@ -48,8 +44,7 @@ public class Course extends HubObject {
         // initialisiert den Studiengang über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
             results.getInt("capacity"), results.getString("allocation_rule_id"),
-            results.getBoolean("published"), results.getString("dosv_subject_key"),
-            results.getString("dosv_degree_key"), results.getBoolean("dosv_pushed"), service);
+            results.getBoolean("published"), results.getBoolean("dosv_pushed"), service);
     }
 
     /**
@@ -252,20 +247,6 @@ public class Course extends HubObject {
      */
     public boolean isPublished() {
         return published;
-    }
-
-    /**
-     * Schlüsselfeld "Studiengang" für das DoSV, muss eindeutig sein.
-     */
-    public String getDosvSubjectKey() {
-        return dosvSubjectKey;
-    }
-
-    /**
-     * Schlüsselfeld "Abschluss" für das DoSV.
-     */
-    public String getDosvDegreeKey() {
-        return dosvDegreeKey;
     }
 
     /**

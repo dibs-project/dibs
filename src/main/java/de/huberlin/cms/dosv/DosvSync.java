@@ -157,13 +157,14 @@ public class DosvSync {
                 studienangebotsStatus = OEFFENTLICH_SICHTBAR;
             }
 
+            String dosvSubjectKey = Integer.toString(course.getName().hashCode());
             /** Studienangebot - SAF 101 */
             Studienfach studienfach = new Studienfach();
-            studienfach.setSchluessel(course.getDosvSubjectKey());
-            studienfach.setNameDe(course.getName()); //TODO Feld Course.subject
+            studienfach.setSchluessel(dosvSubjectKey);
+            studienfach.setNameDe(course.getName()); // TODO Feld Course.subject
             Abschluss abschluss = new Abschluss();
-            abschluss.setSchluessel(course.getDosvDegreeKey());
-            abschluss.setNameDe(course.getDosvDegreeKey()); //TODO Feld Course.degree
+            abschluss.setSchluessel("bachelor");
+            abschluss.setNameDe("bachelor"); // TODO Feld Course.degree
 
             Studiengang studiengang = new Studiengang();
             studiengang.setNameDe(course.getName());
@@ -180,10 +181,10 @@ public class DosvSync {
             integrationseinstellungen
                 .setRueckstellungsBescheidVersandart(BescheidVersandart.HOCHSCHULE);
 
-            Koordinierungsangebotsdaten koordinierungsangebotsdaten
-                = new Koordinierungsangebotsdaten();
+            Koordinierungsangebotsdaten koordinierungsangebotsdaten =
+                new Koordinierungsangebotsdaten();
             GregorianCalendar cal = new GregorianCalendar();
-            cal.setTime(new Date()); //TODO Beginn Bewerbungsfrist in Course
+            cal.setTime(new Date()); // TODO Beginn Bewerbungsfrist in Course
             XMLGregorianCalendar xmlCal;
             Duration duration;
             try {
@@ -193,18 +194,21 @@ public class DosvSync {
                 // unerreichbar
                 throw new RuntimeException(e);
             }
-            koordinierungsangebotsdaten.setAnfangBewerbungsfrist((XMLGregorianCalendar) xmlCal.clone());
-            xmlCal.add(duration); //TODO Ende Bewerbungsfrist in Course
+            koordinierungsangebotsdaten
+                .setAnfangBewerbungsfrist((XMLGregorianCalendar) xmlCal.clone());
+            xmlCal.add(duration); // TODO Ende Bewerbungsfrist in Course
             koordinierungsangebotsdaten.setEndeBewerbungsfrist(xmlCal);
-
-            koordinierungsangebotsdaten.setUrlHSBewerbungsportal("http://studienplatz.hu-berlin.de/");
+            koordinierungsangebotsdaten
+                .setUrlHSBewerbungsportal("http://studienplatz.hu-berlin.de/");
 
             Einfachstudienangebot einfachstudienangebot = new Einfachstudienangebot();
             einfachstudienangebot.setNameDe(course.getName());
-            einfachstudienangebot.setBeschreibungDe(course.getName()); //TODO Feld Course.description
+            // TODO Feld Course.description
+            einfachstudienangebot.setBeschreibungDe(course.getName());
             einfachstudienangebot.setStudiengang(studiengang);
             einfachstudienangebot.setIntegrationseinstellungen(integrationseinstellungen);
-            einfachstudienangebot.setKoordinierungsangebotsdaten(koordinierungsangebotsdaten);
+            einfachstudienangebot
+                .setKoordinierungsangebotsdaten(koordinierungsangebotsdaten);
             einfachstudienangebot.setStatus(studienangebotsStatus);
 
             studiangebote.add(einfachstudienangebot);
@@ -217,10 +221,8 @@ public class DosvSync {
             /** Studienpaket - SAF 401 */
             EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
                 new EinfachstudienangebotsSchluessel();
-            einfachstudienangebotsSchluessel.setStudienfachSchluessel(course
-                .getDosvSubjectKey());
-            einfachstudienangebotsSchluessel.setAbschlussSchluessel(course
-                .getDosvDegreeKey());
+            einfachstudienangebotsSchluessel.setStudienfachSchluessel(dosvSubjectKey);
+            einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
 
             Bewerberplatzbedarf bewerberplatzbedarf = new Bewerberplatzbedarf();
             bewerberplatzbedarf.setNenner(1);
@@ -232,8 +234,7 @@ public class DosvSync {
             paketbestandteil.setBewerberplatzbedarf(bewerberplatzbedarf);
 
             Studienpaket studienpaket = new Studienpaket();
-            studienpaket.setSchluessel(course.getDosvSubjectKey() + "--"
-                + course.getDosvDegreeKey());
+            studienpaket.setSchluessel(dosvSubjectKey + "--" + "bachelor");
             studienpaket.setKapazitaet(course.getCapacity());
             studienpaket.getPaketbestandteil().add(paketbestandteil);
             studienpaket.setNameDe(course.getName());

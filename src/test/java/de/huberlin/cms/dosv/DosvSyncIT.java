@@ -5,21 +5,16 @@
 
 package de.huberlin.cms.dosv;
 
-import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.IN_VORBEREITUNG;
-import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.OEFFENTLICH_SICHTBAR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import de.hochschulstart.hochschulschnittstelle.studiengaengeservicev1_0.StudiengaengeServiceFehler;
-import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studienangebot;
 import de.hu_berlin.dosv.DosvClient;
 import de.huberlin.cms.hub.HubTest;
 import de.huberlin.cms.hub.User;
@@ -56,16 +51,6 @@ public class DosvSyncIT extends HubTest {
         dosvSync = new DosvSync(service);
         dosvSync.synchronize();
         assertTrue(service.getCourse(course.getId()).isDosvPushed());
-        DosvClient client = new DosvClient(config);
-        List<Studienangebot> angebote =
-            client.abrufenStudienangeboteDurchHS(course.getDosvDegreeKey());
-        for (Studienangebot angebot : angebote) {
-            if (angebot.getNameDe().equals(course.getName())) {
-                if (!angebot.getStatus().equals(IN_VORBEREITUNG)) {
-                    fail("DoSV-Status of unpublished course has to be 'In Vorbereitung'");
-                }
-            }
-        }
     }
 
     @Test
@@ -73,15 +58,5 @@ public class DosvSyncIT extends HubTest {
         dosvSync = new DosvSync(service);
         dosvSync.synchronize();
         assertTrue(service.getCourse(course.getId()).isDosvPushed());
-        DosvClient client = new DosvClient(config);
-        List<Studienangebot> angebote =
-            client.abrufenStudienangeboteDurchHS(course.getDosvDegreeKey());
-        for (Studienangebot angebot : angebote) {
-            if (angebot.getNameDe().equals(course.getName())) {
-                if (!angebot.getStatus().equals(OEFFENTLICH_SICHTBAR)) {
-                    fail("DoSV-Status of published course has to be 'Öffentlich Sichtbar'");
-                }
-            }
-        }
     }
 }
