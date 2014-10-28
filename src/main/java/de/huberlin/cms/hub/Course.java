@@ -175,6 +175,35 @@ public class Course extends HubObject {
     }
 
     /**
+     * Ruft die Rangliste für den Studiengang ab.
+     * 
+     * @return Rangliste
+     */
+    public List<Rank> getRankings() {
+        ArrayList<Rank> ranking = new ArrayList<Rank>();
+        try {
+            String sql = "SELECT * FROM rank WHERE quota_id = ?";
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
+            statement.setString(1, this.getAllocationRule().getQuota().getId());
+            ResultSet results = statement.executeQuery();
+            while (results.next()) {
+                HashMap<String, Object> args = new HashMap<String, Object>();
+                args.put("id", results.getString("id"));
+                args.put("quota_id", results.getString("quota_id"));
+                args.put("user_id", results.getString("user_id"));
+                args.put("application_id", results.getString("application_id"));
+                args.put("index", results.getInt("index"));
+                args.put("lotnumber", results.getInt("lotnumber"));
+                args.put("service", this.service);
+                ranking.add(new Rank(args));
+            }
+            return ranking;
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
      * Name des Studiengangs.
      */
     public String getName() {
