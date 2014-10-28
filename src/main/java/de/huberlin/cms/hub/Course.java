@@ -26,6 +26,13 @@ public class Course extends HubObject {
     private int capacity;
     private String allocationRuleId;
 
+    Course(HashMap<String, Object> args) {
+        super((String) args.get("id"), (ApplicationService) args.get("service"));
+        this.name = (String) args.get("name");
+        this.capacity = (Integer) args.get("capacity");
+        this.allocationRuleId = (String) args.get("allocation_rule_id");
+    }
+
     Course(String id, String name, int capacity, String allocationRuleId,
         ApplicationService service) {
         super(id, service);
@@ -35,10 +42,10 @@ public class Course extends HubObject {
     }
 
     Course(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert den Studiengang über den Datenbankcursor
-        this(results.getString("id"), results.getString("name"),
-            results.getInt("capacity"), results.getString("allocation_rule_id"), service);
-    }
+     // initialisiert den Studiengang über den Datenbankcursor
+     this(results.getString("id"), results.getString("name"),
+         results.getInt("capacity"), results.getString("allocation_rule_id"), service);
+     }
 
     /**
      * Legt eine neue Vergaberegel an und verknüpft diese mit dem Studiengang.
@@ -156,6 +163,15 @@ public class Course extends HubObject {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+    }
+
+    /**
+     * Generiert die Rangliste für den Studiengang.
+     *
+     * @return Rangliste
+     */
+    public void generateRankings() {
+        this.getAllocationRule().getQuota().generateRanking();
     }
 
     /**

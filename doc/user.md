@@ -24,6 +24,7 @@ Struktur:
   |----------------------| |----------------| |---------------------| |-----------|
   | createAllocationRule | | createQuota    | | addRankingCriterion | | evaluate  |
   | apply                | '----------------' '---------------------' '-----------'
+  | generateRankings     |
   '----------------------'
 
   .---------.
@@ -44,5 +45,6 @@ Ablauf:
    . register          |                      |
    . createInformation |                      |
    . apply             |                      |
+   .                   |                      | generateRankings
 
 ```

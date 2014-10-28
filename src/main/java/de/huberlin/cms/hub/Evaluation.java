@@ -70,6 +70,13 @@ public class Evaluation extends HubObject {
     }
 
     /**
+     * ID des Kriteriums.
+     */
+    public String getCriterionId() {
+        return this.criterionId;
+    }
+
+    /**
      * Zugeordnete Information. <code>null</code>, wenn noch keine Information verknüpft
      * wurde.
      */

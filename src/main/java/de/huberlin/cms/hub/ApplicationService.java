@@ -83,7 +83,7 @@ public class ApplicationService {
                 // TODO: Tabellen automatisch aus hub.sql lesen
                 String[] tables = {"user", "settings", "quota", "quota_ranking_criteria",
                     "allocation_rule", "course", "journal_record", "qualification",
-                    "application", "evaluation"};
+                    "application", "evaluation", "rank"};
                 for (String table : tables) {
                     statement = db.prepareStatement(
                         String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));

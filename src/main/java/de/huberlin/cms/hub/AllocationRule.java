@@ -12,7 +12,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Random;
+
+import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 
 /**
  * Regel, nach der Studienplätze für einen Studiengang an die Bewerber vergeben werden
@@ -28,11 +31,16 @@ public class AllocationRule extends HubObject {
         super(id, service);
     }
 
-    AllocationRule(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert das Vergabeschema über den Datenbankcursor
-        this(results.getString("id"), service);
-        this.quotaId = results.getString("quota_id");
+    AllocationRule(HashMap<String, Object> args) throws SQLException {
+            super((String) args.get("id"), (ApplicationService) args.get("service"));
+            this.quotaId = (String) args.get("quota_id");
     }
+
+    AllocationRule(ResultSet results, ApplicationService service) throws SQLException {
+     // initialisiert das Vergabeschema über den Datenbankcursor
+     this(results.getString("id"), service);
+     this.quotaId = results.getString("quota_id");
+     }
 
     /**
      * Erstellt und verknüpft eine Quote.
@@ -70,6 +78,30 @@ public class AllocationRule extends HubObject {
             db.commit();
             db.setAutoCommit(true);
             return service.getQuota(this.quotaId);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Gibt den Studiengang des Vergabeschematas zurück. 
+     */
+    public Course getCourse() {
+        try {
+            String sql = "SELECT * FROM course WHERE allocation_rule_id = ?";
+            PreparedStatement statement = this.service.getDb().prepareStatement(sql);
+            statement.setString(1, this.id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new ObjectNotFoundException(id);
+            }
+            HashMap<String, Object> args = new HashMap<String, Object>();
+            args.put("id", results.getString("id"));
+            args.put("name", results.getString("name"));
+            args.put("capacity", results.getInt("capacity"));
+            args.put("allocation_rule_id", results.getString("allocation_rule_id"));
+            args.put("service", this.service);
+            return new Course(args);
         } catch (SQLException e) {
             throw new IOError(e);
         }
