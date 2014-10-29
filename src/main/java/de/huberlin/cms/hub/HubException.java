@@ -46,15 +46,13 @@ public abstract class HubException extends RuntimeException {
     }
 
     /**
-     * Exception die auftritt, wenn versucht wird, eine Entität zu verändern, die sich in
-     * einem mit der Aktion inkompatiblen Zustand befindet.
+     * Zeigt an, dass eine Methode zu einem unzulässigen Zeitpunkt aufgerufen wurde:
+     * HUB ist in einem mit der Ausführung der Operation inkompatiblen Zustand.
      *
      * @author Markus Michler
      * @see java.lang.IllegalStateException
      */
     public static class IllegalStateException extends HubException {
-        protected String objectId;
-
         public IllegalStateException(String code) {
             super(code);
         }
