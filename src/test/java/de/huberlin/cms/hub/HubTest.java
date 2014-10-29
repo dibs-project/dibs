@@ -75,7 +75,8 @@ public abstract class HubTest {
         ApplicationService.setupStorage(this.db, true);
 
         this.service = new ApplicationService(this.db, this.config);
-        this.user = this.service.createUser("Jen", "barber@example.org");
+        this.user = this.service.createUser("Jen", "barber@example.org",
+            "barber@example.org:secr3t");
 
         this.course = this.service.createCourse("Computer Science", 500, null);
         this.course.createAllocationRule(null).createQuota("Standard", 100, null).

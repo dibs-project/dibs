@@ -15,8 +15,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -83,7 +85,7 @@ public class ApplicationService {
                 // TODO: Tabellen automatisch aus hub.sql lesen
                 String[] tables = {"user", "settings", "quota", "quota_ranking_criteria",
                     "allocation_rule", "course", "journal_record", "qualification",
-                    "application", "evaluation"};
+                    "application", "evaluation", "session"};
                 for (String table : tables) {
                     statement = db.prepareStatement(
                         String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
@@ -162,28 +164,29 @@ public class ApplicationService {
      *
      * @param name Name, mit dem der Benutzer von HUB angesprochen wird
      * @param email Email-Adresse
+     * TODO
      * @return Angelegter Benutzer
-     * @throws IllegalArgumentException wenn <code>name</code> oder <code>email</code>
-     *     leer ist
      */
-    public User createUser(String name, String email) {
+    public User createUser(String name, String email, String credential) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
         if (email.isEmpty()) {
             throw new IllegalArgumentException("illegal email: empty");
         }
+        // TODO
 
         try {
             this.db.setAutoCommit(false);
-            // TODO: besseres Format für zufällige IDs
-            String id = Integer.toString(new Random().nextInt());
+            String id = String.format("user:%s", new Random().nextInt());
             PreparedStatement statement =
-                db.prepareStatement("INSERT INTO \"user\" VALUES(?, ?, ?)");
+                db.prepareStatement("INSERT INTO \"user\" VALUES (?, ?, ?, ?)");
             statement.setString(1, id);
             statement.setString(2, name);
             statement.setString(3, email);
+            statement.setString(4, credential);
             statement.executeUpdate();
+            // TODO: check for duplicate email
             journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
             this.db.commit();
             this.db.setAutoCommit(true);
@@ -234,17 +237,6 @@ public class ApplicationService {
         } catch (SQLException e) {
             throw new IOError(e);
         }
-    }
-
-    /**
-    * Registriert einen neuen Benutzer.
-    *
-    * @param name Name, mit dem der Benutzer von HUB angesprochen wird
-    * @param email Email-Adresse
-    * @return Registrierter Nutzer
-    */
-    public User register(String name, String email) {
-        return this.createUser(name, email);
     }
 
     /**
@@ -332,6 +324,92 @@ public class ApplicationService {
     }
 
     /**
+    * Registriert einen neuen Benutzer.
+    *
+    * @param name Name, mit dem der Benutzer von HUB angesprochen wird
+    * @param email Email-Adresse
+    * TODO
+    * @return Registrierter Nutzer
+    */
+    public User register(String name, String email, String credential) {
+        return this.createUser(name, email, credential);
+    }
+
+    // TODO: document
+    public User authenticate(String credential) {
+        try {
+            PreparedStatement statement = this.getDb().prepareStatement(
+                "SELECT * FROM \"user\" WHERE credential = ?");
+            statement.setString(1, credential);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                return null;
+            }
+            return new User(results, this);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    // TODO: document
+    public Session login(String credential, String device) {
+        // TODO: validate
+
+        User user = this.authenticate(credential);
+        if (user == null) {
+            return null;
+        }
+
+        String id = String.format("session:%s", new Random().nextInt());
+        Timestamp startTime = new Timestamp(new Date().getTime());
+        // TODO: const
+        Timestamp endTime = new Timestamp(
+            startTime.getTime() + 30 * 24 * 60 * 60 * 1000L);
+
+        try {
+            PreparedStatement statement = this.getDb().prepareStatement(
+                "INSERT INTO session VALUES (?, ?, ?, ?, ?)");
+            statement.setString(1, id);
+            statement.setString(2, user.getId());
+            statement.setString(3, device);
+            statement.setTimestamp(4, startTime);
+            statement.setTimestamp(5, endTime);
+            statement.executeUpdate();
+            return this.getSession(id);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    // TODO: document
+    public void logout(Session session) {
+        session.end();
+    }
+
+    // TODO: document
+    public Session getSession(String id) {
+        try {
+            PreparedStatement statement =
+                this.getDb().prepareStatement("SELECT * FROM session WHERE id = ?");
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            if (!results.next()) {
+                throw new ObjectNotFoundException(id);
+            }
+            HashMap<String, Object> args = new HashMap<>();
+            args.put("id", results.getString("id"));
+            args.put("user_id", results.getString("user_id"));
+            args.put("device", results.getString("device"));
+            args.put("start_time", results.getTimestamp("start_time"));
+            args.put("end_time", results.getTimestamp("end_time"));
+            args.put("service", this);
+            return new Session(args);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
      * Stellt das aktuelle Semester für das Bewerbungssystem ein.
      *
      * @param semester Neues aktuelles Semester.
@@ -406,7 +484,7 @@ public class ApplicationService {
 
         try {
             this.db.setAutoCommit(false);
-            String id = "course:" + Integer.toString(new Random().nextInt());
+            String id = String.format("course:%s", new Random().nextInt());
             PreparedStatement statement =
                 db.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
             statement.setString(1, id);

@@ -22,17 +22,20 @@ import java.util.List;
 public class User extends HubObject {
     private String name;
     private String email;
+    private String credential;
 
-    User(String id, String name, String email, ApplicationService service) {
+    User(String id, String name, String email, String credential,
+            ApplicationService service) {
         super(id, service);
         this.name = name;
         this.email = email;
+        this.credential = credential;
     }
 
     User(ResultSet results, ApplicationService service) throws SQLException {
         // initialisiert den Benutzer über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
-            results.getString("email"), service);
+            results.getString("email"), results.getString("credential"), service);
     }
 
     /**
@@ -126,5 +129,10 @@ public class User extends HubObject {
      */
     public String getEmail() {
         return this.email;
+    }
+
+    // TODO: document
+    public String getCredential() {
+        return this.credential;
     }
 }

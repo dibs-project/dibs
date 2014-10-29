@@ -1,7 +1,8 @@
 CREATE TABLE "user" (
     id VARCHAR(256) PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
-    email VARCHAR(256) NOT NULL
+    email VARCHAR(256) UNIQUE NOT NULL,
+    credential VARCHAR(256) UNIQUE NOT NULL
 );
 
 CREATE TABLE settings (
@@ -65,6 +66,14 @@ CREATE TABLE evaluation (
     information_id VARCHAR(256),
     value FLOAT,
     status VARCHAR(256) NOT NULL
+);
+
+CREATE TABLE session (
+    id VARCHAR(256) PRIMARY KEY,
+    user_id VARCHAR(256) REFERENCES "user" NOT NULL,
+    device VARCHAR(256) NOT NULL,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL
 );
 
 INSERT INTO settings (id, semester, storage_version) VALUES ('settings', '2014WS', '0');
