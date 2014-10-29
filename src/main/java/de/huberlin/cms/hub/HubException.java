@@ -44,4 +44,17 @@ public abstract class HubException extends RuntimeException {
             return "Object '" + objectId + "' does not exist.";
         }
     }
+
+    /**
+     * Zeigt an, dass eine Methode zu einem unzulässigen Zeitpunkt aufgerufen wurde:
+     * HUB ist in einem mit der Ausführung der Operation inkompatiblen Zustand.
+     *
+     * @author Markus Michler
+     * @see java.lang.IllegalStateException
+     */
+    public static class IllegalStateException extends HubException {
+        public IllegalStateException(String code) {
+            super(code);
+        }
+    }
 }
