@@ -11,12 +11,12 @@ import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Settings;
 
 /**
- * FIXME Prämisse/ Frontend: Ein Status wird nur von HUB oder dem DoSV geschrieben.
+ * Synchronisiert Studiengänge, Bewerbungen und Ranglisten mit dem DoSV. Jedes Datum
+ * wird ausschließlich entweder im System des DoSV oder lokal geschrieben.
  *
  * @author Markus Michler
  */
 public class DosvSync {
-
     /**
      * Der Benutzer hat sich selbst registriert. Der Benutzer besitzt keinen Zugriff auf
      * wesentliche Systemfunktionalitäten.
@@ -25,7 +25,7 @@ public class DosvSync {
 
     /**
      * Der Benutzer hat seine Aktivierungsmail bestätigt, aber das System erfordert eine
-     * zusätzliche Autorisierung des Benutzers durch einen Servicestellen-Mitarbeiter. Der
+     * zusätzliche Autorisierung des Benutzers durch einen Servicestellenmitarbeiter. Der
      * Benutzer besitzt keinen Zugriff auf wesentliche Systemfunktionalitäten.
      */
     public static final String USER_AUTHORIZATION_NEEDED = "authorization_needed";
@@ -55,14 +55,11 @@ public class DosvSync {
      */
     public static final String USER_DELETION_REQUESTED = "deletion_requested";
 
-    DosvClient dosvClient;
-    ApplicationService service;
+    private DosvClient dosvClient;
 
     public DosvSync(ApplicationService service) {
-        this.service = service;
         Properties dosvConfig = service.getConfig();
         Settings settings = service.getSettings();
-        System.out.println(service.getConfig().getProperty(DosvClient.URL));
         dosvConfig.setProperty(DosvClient.SEMESTER, settings.getSemester().substring(4, 6));
         dosvConfig.setProperty(DosvClient.YEAR, settings.getSemester().substring(0, 4));
         dosvClient = new DosvClient(dosvConfig);
@@ -88,7 +85,7 @@ public class DosvSync {
                 return USER_DELETION_PENDING;
             case LOESCHUNG_GEWUENSCHT:
                 return USER_DELETION_REQUESTED;
-            default: // AKTIV
+            default: /** AKTIV */
                 return USER_ACTIVE;
             }
         } catch (BenutzerServiceFehler e) {

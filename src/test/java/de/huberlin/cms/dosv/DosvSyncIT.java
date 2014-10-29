@@ -13,10 +13,10 @@ import de.huberlin.cms.hub.HubTest;
 import de.huberlin.cms.hub.User;
 
 public class DosvSyncIT extends HubTest {
-
     @Before
     public void before() throws Exception {
         Set<Object> dosvConfigKeys = service.getConfig().keySet();
+        /** Überspringt den Integration Test, wenn der DoSV-Webservice nicht konfiguriert ist */
         assumeTrue(dosvConfigKeys.contains(DosvClient.UNIVERSITY_ID)
             && dosvConfigKeys.contains(DosvClient.USER)
             && dosvConfigKeys.contains(DosvClient.PW));
