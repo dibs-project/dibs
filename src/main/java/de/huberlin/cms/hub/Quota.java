@@ -77,6 +77,7 @@ public class Quota extends HubObject {
             PreparedStatement statement = service.getDb().prepareStatement(query);
             statement.setString(1, id);
             ResultSet results = statement.executeQuery();
+            
             while (results.next()) {
                 rankingCriteria.add(service.getCriteria().get(
                     results.getString("criterion_id")));

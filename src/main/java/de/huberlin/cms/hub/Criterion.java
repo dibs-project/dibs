@@ -5,8 +5,6 @@
 
 package de.huberlin.cms.hub;
 
-import java.util.Map;
-
 /**
  * Kriterium, welches die Auswahl- und Zulassungsregeln abbildet.
  *

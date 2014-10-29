@@ -7,14 +7,17 @@ package de.huberlin.cms.hub;
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 
@@ -27,10 +30,12 @@ import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 public class Journal {
     private ApplicationService service;
     private Connection db;
+    private QueryRunner queryRunner;
 
     Journal(ApplicationService service) {
         this.service = service;
         this.db = service.getDb();
+        this.queryRunner = new QueryRunner();
     }
 
     /**
@@ -47,15 +52,9 @@ public class Journal {
         try {
             Timestamp time = new Timestamp(new Date().getTime());
             String id = "journal_record:" + Integer.toString(new Random().nextInt());
-            PreparedStatement statement =
-                db.prepareStatement("INSERT INTO journal_record VALUES (?, ?, ?, ?, ?, ?)");
-            statement.setString(1, id);
-            statement.setString(2, actionType);
-            statement.setString(3, objectId);
-            statement.setString(4, agentId);
-            statement.setTimestamp(5, time);
-            statement.setString(6, detail);
-            statement.executeUpdate();
+            this.queryRunner.insert(this.service.getDb(),
+                "INSERT INTO journal_record VALUES (?, ?, ?, ?, ?, ?)", new MapHandler(),
+                id, actionType, objectId, agentId, time, detail);
             return this.getRecord(id);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -70,14 +69,13 @@ public class Journal {
      */
     public JournalRecord getRecord(String id) {
         try {
-            PreparedStatement statement =
-                this.db.prepareStatement("SELECT * FROM journal_record WHERE id = ?");
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            Map<String, Object> args = this.queryRunner.query(this.db,
+                "SELECT * FROM journal_record WHERE id = ?", new MapHandler(), id);
+            if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
-            return new JournalRecord(results, this.service);
+            args.put("service", this.service);
+            return new JournalRecord(args);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -91,19 +89,21 @@ public class Journal {
      */
     public List<JournalRecord> getRecordsByObjectId(String objectId) {
         try {
+            String sql = null;
             List<JournalRecord> journal = new ArrayList<JournalRecord>();
-            PreparedStatement statement = null;
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
             if (objectId == null) {
-                statement = this.db.prepareStatement(
-                    "SELECT * FROM journal_record WHERE object_id IS NULL");
+                sql = "SELECT * FROM journal_record WHERE object_id IS NULL";
+                queryResults = this.queryRunner.query(this.service.getDb(), sql,
+                    new MapListHandler());
             } else {
-                statement = this.db.prepareStatement(
-                    "SELECT * FROM journal_record WHERE object_id = ?");
-                statement.setString(1, objectId);
+                sql = "SELECT * FROM journal_record WHERE object_id = ?";
+                queryResults = this.queryRunner.query(this.service.getDb(), sql,
+                    new MapListHandler(), objectId);
             }
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                journal.add(new JournalRecord(results, this.service));
+            for (Map<String, Object> args : queryResults) {
+                args.put("service", this.service);
+                journal.add(new JournalRecord(args));
             }
             return journal;
         } catch (SQLException e) {
@@ -119,19 +119,21 @@ public class Journal {
      */
     public List<JournalRecord> getRecordsByAgentId(String agentId) {
         try {
+            String sql = null;
             List<JournalRecord> journal = new ArrayList<JournalRecord>();
-            PreparedStatement statement = null;
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
             if (agentId == null) {
-                statement = this.db.prepareStatement(
-                    "SELECT * FROM journal_record WHERE agent_id IS NULL");
+                sql = "SELECT * FROM journal_record WHERE agent_id IS NULL";
+                queryResults = this.queryRunner.query(this.service.getDb(), sql,
+                    new MapListHandler());
             } else {
-                statement = this.db.prepareStatement(
-                    "SELECT * FROM journal_record WHERE agent_id = ?");
-                statement.setString(1, agentId);
+                sql = "SELECT * FROM journal_record WHERE agent_id = ?";
+                queryResults = this.queryRunner.query(this.service.getDb(), sql,
+                    new MapListHandler(), agentId);
             }
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                journal.add(new JournalRecord(results, this.service));
+            for (Map<String, Object> args : queryResults) {
+                args.put("service", this.service);
+                journal.add(new JournalRecord(args));
             }
             return journal;
         } catch (SQLException e) {

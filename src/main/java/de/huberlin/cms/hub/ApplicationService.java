@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
@@ -77,7 +76,8 @@ public class ApplicationService {
     private Map<String, Information.Type> informationTypes;
     private Map<String, Criterion> criteria;
     private QueryRunner queryRunner;
-    private ResultSetHandler resultSetHandler;
+
+    private ArrayListHandler resultSetHandler;
 
     // TODO: dokumentieren
     public static void setupStorage(Connection db, boolean overwrite) {
@@ -189,12 +189,8 @@ public class ApplicationService {
             this.db.setAutoCommit(false);
             // TODO: besseres Format für zufällige IDs
             String id = Integer.toString(new Random().nextInt());
-            PreparedStatement statement =
-                db.prepareStatement("INSERT INTO \"user\" VALUES(?, ?, ?)");
-            statement.setString(1, id);
-            statement.setString(2, name);
-            statement.setString(3, email);
-            statement.executeUpdate();
+            this.queryRunner.insert(this.getDb(), "INSERT INTO \"user\" VALUES(?, ?, ?)",
+                new MapHandler(), id, name, email);
             journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
             this.db.commit();
             this.db.setAutoCommit(true);
@@ -344,10 +340,8 @@ public class ApplicationService {
      */
     public void setSemester(String semester) {
         try {
-            PreparedStatement statement =
-                db.prepareStatement("UPDATE settings SET semester = ?");
-            statement.setString(1, semester);
-            statement.executeUpdate();
+            this.queryRunner.update(this.getDb(), "UPDATE settings SET semester = ?",
+                semester);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -415,12 +409,8 @@ public class ApplicationService {
         try {
             this.db.setAutoCommit(false);
             String id = "course:" + Integer.toString(new Random().nextInt());
-            PreparedStatement statement =
-                db.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
-            statement.setString(1, id);
-            statement.setString(2, name);
-            statement.setInt(3, capacity);
-            statement.executeUpdate();
+            this.queryRunner.insert(this.getDb(), "INSERT INTO course VALUES(?, ?, ?)",
+                new MapHandler(), id, name, capacity);
             journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
                 name);
             this.db.commit();

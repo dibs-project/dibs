@@ -5,9 +5,8 @@
 
 package de.huberlin.cms.hub;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Map;
 
 /**
  * Eintrag im Protokollbuch, der eine Prozessaktion eines Dienstes erfasst.
@@ -22,27 +21,13 @@ public class JournalRecord extends HubObject {
     private Timestamp time;
     private String detail;
 
-    JournalRecord(String id, String actionType, String objectId, String userId,
-            Timestamp time, String detail, ApplicationService service) {
-        super(id, service);
-        this.actionType = actionType;
-        this.objectId = objectId;
-        this.agentId = userId;
-        this.time = time;
-        this.detail = detail;
-    }
-
-    JournalRecord(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert den Eintrag über den Datenbankcursor
-        this(
-            results.getString("id"),
-            results.getString("action_type"),
-            results.getString("object_id"),
-            results.getString("agent_id"),
-            results.getTimestamp("time"),
-            results.getString("detail"),
-            service
-        );
+    JournalRecord(Map<String, Object> args) {
+        super((String) args.get("id"), (ApplicationService) args.get("service"));
+        this.actionType = (String)args.get("action_type");
+        this.objectId = (String)args.get("object_id");
+        this.agentId = (String)args.get("agent_id");
+        this.time = (Timestamp)args.get("time");
+        this.detail = (String)args.get("detail");
     }
 
     /**
