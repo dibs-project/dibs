@@ -131,7 +131,6 @@ public class User extends HubObject {
      * @param dosvBid DoSV Benutzer-ID
      * @param dosvBan DOSV Benutzer-Autorisierungsnummer
      *
-     * @return
      * @throws DosvAuthenticationException
      * @see {@link de.huberlin.cms.dosv.DosvSync#getUserStatus(String, String)}
      */
@@ -181,7 +180,7 @@ public class User extends HubObject {
     }
 
     /**
-     *  Bewerber-Authentifizierungs-Nummer für das DoSV.
+     *  Bewerber-Autorisierungsnummer für das DoSV.
      */
     public String getDosvBan() {
         return dosvBan;
