@@ -21,7 +21,7 @@ public class CourseTest extends HubTest {
     public void testCreateAllocationRule() {
         course.unpublish(null);
         AllocationRule allocationRule = course.createAllocationRule(null);
-        assertEquals(allocationRule, service.getAllocationRule(allocationRule.getId()));
+        assertEquals(allocationRule, course.getAllocationRule());
     }
 
     @Test
