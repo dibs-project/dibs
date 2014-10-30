@@ -48,6 +48,6 @@ Ablauf:
    . ApplicationService.register          |                                 |
    . User.createInformation               |                                 |
    . Course.apply                         |                                 |
-   .                   	                  |                                 | generateRankings
+   .                                      |                                 | generateRankings
 
 ```
