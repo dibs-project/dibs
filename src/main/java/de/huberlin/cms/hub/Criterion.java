@@ -5,6 +5,8 @@
 
 package de.huberlin.cms.hub;
 
+import java.util.Map;
+
 /**
  * Kriterium, welches die Auswahl- und Zulassungsregeln abbildet.
  *
@@ -18,11 +20,11 @@ public abstract class Criterion {
     /**
      * Initialisiert das Kriterium.
      */
-    protected Criterion(String id, Information.Type type,
-            ApplicationService service) {
-        this.id = id;
-        this.requiredInformationType = type;
-        this.service = service;
+    protected Criterion(Map<String, Object> args) {
+        this.id = (String) args.get("id");
+        this.requiredInformationType = (Information.Type)
+            args.get("requiredInformationType");
+        this.service = (ApplicationService) args.get("service");
     }
 
     /**

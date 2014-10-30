@@ -13,9 +13,6 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.MapHandler;
-
 /**
  * Regel, nach der Studienplätze für einen Studiengang an die Bewerber vergeben werden
  * (Vergabeschema).
@@ -25,12 +22,10 @@ import org.apache.commons.dbutils.handlers.MapHandler;
  */
 public class AllocationRule extends HubObject {
     private String quotaId;
-    private QueryRunner queryRunner;
 
     AllocationRule(Map<String, Object> args) {
-        super((String) args.get("id"), (ApplicationService) args.get("service"));
-        this.quotaId = (String)args.get("quota_id");
-        this.queryRunner =  new QueryRunner();
+        super(args);
+        this.quotaId = (String) args.get("quota_id");
     }
 
     /**
@@ -52,10 +47,9 @@ public class AllocationRule extends HubObject {
             Connection db = service.getDb();
             db.setAutoCommit(false);
             String quotaId = "quota:" + Integer.toString(new Random().nextInt());
-            this.queryRunner.insert(this.service.getDb(),
-                "INSERT INTO quota VALUES (?, ?, ?)", new MapHandler(), quotaId, name,
-                percentage);
-            this.queryRunner.update(this.service.getDb(),
+            service.getQueryRunner().insert(service.getDb(), "INSERT INTO quota VALUES (?, ?, ?)",
+                service.getMapHandler(), quotaId, name, percentage);
+            service.getQueryRunner().update(this.service.getDb(),
                 "UPDATE allocation_rule SET quota_id = ? WHERE id = ?", quotaId, this.id);
             this.quotaId = quotaId;
             service.getJournal().record(ApplicationService.ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED,

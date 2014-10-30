@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +26,6 @@ import java.util.Set;
 
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
@@ -76,8 +74,8 @@ public class ApplicationService {
     private Map<String, Information.Type> informationTypes;
     private Map<String, Criterion> criteria;
     private QueryRunner queryRunner;
-
-    private ArrayListHandler resultSetHandler;
+    private MapHandler mapHandler;
+    private MapListHandler mapListHandler;
 
     // TODO: dokumentieren
     public static void setupStorage(Connection db, boolean overwrite) {
@@ -160,12 +158,15 @@ public class ApplicationService {
         this.informationTypes.put("qualification", new Qualification.Type());
 
         this.criteria = new HashMap<String, Criterion>();
-        Criterion criterion = new QualificationCriterion("qualification",
-                informationTypes.get("qualification"), this);
-        this.criteria.put("qualification", criterion); //Schlüssel: "qualification"
+        Map<String, Object> args = new HashMap<String, Object>();
+        args.put("id", "qualification");
+        args.put("requiredInformationType", informationTypes.get("qualification"));
+        args.put("service", this);
+        this.criteria.put("qualification", new QualificationCriterion(args));
 
         this.queryRunner =  new QueryRunner();
-        this.resultSetHandler =  new ArrayListHandler();
+        this.mapHandler =  new MapHandler();
+        this.mapListHandler = new MapListHandler();
     }
 
     /**
@@ -190,7 +191,7 @@ public class ApplicationService {
             // TODO: besseres Format für zufällige IDs
             String id = Integer.toString(new Random().nextInt());
             this.queryRunner.insert(this.getDb(), "INSERT INTO \"user\" VALUES(?, ?, ?)",
-                new MapHandler(), id, name, email);
+                mapHandler, id, name, email);
             journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
             this.db.commit();
             this.db.setAutoCommit(true);
@@ -211,7 +212,7 @@ public class ApplicationService {
     public User getUser(String id) {
         try {
             Map<String, Object> args = this.queryRunner.query(this.db,
-                "SELECT * FROM \"user\" WHERE id = ?", new MapHandler(), id);
+                "SELECT * FROM \"user\" WHERE id = ?", mapHandler, id);
             if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
@@ -231,7 +232,7 @@ public class ApplicationService {
         try {
             ArrayList<User> users = new ArrayList<User>();
             List<Map<String, Object>> queryResults = this.queryRunner.query(this.db,
-                "SELECT * FROM \"user\"", new MapListHandler());
+                "SELECT * FROM \"user\"", mapListHandler);
             for(Map<String, Object> args : queryResults) {
                args.put("service", this);
                users.add(new User(args));
@@ -265,27 +266,15 @@ public class ApplicationService {
         if (type == null) {
             throw new ObjectNotFoundException(id);
         }
-//        try {
-//            Map<String, Object> args = this.queryRunner.query(
-//                this.db, "SELECT * FROM \"%s\" WHERE id = ?", new MapHandler(), typeId, id);
-//            if (args == null) {
-//                throw new ObjectNotFoundException(id);
-//            }
-//            args.put("service", this);
-//            return type.newInstance(args, this);
-//        } catch (SQLException e) {
-//            throw new IOError(e);
-//        }
-        
         try {
-            PreparedStatement statement = this.db.prepareStatement(
-                String.format("SELECT * FROM \"%s\" WHERE id = ?", typeId));
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            Map<String, Object> args = this.queryRunner.query(this.db,
+                String.format("SELECT * FROM \"%s\" WHERE id = ?", typeId),
+                mapHandler, id);
+            if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
-            return type.newInstance(results, this);
+            args.put("service", this);
+            return type.newInstance(args, this);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -300,7 +289,7 @@ public class ApplicationService {
     public Application getApplication(String id) {
         try {
             Map<String, Object> args = this.queryRunner.query(
-                this.db, "SELECT * FROM application WHERE id = ?", new MapHandler(), id);
+                this.db, "SELECT * FROM application WHERE id = ?", mapHandler, id);
             if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
@@ -321,7 +310,7 @@ public class ApplicationService {
     public Evaluation getEvaluation(String id, User agent) {
         try {
             Map<String, Object> args = this.queryRunner.query(
-                this.db, "SELECT * FROM evaluation WHERE id = ?", new MapHandler(), id);
+                this.db, "SELECT * FROM evaluation WHERE id = ?", mapHandler, id);
             if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
@@ -376,8 +365,8 @@ public class ApplicationService {
      */
     public Settings getSettings() {
         try {
-            Map<String, Object> args = this.queryRunner.query(
-                this.db, "SELECT * FROM settings", new MapHandler());
+            Map<String, Object> args = this.queryRunner.query(this.db,
+                "SELECT * FROM settings", mapHandler);
             if (args == null) {
                 throw new ObjectNotFoundException("");
             }
@@ -410,7 +399,7 @@ public class ApplicationService {
             this.db.setAutoCommit(false);
             String id = "course:" + Integer.toString(new Random().nextInt());
             this.queryRunner.insert(this.getDb(), "INSERT INTO course VALUES(?, ?, ?)",
-                new MapHandler(), id, name, capacity);
+                mapHandler, id, name, capacity);
             journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
                 name);
             this.db.commit();
@@ -432,7 +421,7 @@ public class ApplicationService {
     public Course getCourse(String id) {
         try {
             Map<String, Object> args = this.queryRunner.query(this.db,
-                "SELECT * FROM course WHERE id = ?", new MapHandler(), id);
+                "SELECT * FROM course WHERE id = ?", mapHandler, id);
             if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
@@ -452,7 +441,7 @@ public class ApplicationService {
         try {
             ArrayList<Course> courses = new ArrayList<Course>();
             List<Map<String, Object>> queryResults = this.queryRunner.query(this.db,
-                    "SELECT * FROM course", new MapListHandler());
+                    "SELECT * FROM course", mapListHandler);
             for(Map<String, Object> args : queryResults) {
                args.put("service", this);
                courses.add(new Course(args));
@@ -472,7 +461,7 @@ public class ApplicationService {
     public AllocationRule getAllocationRule(String id) {
         try {
             Map<String, Object> args = this.queryRunner.query(this.db,
-                "SELECT * FROM allocation_rule WHERE id = ?", new MapHandler(), id);
+                "SELECT * FROM allocation_rule WHERE id = ?", mapHandler, id);
             if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
@@ -492,7 +481,7 @@ public class ApplicationService {
     public Quota getQuota(String id) {
         try {
             Map<String, Object> args = this.queryRunner.query(
-                this.db, "SELECT * FROM quota WHERE id = ?", new MapHandler(), id);
+                this.db, "SELECT * FROM quota WHERE id = ?", mapHandler, id);
             if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
@@ -558,5 +547,26 @@ public class ApplicationService {
      */
     public Map<String, Criterion> getCriteria() {
         return unmodifiableMap(this.criteria);
+    }
+
+    /**
+     * TODO:Dokumentation
+     */
+    public QueryRunner getQueryRunner() {
+        return this.queryRunner;
+    }
+
+    /**
+     * TODO:Dokumentation
+     */
+    public MapHandler getMapHandler() {
+        return this.mapHandler;
+    }
+
+    /**
+     * TODO:Dokumentation
+     */
+    public MapListHandler getMapListHandler() {
+        return this.mapListHandler;
     }
 }

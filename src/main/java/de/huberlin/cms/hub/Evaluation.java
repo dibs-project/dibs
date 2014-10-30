@@ -9,8 +9,6 @@ import java.io.IOError;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.apache.commons.dbutils.QueryRunner;
-
 /**
  * Bewertung eines Bewerbers (bzw.&nbsp;von Informationen eines Bewerbers) anhand eines
  * Kriteriums für eine Bewerbung.
@@ -28,16 +26,14 @@ public class Evaluation extends HubObject {
     private String informationId;
     private Double value;
     private String status;
-    private QueryRunner queryRunner;
 
     Evaluation(Map<String, Object> args) {
-        super((String) args.get("id"), (ApplicationService) args.get("service"));
+        super(args);
         this.applicationId = (String) args.get("application_id");
         this.criterionId = (String) args.get("criterion_id");
         this.informationId = (String) args.get("information_id");
         this.value = (Double) args.get("value");
         this.status = (String) args.get("status");
-        this.queryRunner =  new QueryRunner();
     }
 
     void assignInformation(Information information) {
@@ -46,7 +42,7 @@ public class Evaluation extends HubObject {
         this.status = STATUS_EVALUATED;
 
         try {
-            this.queryRunner.update(this.service.getDb(),
+            service.getQueryRunner().update(service.getDb(),
                 "UPDATE evaluation SET information_id = ?, value = ?, status = ? WHERE id = ?",
                 this.informationId, this.value, this.status, this.id);
         } catch (SQLException e) {

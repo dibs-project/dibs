@@ -9,8 +9,6 @@ import static de.huberlin.cms.hub.Util.isInRange;
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,21 +23,9 @@ import java.util.Random;
 public class Qualification extends Information {
     private double grade;
 
-//    Qualification(Map<String, Object> args) {
-//        super((String)args.get("id"), (String)args.get("user_id"),
-//            (ApplicationService)args.get("service"));
-//        this.grade = (Double)args.get("grade");
-//    }
-    
-    Qualification(String id, String userId, double grade, ApplicationService service) {
-        super(id, userId, service);
-        this.grade = grade;
-    }
-
-    Qualification(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert die Hochschulreife über den Datenbankcursor
-        this(results.getString("id"), results.getString("user_id"),
-            results.getDouble("grade"), service);
+    Qualification(Map<String, Object> args) {
+        super(args);
+        this.grade = (Double) args.get("grade");
     }
 
     /**
@@ -67,19 +53,12 @@ public class Qualification extends Information {
             super("qualification");
         }
 
-//        @Override
-//        public Information newInstance(Map<String, Object> args, ApplicationService service)
-//                throws SQLException {
-//            args.put("service", service);
-//            return new Qualification(args);
-//        }
-        
         @Override
-        public Information newInstance(ResultSet results, ApplicationService service)
+        public Information newInstance(Map<String, Object> args, ApplicationService service)
                 throws SQLException {
-            return new Qualification(results, service);
+            args.put("service", service);
+            return new Qualification(args);
         }
-
 
         /**
          * Legt eine neue Hochschulreife für einen Benutzer an.
@@ -104,12 +83,8 @@ public class Qualification extends Information {
             try {
                 db.setAutoCommit(false);
                 String id = "qualification:" + Integer.toString(new Random().nextInt());
-                PreparedStatement statement =
-                    db.prepareStatement("INSERT INTO qualification VALUES (?, ?, ?)");
-                statement.setString(1, id);
-                statement.setString(2, user.getId());
-                statement.setDouble(3, grade);
-                statement.executeUpdate();
+                service.getQueryRunner().insert(service.getDb(), "INSERT INTO qualification VALUES (?, ?, ?)",
+                    service.getMapHandler(), id, user.getId(), grade);
                 service.getJournal().record(ApplicationService.ACTION_TYPE_INFORMATION_CREATED,
                     user.getId(), HubObject.getId(agent), id);
                 db.commit();

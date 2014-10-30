@@ -5,7 +5,6 @@
 
 package de.huberlin.cms.hub;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -17,9 +16,9 @@ import java.util.Map;
 public abstract class Information extends HubObject {
     protected String userId;
 
-    protected Information(String id, String userId, ApplicationService service) {
-        super(id, service);
-        this.userId = userId;
+    protected Information(Map<String, Object> args) {
+        super(args);
+        this.userId = (String) args.get("user_id");
     }
 
     /**
@@ -55,11 +54,8 @@ public abstract class Information extends HubObject {
          * @return neue Information
          * @throws SQLException wenn ein Datenbankzugriffsfehler auftritt
          */
-//        public abstract Information newInstance(Map<String, Object> args,
-//            ApplicationService service) throws SQLException;
-        
-        public abstract Information newInstance(ResultSet results,
-                ApplicationService service) throws SQLException;
+        public abstract Information newInstance(Map<String, Object> args,
+            ApplicationService service) throws SQLException;
 
         /**
          * Legt eine neue Information für einen Benutzer an.

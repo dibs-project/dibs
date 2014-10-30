@@ -14,9 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.MapHandler;
-
 /**
  * Quote, welche die Kriterien für die Ranglistenerstellung für einen Teil der Plätze
  * eines Studiengangs beinhaltet.
@@ -26,13 +23,11 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 public class Quota extends HubObject {
     private final String name;
     private final int percentage;
-    private QueryRunner queryRunner;
 
     Quota(Map<String, Object> args) {
-        super((String) args.get("id"), (ApplicationService) args.get("service"));
+        super(args);
         this.name = (String) args.get("name");
         this.percentage = (Integer) args.get("percentage");
-        this.queryRunner =  new QueryRunner();
     }
 
     /**
@@ -45,9 +40,8 @@ public class Quota extends HubObject {
         Connection db = service.getDb();
         try {
             db.setAutoCommit(false);
-            this.queryRunner.insert(this.service.getDb(),
-                "INSERT INTO quota_ranking_criteria VALUES(?, ?)", new MapHandler(),
-                id, criterionId);
+            service.getQueryRunner().insert(service.getDb(), "INSERT INTO quota_ranking_criteria VALUES(?, ?)",
+                service.getMapHandler(), id, criterionId);
             service.getJournal().record(ApplicationService.ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED,
                 this.id, HubObject.getId(agent), criterionId);
             db.commit();
@@ -70,6 +64,21 @@ public class Quota extends HubObject {
     /**
      * Kriterien für die Sortierung der Bewerber auf der Rangliste.
      */
+//    public List<Criterion> getRankingCriteria() {
+//        List<Criterion> rankingCriteria = new ArrayList<Criterion>();
+//        try {
+//            String sql = "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
+//            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+//            queryResults = service.getQueryRunner().query(service.getDb(), sql,
+//                    service.getMapListHandler(), id);
+//            for (Map<String, Object> args : queryResults) {
+//                rankingCriteria.add(service.getCriteria().get("criterion_id"));
+//            }
+//            return rankingCriteria;
+//        } catch (SQLException e) {
+//            throw new IOError(e);
+//        }
+//    }
     public List<Criterion> getRankingCriteria() {
         List<Criterion> rankingCriteria = new ArrayList<Criterion>();
         try {

@@ -12,9 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.MapHandler;
-
 /**
  * Studiengang.
  *
@@ -25,14 +22,12 @@ public class Course extends HubObject {
     private String name;
     private int capacity;
     private String allocationRuleId;
-    private QueryRunner queryRunner;
 
     Course(Map<String, Object> args) {
-        super((String) args.get("id"), (ApplicationService) args.get("service"));
+        super(args);
         this.name = (String) args.get("name");
         this.capacity = (Integer) args.get("capacity");
         this.allocationRuleId = (String) args.get("allocation_rule_id");
-        this.queryRunner =  new QueryRunner();
     }
 
     /**
@@ -46,9 +41,9 @@ public class Course extends HubObject {
             Connection db = service.getDb();
             db.setAutoCommit(false);
             String ruleId = "allocation_rule:" + Integer.toString(new Random().nextInt());
-            this.queryRunner.insert(this.service.getDb(),
-                "INSERT INTO allocation_rule VALUES (?)", new MapHandler(), ruleId);
-            this.queryRunner.update(this.service.getDb(),
+            service.getQueryRunner().insert(service.getDb(), "INSERT INTO allocation_rule VALUES (?)",
+                service.getMapHandler(), ruleId);
+            service.getQueryRunner().update(service.getDb(),
                 "UPDATE course SET allocation_rule_id = ? WHERE id = ?", ruleId, this.id);
             this.allocationRuleId = ruleId;
             service.getJournal().record(
@@ -76,8 +71,8 @@ public class Course extends HubObject {
             service.getDb().setAutoCommit(false);
             String applicationId =
                 String.format("application:%s", new Random().nextInt());
-            this.queryRunner.insert(this.service.getDb(),
-                "INSERT INTO application VALUES (?, ?, ?, ?)", new MapHandler(),
+            service.getQueryRunner().insert(service.getDb(),
+                "INSERT INTO application VALUES (?, ?, ?, ?)", service.getMapHandler(),
                 applicationId, userId, this.id, Application.STATUS_INCOMPLETE);
             Application application = this.service.getApplication(applicationId);
             // Bewertung für jedes Kriterium der Verteilungsregel erstellen
@@ -86,16 +81,16 @@ public class Course extends HubObject {
                 this.getAllocationRule().getQuota().getRankingCriteria();
             for (Criterion criterion : criteria) {
                 String id = String.format("evaluation:%s", new Random().nextInt());
-                this.queryRunner.insert(this.service.getDb(),
-                    "INSERT INTO evaluation VALUES (?, ?, ?, ?, ?, ?)", new MapHandler(),
-                    id, applicationId, criterion.getId(), null, null,
-                    Evaluation.STATUS_INFORMATION_MISSING);
+                service.getQueryRunner().insert(service.getDb(),
+                    "INSERT INTO evaluation VALUES (?, ?, ?, ?, ?, ?)",
+                    service.getMapHandler(), id, applicationId, criterion.getId(), null,
+                    null, Evaluation.STATUS_INFORMATION_MISSING);
             }
 
             // Vorhandene Informationen der Bewerbung zuordnen
             // NOTE: Query kann noch optimiert werden
             List<Information> informationSet =
-                this.service.getUser(userId).getInformationSet(null);
+                service.getUser(userId).getInformationSet(null);
             for (Information information : informationSet) {
                 application.assignInformation(information);
             }

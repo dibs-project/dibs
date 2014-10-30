@@ -22,12 +22,12 @@ public class JournalRecord extends HubObject {
     private String detail;
 
     JournalRecord(Map<String, Object> args) {
-        super((String) args.get("id"), (ApplicationService) args.get("service"));
-        this.actionType = (String)args.get("action_type");
-        this.objectId = (String)args.get("object_id");
-        this.agentId = (String)args.get("agent_id");
-        this.time = (Timestamp)args.get("time");
-        this.detail = (String)args.get("detail");
+        super(args);
+        this.actionType = (String) args.get("action_type");
+        this.objectId = (String) args.get("object_id");
+        this.agentId = (String) args.get("agent_id");
+        this.time = (Timestamp) args.get("time");
+        this.detail = (String) args.get("detail");
     }
 
     /**

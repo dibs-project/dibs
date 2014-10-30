@@ -20,11 +20,12 @@ public class Settings extends HubObject {
     private Date dosvApplicationsUpdateTime;
 
     Settings(Map<String, Object> args) {
-        super((String)args.get("id"), (ApplicationService)args.get("service"));
-        this.semester = (String)args.get("semester");
-        this.storageVersion = (String)args.get("storage_version");
-        this.dosvApplicantsUpdateTime = (Date)args.get("dosv_applicants_update_time");
-        this.dosvApplicationsUpdateTime = (Date)args.get("dosv_applications_update_time");
+        super(args);
+        this.semester = (String) args.get("semester");
+        this.storageVersion = (String) args.get("storage_version");
+        this.dosvApplicantsUpdateTime = (Date) args.get("dosv_applicants_update_time");
+        this.dosvApplicationsUpdateTime =
+            (Date) args.get("dosv_applications_update_time");
     }
 
     /**
