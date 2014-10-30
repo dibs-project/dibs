@@ -54,6 +54,7 @@ public class CourseTest extends HubTest {
         assertNotNull(evaluation.getValue());
     }
 
+    @Test
     public void testApplyUnpublished() {
         exception.expect(IllegalStateException.class);
         course.unpublish(null);

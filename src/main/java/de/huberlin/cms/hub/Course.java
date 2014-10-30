@@ -149,16 +149,14 @@ public class Course extends HubObject {
     }
 
     /**
-     * Gibt alle Bewerbungen für den Studiengang zurück.
-     *
-     * @return Liste mit Bewerbungen
+     * Liste aller Bewerbungen, die für diesen Studiengang abgegeben wurden.
      */
     public List<Application> getApplications() {
-        ArrayList<Application> applications = new ArrayList<Application>();
         try {
+            List<Application> applications = new ArrayList<Application>();
             String sql = "SELECT * FROM application WHERE course_id = ?";
             PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, this.id);
+            statement.setString(1, id);
             ResultSet results = statement.executeQuery();
             while (results.next()) {
                 HashMap<String, Object> args = new HashMap<String, Object>();
