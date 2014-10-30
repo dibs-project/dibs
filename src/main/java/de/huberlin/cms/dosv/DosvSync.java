@@ -31,9 +31,10 @@ public class DosvSync {
     /**
      * Der Benutzer hat seine Aktivierungsmail bestätigt, aber das System erfordert eine
      * zusätzliche Autorisierung des Benutzers durch einen Servicestellenmitarbeiter. Der
-     * Benutzer besitzt keinen Zugriff auf wesentliche Systemfunktionalitäten.
+     * Benutzer besitzt keinen Zugriff auf wesentliche Systemfunktionalitäten. Trifft nur
+     * auf den initialen Admin-Account einer Hochschule zu.
      */
-    public static final String USER_AUTHORIZATION_NEEDED = "authorization_needed";
+    public static final String USER_NEEDS_AUTHORIZATION = "needs_authorization";
 
     /**
      * Der Benutzer hat seine Aktivierungsmail bestätigt und eine ggf. erforderliche
@@ -83,7 +84,7 @@ public class DosvSync {
             case REGISTRIERT:
                 return USER_REGISTERED;
             case AUTORISIERUNG_ERFORDERLICH:
-                return USER_AUTHORIZATION_NEEDED;
+                return USER_NEEDS_AUTHORIZATION;
             case GESPERRT:
                 return USER_SUSPENDED;
             case LOESCHBAR:
