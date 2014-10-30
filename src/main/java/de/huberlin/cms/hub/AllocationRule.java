@@ -17,7 +17,6 @@ import java.util.Random;
 
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 
-
 /**
  * Regel, nach der Studienplätze für einen Studiengang an die Bewerber vergeben werden
  * (Vergabeschema).
