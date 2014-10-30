@@ -61,7 +61,7 @@ public class Application extends HubObject {
         try {
             Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
                 "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?",
-                service.getMapHandler(), this.getId(), criterionId);
+                service.getMapHandler(), this.id, criterionId);
             if (args == null) {
                 throw new IllegalArgumentException(
                     "illegal criterionId: evaluation does not exist");
@@ -111,8 +111,7 @@ public class Application extends HubObject {
 //                map.put("service", this.getService());
 //                evaluations.add(new Evaluation(map));
 //            }
-            
-            PreparedStatement statement = this.service.getDb().prepareStatement(
+                PreparedStatement statement = this.service.getDb().prepareStatement(
                     String.format("SELECT * FROM evaluation %s", filterSql));
                 for (int i = 0; i < filterValues.size(); i++) {
                     statement.setObject(i + 1, filterValues.get(i));
@@ -125,7 +124,6 @@ public class Application extends HubObject {
                     map.put("service", this.getService());
                     evaluations.add(new Evaluation(map));
                 }
-            
             return evaluations;
         } catch (SQLException e) {
             throw new IOError(e);

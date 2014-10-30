@@ -13,6 +13,8 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Random;
 
+import de.huberlin.cms.hub.HubException.IllegalStateException;
+
 /**
  * Regel, nach der Studienplätze für einen Studiengang an die Bewerber vergeben werden
  * (Vergabeschema).
@@ -43,6 +45,11 @@ public class AllocationRule extends HubObject {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
+        Course course = getCourse();
+        if (course.isPublished()) {
+            throw new IllegalStateException("course_published");
+        }
+        // NOTE Race Condition: SELECT-UPDATE
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -67,5 +74,20 @@ public class AllocationRule extends HubObject {
      */
     public Quota getQuota() {
         return quotaId != null ? service.getQuota(quotaId) : null;
+    }
+
+    /**
+     * Studiengang, zu dem diese Vergaberegel gehört.
+     */
+    public Course getCourse() {
+        try {
+            Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM course WHERE allocation_rule_id = ?",
+                service.getMapHandler(), id);
+            args.put("service", service);
+            return new Course(args);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 }

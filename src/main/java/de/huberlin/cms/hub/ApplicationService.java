@@ -30,6 +30,7 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
@@ -53,6 +54,10 @@ public class ApplicationService {
     /** Aktionstyp: neue Vergaberegel angelegt und mit dem Studiengang verknüpft. */
     public static final String ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED =
         "course_allocation_rule_created";
+    /** Aktionstyp: Kurs publiziert (zur Bewerbung freigegeben). */
+    public static final String ACTION_TYPE_COURSE_PUBLISHED = "course_published";
+    /** Aktionstyp: Kurspublikation zurückgezogen. */
+    public static final String ACTION_TYPE_COURSE_UNPUBLISHED = "course_unpublished";
     /** Aktionstyp: Bewerbung für den Studiengang angelegt. */
     public static final String ACTION_TYPE_COURSE_APPLIED = "course_applied";
     /** Aktionstyp: Bewerbungstatus bearbeitet. */
@@ -114,7 +119,7 @@ public class ApplicationService {
                 if (e.getSQLState().startsWith("42")) {
                     db.rollback();
                     db.setAutoCommit(true);
-                    throw new IllegalStateException("database not empty");
+                    throw new IllegalStateException("database_not_empty");
                 } else {
                     throw e;
                 }
@@ -233,10 +238,10 @@ public class ApplicationService {
             ArrayList<User> users = new ArrayList<User>();
             List<Map<String, Object>> queryResults = this.queryRunner.query(this.db,
                 "SELECT * FROM \"user\"", mapListHandler);
-            for(Map<String, Object> args : queryResults) {
-               args.put("service", this);
-               users.add(new User(args));
-           }
+            for (Map<String, Object> args : queryResults) {
+                args.put("service", this);
+                users.add(new User(args));
+            }
             return users;
         } catch (SQLException e) {
             throw new IOError(e);
@@ -268,12 +273,11 @@ public class ApplicationService {
         }
         try {
             Map<String, Object> args = this.queryRunner.query(this.db,
-                String.format("SELECT * FROM \"%s\" WHERE id = ?", typeId),
-                mapHandler, id);
+                String.format("SELECT * FROM \"%s\" WHERE id = ?", typeId), mapHandler,
+                id);
             if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
-            args.put("service", this);
             return type.newInstance(args, this);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -367,9 +371,6 @@ public class ApplicationService {
         try {
             Map<String, Object> args = this.queryRunner.query(this.db,
                 "SELECT * FROM settings", mapHandler);
-            if (args == null) {
-                throw new ObjectNotFoundException("");
-            }
             args.put("service", this);
             return new Settings(args);
         } catch (SQLException e) {
@@ -441,7 +442,7 @@ public class ApplicationService {
         try {
             ArrayList<Course> courses = new ArrayList<Course>();
             List<Map<String, Object>> queryResults = this.queryRunner.query(this.db,
-                    "SELECT * FROM course", mapListHandler);
+                "SELECT * FROM course", mapListHandler);
             for(Map<String, Object> args : queryResults) {
                args.put("service", this);
                courses.add(new Course(args));
@@ -550,21 +551,22 @@ public class ApplicationService {
     }
 
     /**
-     * TODO:Dokumentation
+     * Objekt zum Ausführen der SQL-Abfrage mit Stratagie, die zum Umgang mit ResultSets
+     * ist.
      */
     public QueryRunner getQueryRunner() {
         return this.queryRunner;
     }
 
     /**
-     * TODO:Dokumentation
+     * Implementierung ResultSetHandler, die die erste ResultSet Zeit in Map umwandelt. 
      */
     public MapHandler getMapHandler() {
         return this.mapHandler;
     }
 
     /**
-     * TODO:Dokumentation
+     * Implementierung ResultSetHandler, die ein ResultSet Zeit in ein Liste des Map umwandelt. 
      */
     public MapListHandler getMapListHandler() {
         return this.mapListHandler;

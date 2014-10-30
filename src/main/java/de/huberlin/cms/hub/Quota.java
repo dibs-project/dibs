@@ -7,12 +7,12 @@ package de.huberlin.cms.hub;
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
  * Quote, welche die Kriterien für die Ranglistenerstellung für einen Teil der Plätze
@@ -37,6 +37,10 @@ public class Quota extends HubObject {
      * @param agent ausführender Benutzer
      */
     public void addRankingCriterion(String criterionId, User agent) {
+        if (getAllocationRule().getCourse().isPublished()) {
+            throw new IllegalStateException("course_published");
+        }
+        // NOTE Race Condition: SELECT-INSERT
         Connection db = service.getDb();
         try {
             db.setAutoCommit(false);
@@ -64,32 +68,15 @@ public class Quota extends HubObject {
     /**
      * Kriterien für die Sortierung der Bewerber auf der Rangliste.
      */
-//    public List<Criterion> getRankingCriteria() {
-//        List<Criterion> rankingCriteria = new ArrayList<Criterion>();
-//        try {
-//            String sql = "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
-//            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
-//            queryResults = service.getQueryRunner().query(service.getDb(), sql,
-//                    service.getMapListHandler(), id);
-//            for (Map<String, Object> args : queryResults) {
-//                rankingCriteria.add(service.getCriteria().get("criterion_id"));
-//            }
-//            return rankingCriteria;
-//        } catch (SQLException e) {
-//            throw new IOError(e);
-//        }
-//    }
     public List<Criterion> getRankingCriteria() {
         List<Criterion> rankingCriteria = new ArrayList<Criterion>();
         try {
-            String query = "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(query);
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            
-            while (results.next()) {
-                rankingCriteria.add(service.getCriteria().get(
-                    results.getString("criterion_id")));
+            String sql = "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            queryResults = service.getQueryRunner().query(service.getDb(), sql,
+                    service.getMapListHandler(), id);
+            for (Map<String, Object> args : queryResults) {
+                rankingCriteria.add(service.getCriteria().get(args.get("criterion_id")));
             }
             return rankingCriteria;
         } catch (SQLException e) {
@@ -112,5 +99,20 @@ public class Quota extends HubObject {
      */
     public int getPercentage() {
         return percentage;
+    }
+
+    /**
+     * Vergaberegel, zu der diese Quote gehört.
+     */
+    public AllocationRule getAllocationRule() {
+        try {
+            Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM allocation_rule WHERE quota_id = ?",
+                service.getMapHandler(), id);
+            args.put("service", service);
+            return new AllocationRule(args);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 }

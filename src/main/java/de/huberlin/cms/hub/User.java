@@ -12,8 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
-
 /**
  * Benutzer, der mit dem Bewerbungssystem interagiert.
  *
@@ -67,9 +65,10 @@ public class User extends HubObject {
         for (Information.Type type : service.getInformationTypes().values()) {
             try {
                 String sql = String.format("SELECT * FROM \"%s\" WHERE user_id = ?", type.getId());
-                Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
-                    sql, service.getMapHandler(), this.id);
-                if (args != null) {
+                List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+                queryResults = service.getQueryRunner().query(service.getDb(),
+                    sql, service.getMapListHandler(), this.id);
+                for (Map<String, Object> args : queryResults) {
                     informationSet.add(type.newInstance(args, service));
                 }
             } catch (SQLException e) {

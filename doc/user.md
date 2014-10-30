@@ -12,7 +12,7 @@ Struktur:
   |--------------------| '----------' |-------------------|
   | register           |              | createInformation |
   | createUser         |              '-------------------'
-  | createCourse       | 
+  | createCourse       |
   '--------------------'
 
   .-------------. .-------------. .------------.
@@ -24,6 +24,8 @@ Struktur:
   |----------------------| |----------------| |---------------------| |-----------|
   | createAllocationRule | | createQuota    | | addRankingCriterion | | evaluate  |
   | apply                | '----------------' '---------------------' '-----------'
+  | publish              |
+  | unpublish            |
   '----------------------'
 
   .---------.
@@ -34,15 +36,16 @@ Struktur:
 Ablauf:
 
 ```
-   . Applicant         | Employee             | System
-  ---------------------+----------------------+-------
-   .                   | createUser           |
-   .                   | createCourse         |
-   .                   | createAllocationRule |
-   .                   | createQuota          |
-   .                   | addRankingCriterion  |
-   . register          |                      |
-   . createInformation |                      |
-   . apply             |                      |
+   . Applicant                            | Employee                        | System
+  ----------------------------------------+---------------------------------+-------
+   .                                      | ApplicationService.createUser   |
+   .                                      | ApplicationService.createCourse |
+   .                                      | Course.createAllocationRule     |
+   .                                      | AllocationRule.createQuota      |
+   .                                      | Quota.addRankingCriterion       |
+   .                                      | Course.publish                  |
+   . ApplicationService.register          |                                 |
+   . User.createInformation               |                                 |
+   . Course.apply                         |                                 |
 
 ```
