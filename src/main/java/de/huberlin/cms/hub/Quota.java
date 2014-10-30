@@ -21,7 +21,7 @@ import java.util.Random;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
 
-import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
  * Quote, welche die Kriterien für die Ranglistenerstellung für einen Teil der Plätze
@@ -47,6 +47,10 @@ public class Quota extends HubObject {
      * @param agent ausführender Benutzer
      */
     public void addRankingCriterion(String criterionId, User agent) {
+        if (getAllocationRule().getCourse().isPublished()) {
+            throw new IllegalStateException("course_published");
+        }
+        // NOTE Race Condition: SELECT-INSERT
         Connection db = service.getDb();
         try {
             db.setAutoCommit(false);
@@ -235,31 +239,25 @@ public class Quota extends HubObject {
     }
 
     /**
-     * Gibt den Studiengang des Vergabeschematas zurück. 
-     */
-    public AllocationRule getAllocationRule() {
-        try {
-            String sql = "SELECT * FROM allocation_rule WHERE quota_id = ?";
-            PreparedStatement statement = this.service.getDb().prepareStatement(sql);
-            statement.setString(1, this.id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
-                throw new ObjectNotFoundException(id);
-            }
-            HashMap<String, Object> args = new HashMap<String, Object>();
-            args.put("id", results.getString("id"));
-            args.put("quotaId", results.getString("quota_id"));
-            args.put("service", this.service);
-            return new AllocationRule(args);
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
      * Prozentualer Anteil (0..100) der Quote an der Gesamtzahl der vergebenen Studienplätze.
      */
     public int getPercentage() {
         return percentage;
+    }
+
+    /**
+     * Vergaberegel, zu der diese Quote gehört.
+     */
+    public AllocationRule getAllocationRule() {
+        try {
+            String sql = "SELECT * FROM allocation_rule WHERE quota_id = ?";
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            results.next();
+            return new AllocationRule(results, service);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 }

@@ -12,7 +12,7 @@ Struktur:
   |--------------------| '----------' |-------------------|
   | register           |              | createInformation |
   | createUser         |              '-------------------'
-  | createCourse       | 
+  | createCourse       |
   '--------------------'
 
   .-------------. .-------------. .------------.
@@ -25,6 +25,8 @@ Struktur:
   | createAllocationRule | | createQuota    | | addRankingCriterion | | evaluate  |
   | apply                | '----------------' '---------------------' '-----------'
   | generateRankings     |
+  | publish              |
+  | unpublish            |
   '----------------------'
 
   .---------.
@@ -35,16 +37,17 @@ Struktur:
 Ablauf:
 
 ```
-   . Applicant         | Employee             | System
-  ---------------------+----------------------+-------
-   .                   | createUser           |
-   .                   | createCourse         |
-   .                   | createAllocationRule |
-   .                   | createQuota          |
-   .                   | addRankingCriterion  |
-   . register          |                      |
-   . createInformation |                      |
-   . apply             |                      |
-   .                   |                      | generateRankings
+   . Applicant                            | Employee                        | System
+  ----------------------------------------+---------------------------------+-----------------
+   .                                      | ApplicationService.createUser   |
+   .                                      | ApplicationService.createCourse |
+   .                                      | Course.createAllocationRule     |
+   .                                      | AllocationRule.createQuota      |
+   .                                      | Quota.addRankingCriterion       |
+   .                                      | Course.publish                  |
+   . ApplicationService.register          |                                 |
+   . User.createInformation               |                                 |
+   . Course.apply                         |                                 |
+   .                   		              |                                 | generateRankings
 
 ```

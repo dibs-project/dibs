@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import de.huberlin.cms.hub.HubException.IllegalStateException;
+
 /**
  * Studiengang.
  *
@@ -25,6 +27,7 @@ public class Course extends HubObject {
     private String name;
     private int capacity;
     private String allocationRuleId;
+    private boolean published;
 
     Course(HashMap<String, Object> args) {
         super((String) args.get("id"), (ApplicationService) args.get("service"));
@@ -33,19 +36,21 @@ public class Course extends HubObject {
         this.allocationRuleId = (String) args.get("allocation_rule_id");
     }
 
-    Course(String id, String name, int capacity, String allocationRuleId,
+    Course(String id, String name, int capacity, String allocationRuleId, boolean published,
         ApplicationService service) {
         super(id, service);
         this.name = name;
         this.capacity = capacity;
         this.allocationRuleId = allocationRuleId;
+        this.published = published;
     }
 
     Course(ResultSet results, ApplicationService service) throws SQLException {
-     // initialisiert den Studiengang über den Datenbankcursor
-     this(results.getString("id"), results.getString("name"),
-         results.getInt("capacity"), results.getString("allocation_rule_id"), service);
-     }
+        // initialisiert den Studiengang über den Datenbankcursor
+        this(results.getString("id"), results.getString("name"),
+            results.getInt("capacity"), results.getString("allocation_rule_id"),
+            results.getBoolean("published"), service);
+    }
 
     /**
      * Legt eine neue Vergaberegel an und verknüpft diese mit dem Studiengang.
@@ -54,6 +59,10 @@ public class Course extends HubObject {
      * @return angelegte und verknüpfte Vergaberegel
      */
     public AllocationRule createAllocationRule(User agent) {
+        if (service.getCourse(id).isPublished()) {
+            throw new IllegalStateException("course_published");
+        }
+        //NOTE Race Condition: SELECT-UPDATE
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -62,8 +71,7 @@ public class Course extends HubObject {
             PreparedStatement statement = db.prepareStatement(sql);
             statement.setString(1, ruleId);
             statement.executeUpdate();
-            sql = "UPDATE course SET allocation_rule_id = ? WHERE id = ?";
-            statement = db.prepareStatement(sql);
+            statement = db.prepareStatement("UPDATE course SET allocation_rule_id = ? WHERE id = ?");
             statement.setString(1, ruleId);
             statement.setString(2, this.id);
             statement.executeUpdate();
@@ -80,15 +88,17 @@ public class Course extends HubObject {
     }
 
     /**
-     * Legt eine Bewerbung auf den Studiengang an.
+     * Legt eine Bewerbung auf einen publizierten Studiengang an.
      *
      * @param userId ID des Bewerbers
      * @param agent ausführender Benutzer
      * @return angelegte Bewerbung
      */
     public Application apply(String userId, User agent) {
-        // TODO: sicherstellen, dass Metadaten komplett sind (= Vergaberegel und Quote)
-
+        if (!service.getCourse(id).isPublished()) {
+            throw new IllegalStateException("course_published");
+        }
+        // NOTE Race Condition: SELECT-INSERT
         try {
             service.getDb().setAutoCommit(false);
             String applicationId =
@@ -156,7 +166,7 @@ public class Course extends HubObject {
                 args.put("user_id", results.getString("user_id"));
                 args.put("course_id", results.getString("course_id"));
                 args.put("status", results.getString("status"));
-                args.put("service", this.service);
+                args.put("service", this.getService());
                 applications.add(new Application(args));
             }
             return applications;
@@ -204,6 +214,59 @@ public class Course extends HubObject {
     }
 
     /**
+     * Publiziert den Studiengang.
+     */
+    public void publish(User agent) {
+        AllocationRule allocationRule = getAllocationRule();
+        if (allocationRule == null || allocationRule.getQuota() == null) {
+            throw new IllegalStateException("course_incomplete");
+        }
+        // NOTE Race Condition: SELECT-UPDATE
+        try {
+            Connection db = service.getDb();
+            db.setAutoCommit(false);
+            String sql = "UPDATE course SET published = TRUE WHERE id = ?";
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
+            statement.setString(1, getId());
+            statement.executeUpdate();
+            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_PUBLISHED,
+                this.id, HubObject.getId(agent), null);
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+        published = true;
+    }
+
+    /**
+     * Zieht die Publikation zurück. Kann nur erfolgen, wenn noch keine Bewerbungen auf
+     * diesen Studiengang vorliegen.
+     */
+    public void unpublish(User agent) {
+        // NOTE Bewerbungsabfrage kann noch optimiert werden
+        if (!getApplications().isEmpty()) {
+            throw new IllegalStateException("course_has_applications");
+        }
+        try {
+            Connection db = service.getDb();
+            // NOTE Race Condition: SELECT-UPDATE
+            db.setAutoCommit(false);
+            String sql = "UPDATE course SET published = FALSE WHERE id = ?";
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
+            statement.setString(1, getId());
+            statement.executeUpdate();
+            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_UNPUBLISHED,
+                this.id, HubObject.getId(agent), null);
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+        published = false;
+    }
+
+    /**
      * Name des Studiengangs.
      */
     public String getName() {
@@ -223,4 +286,13 @@ public class Course extends HubObject {
     public AllocationRule getAllocationRule() {
         return allocationRuleId != null ? service.getAllocationRule(allocationRuleId) : null;
     }
+
+    /**
+     * Publikationsstatus des Studiengangs.
+     */
+    public boolean isPublished() {
+        return published;
+    }
+
+
 }

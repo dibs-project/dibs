@@ -10,21 +10,28 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import org.junit.Test;
+
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 public class CourseTest extends HubTest {
     @Test
     public void testCreateAllocationRule() {
-        AllocationRule rule = course.createAllocationRule(null);
-        assertEquals(rule, course.getAllocationRule());
+        course.unpublish(null);
+        AllocationRule allocationRule = course.createAllocationRule(null);
+        assertEquals(allocationRule, course.getAllocationRule());
     }
 
     @Test
-    public final void testApply() {
+    public void testCreateAllocationRulePublished() {
+        exception.expect(IllegalStateException.class);
+        course.createAllocationRule(null);
+    }
+
+    @Test
+    public void testApply() {
         Application application = course.apply(user.getId(), null);
         Evaluation evaluation = application.getEvaluationByCriterionId("qualification");
         assertTrue(user.getApplications(null).contains(application));
@@ -47,18 +54,23 @@ public class CourseTest extends HubTest {
         assertNotNull(evaluation.getValue());
     }
 
-    @Test
-    public void testGetApplications() {
-        User user1 = this.service.createUser("Maurice", "maurice@moss.net");
-        User user2 = this.service.createUser("Peter", "peter@pan.com");
-        Application a1 = course.apply(user1.getId(), null);
-        Application a2 = course.apply(user2.getId(), null);
-        List<Application> applications = new ArrayList<Application>();
-        applications.add(a1);
-        applications.add(a2);
-        assertEquals(applications, this.service.getCourse(this.course.getId()).getApplications());
-        assertTrue(this.service.getCourse(this.course.getId()).getApplications().contains(a1));
-        assertTrue(this.service.getCourse(this.course.getId()).getApplications().contains(a2));
+    public void testApplyUnpublished() {
+        exception.expect(IllegalStateException.class);
+        course.unpublish(null);
+        course.apply(user.getId(), null);
     }
 
+    @Test
+    public void testPublishIncomplete() {
+        exception.expect(IllegalStateException.class);
+        Course course = this.service.createCourse("Computer Science", 500, null);
+        course.publish(null);
+    }
+
+    @Test
+    public void testUnpublishApplicationPresent() {
+        exception.expect(IllegalStateException.class);
+        course.apply(user.getId(), null);
+        course.unpublish(null);
+    }
 }
