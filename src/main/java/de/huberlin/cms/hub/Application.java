@@ -101,29 +101,18 @@ public class Application extends HubObject {
         try {
             ArrayList<Evaluation> evaluations = new ArrayList<Evaluation>();
             // NOTE: optimierter Query
-//            String sql = String.format("SELECT * FROM evaluation %s", filterSql);
-//            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
-//            for (int i = 0; i < filterValues.size(); i++) {
-//                queryResults = service.getQueryRunner().query(service.getDb(), sql,
-//                    service.getMapListHandler(), filterValues.get(i));
-//            }
-//            for (Map<String, Object> map : queryResults) {
-//                map.put("service", this.getService());
-//                evaluations.add(new Evaluation(map));
-//            }
-                PreparedStatement statement = this.service.getDb().prepareStatement(
-                    String.format("SELECT * FROM evaluation %s", filterSql));
-                for (int i = 0; i < filterValues.size(); i++) {
-                    statement.setObject(i + 1, filterValues.get(i));
-                }
-                System.out.println(statement.toString());
-                ResultSet results = statement.executeQuery();
-                MapListHandler mapListHandler = new MapListHandler();
-                List<Map<String, Object>> resultMaps = mapListHandler.handle(results);
-                for (Map<String, Object> map : resultMaps) {
-                    map.put("service", this.getService());
-                    evaluations.add(new Evaluation(map));
-                }
+            String sql = String.format("SELECT * FROM evaluation %s", filterSql);
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            Object[] params = new Object[filterValues.size()]; 
+            for (int i = 0; i < filterValues.size(); i++) {
+                params[i] = filterValues.get(i);
+            }
+            queryResults = service.getQueryRunner().query(service.getDb(), sql,
+                service.getMapListHandler(), params);
+            for (Map<String, Object> map : queryResults) {
+                map.put("service", this.getService());
+                evaluations.add(new Evaluation(map));
+            }
             return evaluations;
         } catch (SQLException e) {
             throw new IOError(e);

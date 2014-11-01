@@ -551,22 +551,27 @@ public class ApplicationService {
     }
 
     /**
-     * Objekt zum Ausführen der SQL-Abfrage mit Stratagie, die zum Umgang mit ResultSets
-     * ist.
+     * Ausführer der Datenbankabfrage, welcher das Abfrageergebnis mit Hilfe des 
+     * <code>ResultSetHandler<code> generiert.
+     *
+     * @see getMapHandler
+     * @see getMapListHandler()
      */
     public QueryRunner getQueryRunner() {
         return this.queryRunner;
     }
 
     /**
-     * Implementierung ResultSetHandler, die die erste ResultSet Zeit in Map umwandelt. 
+     * Implementiertes ResultSetHandler, welches die erste Zeile des Abfrageergebnis
+     * in ein <code>Map<String, Object></code> generiert.
      */
     public MapHandler getMapHandler() {
         return this.mapHandler;
     }
 
     /**
-     * Implementierung ResultSetHandler, die ein ResultSet Zeit in ein Liste des Map umwandelt. 
+     * Implementiertes <code>ResultSetHandler</code>, welches die komplete Datensätzen des
+     * Abfrageergebnis in ein <code>List<Map<String, Object>></code> generiert.
      */
     public MapListHandler getMapListHandler() {
         return this.mapListHandler;

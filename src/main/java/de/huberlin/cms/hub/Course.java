@@ -67,7 +67,7 @@ public class Course extends HubObject {
     }
 
     /**
-     * Legt eine Bewerbung auf den Studiengang an.
+     * Legt eine Bewerbung auf einen publizierten Studiengang an.
      *
      * @param userId ID des Bewerbers
      * @param agent ausführender Benutzer
