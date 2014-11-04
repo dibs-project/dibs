@@ -149,6 +149,13 @@ public class Course extends HubObject {
     }
 
     /**
+     * Generiert die Rangliste für den Studiengang.
+     */
+    public void generateRankings() {
+        this.getAllocationRule().getQuota().generateRanking();
+    }
+
+    /**
      * Liste aller Bewerbungen, die für diesen Studiengang abgegeben wurden.
      */
     public List<Application> getApplications() {
@@ -171,15 +178,6 @@ public class Course extends HubObject {
         } catch (SQLException e) {
             throw new IOError(e);
         }
-    }
-
-    /**
-     * Generiert die Rangliste für den Studiengang.
-     *
-     * @return Rangliste
-     */
-    public void generateRankings() {
-        this.getAllocationRule().getQuota().generateRanking();
     }
 
     /**

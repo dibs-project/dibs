@@ -45,10 +45,10 @@ public class QuotaTest extends HubTest {
         info1 = new Qualification("1", app1.getUser().getId(), 2, service);
         eval1.get(0).assignInformation(info1);
         eval2 = app2.getEvaluations(null);
-        info2 = new Qualification("1", app2.getUser().getId(), 3, service);
+        info2 = new Qualification("2", app2.getUser().getId(), 3, service);
         eval2.get(0).assignInformation(info2);
         eval3 = app3.getEvaluations(null);
-        info3 = new Qualification("1", app3.getUser().getId(), 2, service);
+        info3 = new Qualification("3", app3.getUser().getId(), 2, service);
         eval3.get(0).assignInformation(info3);
     }
 
@@ -91,9 +91,9 @@ public class QuotaTest extends HubTest {
     public void testGenerateRanking() {
         quota1 = this.service.getCourse(this.course.getId()).getAllocationRule().getQuota();
         List<Rank> ranking = quota1.generateRanking();
-        assertTrue(this.service.getApplication(ranking.get(1).getApplicationId())
-                .getEvaluations(null).get(0).getValue() < 
-                this.service.getApplication(ranking.get(2).getApplicationId())
+        assertTrue(this.service.getApplication(ranking.get(1).getApplication().getId())
+                .getEvaluations(null).get(0).getValue() <
+                this.service.getApplication(ranking.get(2).getApplication().getId())
                 .getEvaluations(null).get(0).getValue());
     }
 

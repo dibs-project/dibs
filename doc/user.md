@@ -22,12 +22,13 @@ Struktur:
   .----------------------. .----------------. .---------------------. .-----------.
   | Course               | | AllocationRule | | Quota               | | Criterion |
   |----------------------| |----------------| |---------------------| |-----------|
-  | createAllocationRule | | createQuota    | | addRankingCriterion | | evaluate  |
-  | apply                | '----------------' '---------------------' '-----------'
-  | generateRankings     |
+  | createAllocationRule | | createQuota    | | addRankingCriterion | |evaluate   |
+  | apply                | '----------------' | generateRanking     | '-----------'
+  | generateRankings     |                    '---------------------'
   | publish              |
   | unpublish            |
-  '----------------------'
+  '----------------------'                                                                 
+ 
 
   .---------.
   | Journal |

@@ -79,6 +79,55 @@ public class Quota extends HubObject {
     }
 
     /**
+     * Generiert die Rangliste für die Quote.
+     *
+     * @return Rangliste
+     */
+    public List<Rank> generateRanking() {
+        // TODO Sobald es mehrere Kriterien gibt, muss die Funktion angepasst werden, da die Reihenfolge der Kriterien nicht gewährleistet werden kann
+        List<Application> applications = this.getApplications();
+        final Map<Application,List<Evaluation>> evaluations = this.getEvaluations();
+        final HashMap<Application,Integer> lotnumbers = new HashMap<>();
+        for (Application application : applications) {
+            lotnumbers.put(application, new Random().nextInt(1000000));
+        }
+        Collections.sort(applications,new Comparator<Application>() {
+            @Override
+            public int compare(Application a1, Application a2) {
+                List<Criterion> criteria = Quota.this.getRankingCriteria();
+                for (final Criterion criterion : criteria) {
+                    Predicate<Evaluation> predicate = new Predicate<Evaluation>() {
+                        @Override
+                        public boolean evaluate(Evaluation evaluation) {
+                            return (evaluation.getCriterion().getId().equals(criterion.id));
+                        }
+                    };
+                    Evaluation eval1 = CollectionUtils.find(evaluations.get(a1), predicate);
+                    Evaluation eval2 = CollectionUtils.find(evaluations.get(a2), predicate);
+                    double value = eval1.getValue() - eval2.getValue();
+                    if (value != 0) {
+                        return (int) value;
+                    }
+                }
+                return lotnumbers.get(a1)- lotnumbers.get(a2);
+            }
+        });
+        List<Rank> ranking = new ArrayList<Rank>();
+        for (int i = 0; i < applications.size(); i++) {
+            Application application = applications.get(i);
+            HashMap<String, Object> args = new HashMap<String, Object>();
+            args.put("quota_id", this.getId());
+            args.put("user_id", application.getUser().getId());
+            args.put("application_id", application.getId());
+            args.put("index", i);
+            args.put("lotnumber", lotnumbers.get(application));
+            args.put("service", this.service);
+            ranking.add(Rank.create(args));
+        }
+        return ranking;
+    }
+
+    /**
      * Kriterien für die Sortierung der Bewerber auf der Rangliste.
      */
     public List<Criterion> getRankingCriteria() {
@@ -105,8 +154,7 @@ public class Quota extends HubObject {
      * @return Map mit Bewerbungen und Liste von Evaluation
      */
     Map<Application,List<Evaluation>> getEvaluations() {
-        Map<Application,List<Evaluation>> evaluationsList = 
-                new HashMap<Application, List<Evaluation>>();
+        Map<Application,List<Evaluation>> evaluationsList = new HashMap<>();
         List<Application> applications = this.getApplications();
         for(Application application : applications) {
             //TODO Performance. unperformant wegen jede abfrage einzeln
@@ -144,59 +192,6 @@ public class Quota extends HubObject {
         } catch (SQLException e) {
             throw new IOError(e);
         }
-    }
-
-    /**
-     * Generiert die Rangliste für die Quote.
-     *
-     * @return Rangliste
-     */
-    public List<Rank> generateRanking() {
-        List<Application> applications = 
-                this.getAllocationRule().getCourse().getApplications();
-        final Map<Application,List<Evaluation>> evaluations = this.getEvaluations();
-        final HashMap<Application,Integer> lotnumbers = new HashMap<>();
-        Random random = new Random();
-        for (Application application : applications) {
-            lotnumbers.put(application,random.nextInt(1000000));
-        }
-        Collections.sort(applications,new Comparator<Application>() {
-            @Override
-            public int compare(Application a1,Application a2) {
-                List<Criterion> criteria =   Quota.this.getRankingCriteria();
-                for (final Criterion criterion : criteria)
-                {
-                    Predicate<Evaluation> predicate = new Predicate<Evaluation>() {
-                        @Override
-                        public boolean evaluate(Evaluation evaluation) {
-                            return (evaluation.getCriterionId().equals(criterion.id));
-                        }
-                    };
-                    Evaluation eval1 = CollectionUtils.find(evaluations.get(a1), predicate);
-                    Evaluation eval2 = CollectionUtils.find(evaluations.get(a2), predicate);
-                    double value = eval1.getValue() - eval2.getValue();
-                    if (value != 0)
-                    {
-                        return (int) value;
-                    }
-                }
-                return lotnumbers.get(a1)-lotnumbers.get(a2);
-            }
-        });
-        List<Rank> ranking = new ArrayList<Rank>();
-        for (int i = 0; i < applications.size(); i++)
-        {
-            Application application = applications.get(i);
-            HashMap<String, Object> args = new HashMap<String, Object>();
-            args.put("quota_id", this.getId());
-            args.put("user_id", application.getUser().getId());
-            args.put("application_id", application.getId());
-            args.put("index", i);
-            args.put("lotnumber", lotnumbers.get(application));
-            args.put("service", this.service);
-            ranking.add(Rank.create(args));
-        }
-        return ranking;
     }
 
     /**

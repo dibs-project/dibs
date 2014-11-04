@@ -58,24 +58,24 @@ public class Rank extends HubObject {
     }
 
     /**
-     * Gibt die Id der Quote zurück.
+     * Gibt die Quote zurück.
      */
-    public String getQuotaId() {
-        return quotaId;
+    public Quota getQuota() {
+        return service.getQuota(quotaId);
     }
 
     /**
-     * Gibt die Id des Users zurück.
+     * Gibt den User zurück.
      */
-    public String getUserId() {
-        return userId;
+    public User getUser() {
+        return service.getUser(this.userId);
     }
 
     /**
-     * Gibt die Id der Bewerbung zurück.
+     * Gibt die Bewerbung zurück.
      */
-    public String getApplicationId() {
-        return applicationId;
+    public Application getApplication() {
+        return service.getApplication(applicationId);
     }
 
     /**
