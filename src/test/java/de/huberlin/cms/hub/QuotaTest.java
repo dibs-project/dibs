@@ -92,9 +92,10 @@ public class QuotaTest extends HubTest {
         quota1 = this.service.getCourse(this.course.getId()).getAllocationRule().getQuota();
         List<Rank> ranking = quota1.generateRanking();
         assertTrue(this.service.getApplication(ranking.get(1).getApplication().getId())
-                .getEvaluations(null).get(0).getValue() <
+                .getEvaluationByCriterionId(quota1.getRankingCriteria().get(0).getId())
+                .getValue() <
                 this.service.getApplication(ranking.get(2).getApplication().getId())
-                .getEvaluations(null).get(0).getValue());
+                .getEvaluationByCriterionId(quota1.getRankingCriteria().get(0).getId()).getValue());
     }
 
     @Test
