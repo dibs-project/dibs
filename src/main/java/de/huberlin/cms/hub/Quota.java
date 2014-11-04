@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import de.huberlin.cms.hub.HubException.IllegalStateException;
+
 /**
  * Quote, welche die Kriterien für die Ranglistenerstellung für einen Teil der Plätze
  * eines Studiengangs beinhaltet.
@@ -37,6 +39,10 @@ public class Quota extends HubObject {
      * @param agent ausführender Benutzer
      */
     public void addRankingCriterion(String criterionId, User agent) {
+        if (getAllocationRule().getCourse().isPublished()) {
+            throw new IllegalStateException("course_published");
+        }
+        // NOTE Race Condition: SELECT-INSERT
         Connection db = service.getDb();
         try {
             db.setAutoCommit(false);
@@ -99,5 +105,21 @@ public class Quota extends HubObject {
      */
     public int getPercentage() {
         return percentage;
+    }
+
+    /**
+     * Vergaberegel, zu der diese Quote gehört.
+     */
+    public AllocationRule getAllocationRule() {
+        try {
+            String sql = "SELECT * FROM allocation_rule WHERE quota_id = ?";
+            PreparedStatement statement = service.getDb().prepareStatement(sql);
+            statement.setString(1, id);
+            ResultSet results = statement.executeQuery();
+            results.next();
+            return new AllocationRule(results, service);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 }

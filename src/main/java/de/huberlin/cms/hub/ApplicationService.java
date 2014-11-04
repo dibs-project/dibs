@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.commons.collections4.Predicate;
 
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
@@ -53,6 +54,10 @@ public class ApplicationService {
     /** Aktionstyp: neue Vergaberegel angelegt und mit dem Studiengang verknüpft. */
     public static final String ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED =
         "course_allocation_rule_created";
+    /** Aktionstyp: Kurs publiziert (zur Bewerbung freigegeben). */
+    public static final String ACTION_TYPE_COURSE_PUBLISHED = "course_published";
+    /** Aktionstyp: Kurspublikation zurückgezogen. */
+    public static final String ACTION_TYPE_COURSE_UNPUBLISHED = "course_unpublished";
     /** Aktionstyp: Bewerbung für den Studiengang angelegt. */
     public static final String ACTION_TYPE_COURSE_APPLIED = "course_applied";
     /** Aktionstyp: Bewerbungstatus bearbeitet. */
@@ -111,7 +116,7 @@ public class ApplicationService {
                 if (e.getSQLState().startsWith("42")) {
                     db.rollback();
                     db.setAutoCommit(true);
-                    throw new IllegalStateException("database not empty");
+                    throw new IllegalStateException("database_not_empty");
                 } else {
                     throw e;
                 }

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import org.junit.Test;
 
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 public class ApplicationServiceTest extends HubTest {
     @Test
