@@ -16,8 +16,8 @@ import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Settings;
 
 /**
- * Synchronisiert Studiengänge, Bewerbungen und Ranglisten mit dem DoSV. Jedes Datum
- * wird ausschließlich entweder vom System des DoSV oder von HUB verändert.
+ * Synchronisiationsklasse für Studiengänge, Bewerbungen und Ranglisten mit dem DoSV.
+ * Jedes Datum wird ausschließlich entweder im System des DoSV oder in HUB verändert.
  *
  * @author Markus Michler
  */

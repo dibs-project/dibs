@@ -127,17 +127,16 @@ public class User extends HubObject {
      * Verbindet den Benutzer mit dem System des DoSV. Speichert bei Erfolg BID und BAN
      * bei den Benutzerdaten.
      *
-     * @param dosvBid DoSV Benutzer-ID
-     * @param dosvBan DOSV Benutzer-Autorisierungsnummer
+     * @param dosvBid DoSV-Benutzer-ID
+     * @param dosvBan DOSV-Benutzer-Autorisierungsnummer
      *
      * @return <code>true</code>, wenn der Benutzer verbunden wurde,
      * ansonsten <code>false</code>.
      *
-     * @see {@link de.huberlin.cms.hub.dosv.DosvSync#authenticate(String, String)}
+     * @see de.huberlin.cms.hub.dosv.DosvSync#authenticate(String, String)
      */
     public boolean connectToDosv(String dosvBid, String dosvBan, User agent) {
-        DosvSync dosvSync = new DosvSync(service);
-        if (!dosvSync.authenticate(dosvBid, dosvBan)) {
+        if (!service.getDosvSync().authenticate(dosvBid, dosvBan)) {
             return false;
         };
         try {
@@ -156,6 +155,7 @@ public class User extends HubObject {
             db.commit();
             db.setAutoCommit(true);
         } catch (SQLException e) {
+            // TODO Fehler bei Verletzung unique-constraint dosv_bid abfangen
             throw new IOError(e);
         }
         return true;

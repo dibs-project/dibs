@@ -29,6 +29,7 @@ import org.apache.commons.collections4.Predicate;
 
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 import de.huberlin.cms.hub.HubException.IllegalStateException;
+import de.huberlin.cms.hub.dosv.DosvSync;
 
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
@@ -78,6 +79,7 @@ public class ApplicationService {
     private Journal journal;
     private HashMap<String, Information.Type> informationTypes;
     private HashMap<String, Criterion> criteria;
+    private DosvSync dosvSync;
 
     // TODO: dokumentieren
     public static void setupStorage(Connection db, boolean overwrite) {
@@ -157,6 +159,8 @@ public class ApplicationService {
         this.criteria = new HashMap<String, Criterion>();
         this.criteria.put("qualification", new QualificationCriterion("qualification",
             informationTypes.get("qualification"), this));
+
+        this.dosvSync = new DosvSync(this);
     }
 
     /**
@@ -358,16 +362,7 @@ public class ApplicationService {
     }
 
     /**
-     * Konfiguration. Folgende Einstellungen können gesetzt werden:
-     * <ul>
-     *     <li>
-     *         dosv_url: URL zur DoSV-API. Der Standardwert ist
-     *         "https://hsst.hochschulstart.de/hochschule/webservice/2/" (Testumgebung).
-     *     </li>
-     *     <li>dosv_user: Benutzername für die DoSV-API.</li>
-     *     <li>dosv_password: Passwort für die DoSV-API.</li>
-     *     <li>university_id: StaBu-Nummer der Universität für das DoSV</li>
-     * </ul>
+     * Konfiguration. Die Einstellungen sind in <code>default.properties</code> dokumentiert.
      */
     public Properties getConfig() {
         return config;
@@ -571,5 +566,12 @@ public class ApplicationService {
      */
     public Map<String, Criterion> getCriteria() {
         return unmodifiableMap(this.criteria);
+    }
+
+    /**
+     * DoSV-Synchronisationsklasse.
+     */
+    public DosvSync getDosvSync() {
+        return dosvSync;
     }
 }
