@@ -201,7 +201,7 @@ public class Course extends HubObject {
     public void unpublish(User agent) {
         // NOTE Bewerbungsabfrage kann noch optimiert werden
         if (!getApplications().isEmpty()) {
-            throw new IllegalStateException("applications_present");
+            throw new IllegalStateException("course_has_applications");
         }
         try {
             Connection db = service.getDb();

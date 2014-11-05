@@ -29,8 +29,8 @@ public class AllocationRuleTest extends HubTest {
 
     @Test
     public void testCreateQuotaPublished() {
-        course.publish(null);
         exception.expect(IllegalStateException.class);
+        course.publish(null);
         course.getAllocationRule().createQuota("Performance", 100, null);
     }
 

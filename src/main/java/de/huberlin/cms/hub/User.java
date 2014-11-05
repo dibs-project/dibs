@@ -14,8 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import de.huberlin.cms.dosv.DosvAuthenticationException;
-import de.huberlin.cms.dosv.DosvSync;
+import de.huberlin.cms.hub.dosv.DosvSync;
 
 /**
  * Benutzer, der mit dem Bewerbungssystem interagiert.
@@ -125,20 +124,21 @@ public class User extends HubObject {
     }
 
     /**
-     * Verbindet den Benutzer mit dem System des DoSV. Schreibt bei Erfolg BID und BAN
-     * in die Datenbank.
+     * Verbindet den Benutzer mit dem System des DoSV. Speichert bei Erfolg BID und BAN
+     * bei den Benutzerdaten.
      *
-     * @param dosvBid DoSV Benutzer-ID
-     * @param dosvBan DOSV Benutzer-Autorisierungsnummer
+     * @param dosvBid DoSV-Benutzer-ID
+     * @param dosvBan DOSV-Benutzer-Autorisierungsnummer
      *
-     * @return
-     * @throws DosvAuthenticationException
-     * @see {@link de.huberlin.cms.dosv.DosvSync#getUserStatus(String, String)}
+     * @return <code>true</code>, wenn der Benutzer verbunden wurde,
+     * ansonsten <code>false</code>.
+     *
+     * @see de.huberlin.cms.hub.dosv.DosvSync#authenticate(String, String)
      */
-    public void connectToDosv(String dosvBid, String dosvBan, User agent)
-        throws DosvAuthenticationException {
-        DosvSync dosvSync = new DosvSync(service);
-        dosvSync.getUserStatus(dosvBid, dosvBan);
+    public boolean connectToDosv(String dosvBid, String dosvBan, User agent) {
+        if (!service.getDosvSync().authenticate(dosvBid, dosvBan)) {
+            return false;
+        };
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -155,8 +155,10 @@ public class User extends HubObject {
             db.commit();
             db.setAutoCommit(true);
         } catch (SQLException e) {
+            // TODO Fehler bei Verletzung unique-constraint dosv_bid abfangen
             throw new IOError(e);
         }
+        return true;
     }
 
     /**
@@ -181,7 +183,7 @@ public class User extends HubObject {
     }
 
     /**
-     *  Bewerber-Authentifizierungs-Nummer für das DoSV.
+     *  Bewerber-Autorisierungsnummer für das DoSV.
      */
     public String getDosvBan() {
         return dosvBan;

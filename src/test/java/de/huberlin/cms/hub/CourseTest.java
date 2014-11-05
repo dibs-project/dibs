@@ -18,6 +18,13 @@ import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 public class CourseTest extends HubTest {
     @Test
+    public void testCreateAllocationRule() {
+        course.unpublish(null);
+        AllocationRule allocationRule = course.createAllocationRule(null);
+        assertEquals(allocationRule, course.getAllocationRule());
+    }
+
+    @Test
     public void testCreateAllocationRulePublished() {
         exception.expect(IllegalStateException.class);
         course.createAllocationRule(null);
@@ -49,8 +56,8 @@ public class CourseTest extends HubTest {
 
     @Test
     public void testApplyUnpublished() {
-        course.unpublish(null);
         exception.expect(IllegalStateException.class);
+        course.unpublish(null);
         course.apply(user.getId(), null);
     }
 
