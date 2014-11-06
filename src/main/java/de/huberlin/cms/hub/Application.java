@@ -8,8 +8,6 @@ package de.huberlin.cms.hub;
 import static java.util.Collections.nCopies;
 
 import java.io.IOError;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.lang3.StringUtils;
 
@@ -61,7 +60,7 @@ public class Application extends HubObject {
         try {
             Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
                 "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?",
-                service.getMapHandler(), this.id, criterionId);
+                new MapHandler(), this.id, criterionId);
             if (args == null) {
                 throw new IllegalArgumentException(
                     "illegal criterionId: evaluation does not exist");
@@ -108,7 +107,7 @@ public class Application extends HubObject {
                 params[i] = filterValues.get(i);
             }
             queryResults = service.getQueryRunner().query(service.getDb(), sql,
-                service.getMapListHandler(), params);
+                new MapListHandler(), params);
             for (Map<String, Object> map : queryResults) {
                 map.put("service", this.getService());
                 evaluations.add(new Evaluation(map));

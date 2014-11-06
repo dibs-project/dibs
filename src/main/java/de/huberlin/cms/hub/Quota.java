@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
+
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
@@ -45,7 +48,7 @@ public class Quota extends HubObject {
         try {
             db.setAutoCommit(false);
             service.getQueryRunner().insert(service.getDb(), "INSERT INTO quota_ranking_criteria VALUES(?, ?)",
-                service.getMapHandler(), id, criterionId);
+                new MapHandler(), id, criterionId);
             service.getJournal().record(ApplicationService.ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED,
                 this.id, HubObject.getId(agent), criterionId);
             db.commit();
@@ -74,7 +77,7 @@ public class Quota extends HubObject {
             String sql = "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
             List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
             queryResults = service.getQueryRunner().query(service.getDb(), sql,
-                    service.getMapListHandler(), id);
+                new MapListHandler(), id);
             for (Map<String, Object> args : queryResults) {
                 rankingCriteria.add(service.getCriteria().get(args.get("criterion_id")));
             }
@@ -108,7 +111,7 @@ public class Quota extends HubObject {
         try {
             Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
                 "SELECT * FROM allocation_rule WHERE quota_id = ?",
-                service.getMapHandler(), id);
+                new MapHandler(), id);
             args.put("service", service);
             return new AllocationRule(args);
         } catch (SQLException e) {

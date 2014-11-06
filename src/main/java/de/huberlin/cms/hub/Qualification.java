@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.dbutils.handlers.MapHandler;
+
 /**
  * Hochschulreife (bzw. Hochschulzugangsberechtigung).
  *
@@ -84,7 +86,7 @@ public class Qualification extends Information {
                 db.setAutoCommit(false);
                 String id = "qualification:" + Integer.toString(new Random().nextInt());
                 service.getQueryRunner().insert(service.getDb(), "INSERT INTO qualification VALUES (?, ?, ?)",
-                    service.getMapHandler(), id, user.getId(), grade);
+                    new MapHandler(), id, user.getId(), grade);
                 service.getJournal().record(ApplicationService.ACTION_TYPE_INFORMATION_CREATED,
                     user.getId(), HubObject.getId(agent), id);
                 db.commit();

@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.dbutils.handlers.MapListHandler;
+
 /**
  * Benutzer, der mit dem Bewerbungssystem interagiert.
  *
@@ -67,7 +69,7 @@ public class User extends HubObject {
                 String sql = String.format("SELECT * FROM \"%s\" WHERE user_id = ?", type.getId());
                 List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
                 queryResults = service.getQueryRunner().query(service.getDb(),
-                    sql, service.getMapListHandler(), this.id);
+                    sql, new MapListHandler(), this.id);
                 for (Map<String, Object> args : queryResults) {
                     informationSet.add(type.newInstance(args, service));
                 }
@@ -89,7 +91,7 @@ public class User extends HubObject {
             List<Application> applications = new ArrayList<Application>();
             List<Map<String, Object>> queryResults = service.getQueryRunner().query(
                 service.getDb(), "SELECT * FROM application WHERE user_id = ?",
-                service.getMapListHandler(), this.getId());
+                new MapListHandler(), this.getId());
             for(Map<String, Object> args : queryResults) {
                args.put("service", service);
                applications.add(new Application(args));

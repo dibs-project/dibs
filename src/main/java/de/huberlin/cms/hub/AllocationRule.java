@@ -13,6 +13,8 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.dbutils.handlers.MapHandler;
+
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
@@ -55,7 +57,7 @@ public class AllocationRule extends HubObject {
             db.setAutoCommit(false);
             String quotaId = "quota:" + Integer.toString(new Random().nextInt());
             service.getQueryRunner().insert(service.getDb(), "INSERT INTO quota VALUES (?, ?, ?)",
-                service.getMapHandler(), quotaId, name, percentage);
+                new MapHandler(), quotaId, name, percentage);
             service.getQueryRunner().update(this.service.getDb(),
                 "UPDATE allocation_rule SET quota_id = ? WHERE id = ?", quotaId, this.id);
             this.quotaId = quotaId;
@@ -83,7 +85,7 @@ public class AllocationRule extends HubObject {
         try {
             Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
                 "SELECT * FROM course WHERE allocation_rule_id = ?",
-                service.getMapHandler(), id);
+                new MapHandler(), id);
             args.put("service", service);
             return new Course(args);
         } catch (SQLException e) {

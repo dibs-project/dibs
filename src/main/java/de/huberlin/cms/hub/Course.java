@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
+
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
@@ -51,7 +54,7 @@ public class Course extends HubObject {
             db.setAutoCommit(false);
             String ruleId = "allocation_rule:" + Integer.toString(new Random().nextInt());
             service.getQueryRunner().insert(service.getDb(), "INSERT INTO allocation_rule VALUES (?)",
-                service.getMapHandler(), ruleId);
+                new MapHandler(), ruleId);
             service.getQueryRunner().update(service.getDb(),
                 "UPDATE course SET allocation_rule_id = ? WHERE id = ?", ruleId, this.id);
             this.allocationRuleId = ruleId;
@@ -83,7 +86,7 @@ public class Course extends HubObject {
             String applicationId =
                 String.format("application:%s", new Random().nextInt());
             service.getQueryRunner().insert(service.getDb(),
-                "INSERT INTO application VALUES (?, ?, ?, ?)", service.getMapHandler(),
+                "INSERT INTO application VALUES (?, ?, ?, ?)", new MapHandler(),
                 applicationId, userId, this.id, Application.STATUS_INCOMPLETE);
             Application application = this.service.getApplication(applicationId);
 
@@ -94,8 +97,8 @@ public class Course extends HubObject {
             for (Criterion criterion : criteria) {
                 String id = String.format("evaluation:%s", new Random().nextInt());
                 service.getQueryRunner().insert(service.getDb(),
-                    "INSERT INTO evaluation VALUES (?, ?, ?, ?, ?, ?)",
-                    service.getMapHandler(), id, applicationId, criterion.getId(), null,
+                    "INSERT INTO evaluation VALUES (?, ?, ?, ?, ?, ?)", new MapHandler(),
+                    id, applicationId, criterion.getId(), null,
                     null, Evaluation.STATUS_INFORMATION_MISSING);
             }
 
@@ -127,7 +130,7 @@ public class Course extends HubObject {
             List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
             queryResults = service.getQueryRunner().query(service.getDb(),
                 "SELECT * FROM application WHERE course_id = ?",
-                service.getMapListHandler(), id);
+                new MapListHandler(), id);
             for (Map<String, Object> args : queryResults) {
                 args.put("service", this.getService());
                 applications.add(new Application(args));
