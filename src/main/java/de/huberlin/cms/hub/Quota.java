@@ -47,6 +47,7 @@ public class Quota extends HubObject {
      * @param agent ausführender Benutzer
      */
     public void addRankingCriterion(String criterionId, User agent) {
+        // TODO Sobald es mehrere Kriterien gibt, muss die Funktion angepasst werden, da die Reihenfolge der Kriterien nicht gewährleistet werden kann
         if (getAllocationRule().getCourse().isPublished()) {
             throw new IllegalStateException("course_published");
         }
@@ -84,14 +85,13 @@ public class Quota extends HubObject {
      * @return Rangliste
      */
     public List<Rank> generateRanking() {
-        // TODO Sobald es mehrere Kriterien gibt, muss die Funktion angepasst werden, da die Reihenfolge der Kriterien nicht gewährleistet werden kann
         List<Application> applications = this.getApplications();
         final Map<Application,List<Evaluation>> evaluations = this.getEvaluations();
         final HashMap<Application,Integer> lotnumbers = new HashMap<>();
         for (Application application : applications) {
             lotnumbers.put(application, new Random().nextInt(1000000));
         }
-        Collections.sort(applications,new Comparator<Application>() {
+        Collections.sort(applications, new Comparator<Application>() {
             @Override
             public int compare(Application a1, Application a2) {
                 List<Criterion> criteria = Quota.this.getRankingCriteria();
