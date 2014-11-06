@@ -8,7 +8,6 @@ package de.huberlin.cms.hub.dosv;
 import java.util.Properties;
 
 import de.hochschulstart.hochschulschnittstelle.benutzerservicev1_0.BenutzerServiceFehler;
-import de.hochschulstart.hochschulschnittstelle.benutzerv1_0.Bewerber;
 import de.hochschulstart.hochschulschnittstelle.commonv1_0.AutorisierungsFehler;
 import de.hochschulstart.hochschulschnittstelle.commonv1_0.UnbekannterBenutzerFehler;
 import de.hu_berlin.dosv.DosvClient;

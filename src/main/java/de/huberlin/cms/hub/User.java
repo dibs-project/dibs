@@ -14,8 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import de.huberlin.cms.hub.dosv.DosvSync;
-
 /**
  * Benutzer, der mit dem Bewerbungssystem interagiert.
  *
