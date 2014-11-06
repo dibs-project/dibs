@@ -47,9 +47,9 @@ public abstract class Information extends HubObject {
 
         /**
          * Extension API: Erstellt eine neue Instanz dieses Informationstyps und
-         * initialisiert sie über einen Datenbankcursor.
+         * initialisiert sie über die Argumente.
          *
-         * @param args Datenbankcursor, der auf ein passendes Abfrageergebnis verweist
+         * @param args Argumente zum Initialisieren der Information.
          * @param service Bewerbungsdienst
          * @return neue Information
          * @throws SQLException wenn ein Datenbankzugriffsfehler auftritt

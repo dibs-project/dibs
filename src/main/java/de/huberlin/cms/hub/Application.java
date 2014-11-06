@@ -118,7 +118,6 @@ public class Application extends HubObject {
         }
     }
 
-
     /**
      * Gibt eine Liste aller Bewertungen, die zu dieser Bewerbung gehören, zurück.
      *

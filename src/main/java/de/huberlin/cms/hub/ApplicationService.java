@@ -439,7 +439,7 @@ public class ApplicationService {
             ArrayList<Course> courses = new ArrayList<Course>();
             List<Map<String, Object>> queryResults = this.queryRunner.query(this.db,
                 "SELECT * FROM course", new MapListHandler());
-            for(Map<String, Object> args : queryResults) {
+            for (Map<String, Object> args : queryResults) {
                args.put("service", this);
                courses.add(new Course(args));
            }
@@ -548,7 +548,7 @@ public class ApplicationService {
 
     /**
      * Ausführer der Datenbankabfrage, welcher das Abfrageergebnis mit Hilfe des
-     * <code>ResultSetHandler<code> generiert.
+     * <code>ResultSetHandler<code> in ein <code>Map</code> oder Liste des Maps umwandert.
      */
     public QueryRunner getQueryRunner() {
         return this.queryRunner;
