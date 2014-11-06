@@ -68,4 +68,13 @@ CREATE TABLE evaluation (
     status VARCHAR(256) NOT NULL
 );
 
+CREATE TABLE rank (
+    id VARCHAR(256) PRIMARY KEY,
+    quota_id VARCHAR(256) REFERENCES quota NOT NULL,
+    user_id VARCHAR(256) REFERENCES "user" NOT NULL,
+    application_id VARCHAR(256) REFERENCES application NOT NULL,
+    index INT NOT NULL,
+    lotnumber INT NOT NULL
+);
+
 INSERT INTO settings (id, semester, storage_version) VALUES ('settings', '2014WS', '0');

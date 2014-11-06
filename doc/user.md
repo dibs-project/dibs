@@ -22,11 +22,13 @@ Struktur:
   .----------------------. .----------------. .---------------------. .-----------.
   | Course               | | AllocationRule | | Quota               | | Criterion |
   |----------------------| |----------------| |---------------------| |-----------|
-  | createAllocationRule | | createQuota    | | addRankingCriterion | | evaluate  |
-  | apply                | '----------------' '---------------------' '-----------'
+  | createAllocationRule | | createQuota    | | addRankingCriterion | |evaluate   |
+  | apply                | '----------------' | generateRanking     | '-----------'
+  | generateRankings     |                    '---------------------'
   | publish              |
   | unpublish            |
-  '----------------------'
+  '----------------------'                                                                 
+ 
 
   .---------.
   | Journal |
@@ -37,7 +39,7 @@ Ablauf:
 
 ```
    . Applicant                            | Employee                        | System
-  ----------------------------------------+---------------------------------+-------
+  ----------------------------------------+---------------------------------+-----------------------
    .                                      | ApplicationService.createUser   |
    .                                      | ApplicationService.createCourse |
    .                                      | Course.createAllocationRule     |
@@ -47,5 +49,6 @@ Ablauf:
    . ApplicationService.register          |                                 |
    . User.createInformation               |                                 |
    . Course.apply                         |                                 |
+   .                                      |                                 | Course.generateRankings
 
 ```

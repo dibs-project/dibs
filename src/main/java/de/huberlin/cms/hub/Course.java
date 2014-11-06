@@ -122,6 +122,13 @@ public class Course extends HubObject {
     }
 
     /**
+     * Generiert die Rangliste für den Studiengang.
+     */
+    public void generateRankings() {
+        this.getAllocationRule().getQuota().generateRanking();
+    }
+
+    /**
      * Liste aller Bewerbungen, die für diesen Studiengang abgegeben wurden.
      */
     public List<Application> getApplications() {
@@ -136,6 +143,28 @@ public class Course extends HubObject {
                 applications.add(new Application(args));
             }
             return applications;
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Ruft die Rangliste für den Studiengang ab.
+     * 
+     * @return Rangliste
+     */
+    public List<Rank> getRankings() {
+        ArrayList<Rank> ranking = new ArrayList<Rank>();
+        try {
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            queryResults = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM rank WHERE quota_id = ?", new MapListHandler(),
+                this.getAllocationRule().getQuota().getId());
+            for (Map<String, Object> args : queryResults) {
+                args.put("service", this.getService());
+                ranking.add(new Rank(args));
+            }
+            return ranking;
         } catch (SQLException e) {
             throw new IOError(e);
         }
