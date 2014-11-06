@@ -21,25 +21,25 @@ import de.huberlin.cms.hub.Settings;
  * @author Markus Michler
  */
 public class DosvSync {
-    private DosvClient dosvClient;
+    private Properties dosvConfig;
 
     public DosvSync(ApplicationService service) {
-        Properties dosvConfig = service.getConfig();
+        dosvConfig = service.getConfig();
         Settings settings = service.getSettings();
         dosvConfig.setProperty(DosvClient.SEMESTER, settings.getSemester().substring(4, 6));
         dosvConfig.setProperty(DosvClient.YEAR, settings.getSemester().substring(0, 4));
-        dosvClient = new DosvClient(dosvConfig);
     }
 
     /**
      * @param dosvBid DoSV-Benutzer-ID
-     * @param dosvBan DOSV-Benutzer-Autorisierungsnummer
+     * @param dosvBan DoSV-Benutzer-Autorisierungsnummer
      * @return <code>true</code>, wenn der Benutzer authentifiziert wurde,
      * ansonsten <code>false</code>.
      */
     public boolean authenticate(String dosvBid, String dosvBan) {
         try {
-            dosvClient.abrufenStammdatenDurchHS(dosvBid, dosvBan);
+            // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+            new DosvClient(dosvConfig).abrufenStammdatenDurchHS(dosvBid, dosvBan);
             return true;
         } catch (BenutzerServiceFehler e) {
             if (e.getFaultInfo() instanceof UnbekannterBenutzerFehler

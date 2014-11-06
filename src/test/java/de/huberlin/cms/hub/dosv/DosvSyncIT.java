@@ -7,6 +7,7 @@ package de.huberlin.cms.hub.dosv;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.Properties;
@@ -27,10 +28,10 @@ public class DosvSyncIT extends HubTest {
         Properties config = service.getConfig();
         /** Überspringt den Integration Test, wenn der DoSV-Webservice nicht konfiguriert ist */
         assumeTrue(!config.get(DosvClient.UNIVERSITY_ID).equals("")
-            && !config.get(DosvClient.USER).equals("")
-            && !config.get(DosvClient.PW).equals("")
-            && !config.get("dosv_test_bid").equals("")
-            && !config.get("dosv_test_ban").equals(""));
+            && !config.getProperty(DosvClient.USER).isEmpty()
+            && !config.getProperty(DosvClient.PW).isEmpty()
+            && !config.getProperty("dosv_test_bid").isEmpty()
+            && !config.getProperty("dosv_test_ban").isEmpty());
         bid = config.getProperty("dosv_test_bid");
         ban = config.getProperty("dosv_test_ban");
     }
@@ -38,7 +39,7 @@ public class DosvSyncIT extends HubTest {
     @Test
     public void testUserConnectToDosv() {
         User dosvUser = service.createUser("dosv-testuser", "test@example.org");
-        dosvUser.connectToDosv(bid, ban, null);
+        assertTrue(dosvUser.connectToDosv(bid, ban, null));
         assertEquals(bid, service.getUser(dosvUser.getId()).getDosvBid());
     }
 

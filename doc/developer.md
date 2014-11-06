@@ -18,6 +18,14 @@ Führe einfach folgenden Befehl aus um alle Testfälle durch zu spielen:
 
     mvn test
 
+Für das Testen der Anbindung an das DoSV existieren Integration Tests.
+Für jene muss ein Benutzerkonto auf der Testumgebung bei Hochschulstart angelegt und die 
+BID und BAN dieses Kontos in `test.properties` eingetragen werden.
+
+Um nur die Integration Tests auszuführen nutze den Befehl
+
+    mvn test-compile failsafe:integration-test
+
 HUB-Entwicklungsserver ausführen
 --------------------------------
 

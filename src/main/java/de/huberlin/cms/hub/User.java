@@ -129,7 +129,7 @@ public class User extends HubObject {
      * @param dosvBan DOSV-Benutzer-Autorisierungsnummer
      *
      * @return <code>true</code>, wenn der Benutzer verbunden wurde,
-     * ansonsten <code>false</code>.
+     * <code>false</code> wenn er nicht authentifiziert werden konnte.
      *
      * @see de.huberlin.cms.hub.dosv.DosvSync#authenticate(String, String)
      */
