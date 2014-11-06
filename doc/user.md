@@ -39,7 +39,7 @@ Ablauf:
 
 ```
    . Applicant                            | Employee                        | System
-  ----------------------------------------+---------------------------------+-----------------
+  ----------------------------------------+---------------------------------+-----------------------
    .                                      | ApplicationService.createUser   |
    .                                      | ApplicationService.createCourse |
    .                                      | Course.createAllocationRule     |
@@ -49,6 +49,6 @@ Ablauf:
    . ApplicationService.register          |                                 |
    . User.createInformation               |                                 |
    . Course.apply                         |                                 |
-   .                                      |                                 | generateRankings
+   .                                      |                                 | Course.generateRankings
 
 ```
