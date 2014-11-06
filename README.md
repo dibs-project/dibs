@@ -20,6 +20,9 @@ Führe einfach folgenden Befehl aus um HUB zu bauen:
 HUB einrichten
 --------------
 
+Um HUB zu konfigurieren, kopiere die Datei `default.properties` nach `hub.properties`
+und passe sie deinen Bedürfnissen an.
+
 HUB benötigt eine PostgreSQL-Datenbank. Bei Bedarf kannst du eine Datenbank (inkl.
 Datenbankbenutzer) lokal erstellen, indem du mit dem Werkzeug `psql` als
 PostgreSQL-Superuser (oft `postgres`) folgende Befehle ausführst:
@@ -29,6 +32,10 @@ PostgreSQL-Superuser (oft `postgres`) folgende Befehle ausführst:
 
 Hier sind für den Benutzernamen, das Passwort und den Datenbanknamen "hub" gewählt, die
 Werte sind aber beliebig.
+
+Für die Synchronisation von HUB mit dem Dialogorientierten Serviceverfahren müssen die
+Webservices konfiguriert werden. Versehe hierfür die Schlüssel mit dem Präfix `dosv_` mit
+Werten.
 
 Hergestellt mit
 ---------------

@@ -1,7 +1,9 @@
 CREATE TABLE "user" (
     id VARCHAR(256) PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
-    email VARCHAR(256) NOT NULL
+    email VARCHAR(256) NOT NULL,
+    dosv_bid VARCHAR(256) UNIQUE,
+    dosv_ban VARCHAR(256)
 );
 
 CREATE TABLE settings (
