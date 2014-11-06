@@ -406,12 +406,13 @@ public class ApplicationService {
             this.db.setAutoCommit(false);
             String id = "course:" + Integer.toString(new Random().nextInt());
             PreparedStatement statement =
-                db.prepareStatement("INSERT INTO course(id, name, capacity) VALUES(?, ?, ?)");
+                db.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
             statement.setString(1, id);
             statement.setString(2, name);
             statement.setInt(3, capacity);
             statement.executeUpdate();
-            journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent), name);
+            journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
+                name);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getCourse(id);

@@ -7,6 +7,7 @@ package de.huberlin.cms.hub.dosv;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.Properties;
@@ -46,5 +47,11 @@ public class DosvSyncIT extends HubTest {
     public void testUserConnectToDosvBadBid() {
         User dosvUser = service.createUser("dosv-testuser", "test@example.org");
         assertFalse(dosvUser.connectToDosv("BadBid", ban, null));
+    }
+
+    @Test
+    public void testCoursePushPublished() {
+        service.getDosvSync().synchronize();
+        assertTrue(service.getCourse(course.getId()).isDosvPushed());
     }
 }
