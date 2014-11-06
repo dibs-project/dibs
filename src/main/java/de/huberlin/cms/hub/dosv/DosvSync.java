@@ -24,7 +24,8 @@ public class DosvSync {
     private Properties dosvConfig;
 
     public DosvSync(ApplicationService service) {
-        dosvConfig = service.getConfig();
+        dosvConfig = new Properties();
+        dosvConfig.putAll(service.getConfig());
         Settings settings = service.getSettings();
         dosvConfig.setProperty(DosvClient.SEMESTER, settings.getSemester().substring(4, 6));
         dosvConfig.setProperty(DosvClient.YEAR, settings.getSemester().substring(0, 4));
@@ -50,5 +51,4 @@ public class DosvSync {
             }
         }
     }
-
 }

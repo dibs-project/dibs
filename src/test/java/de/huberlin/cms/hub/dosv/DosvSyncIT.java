@@ -27,7 +27,7 @@ public class DosvSyncIT extends HubTest {
     public void before() throws Exception {
         Properties config = service.getConfig();
         /** Überspringt den Integration Test, wenn der DoSV-Webservice nicht konfiguriert ist */
-        assumeTrue(!config.get(DosvClient.UNIVERSITY_ID).equals("")
+        assumeTrue(!config.getProperty(DosvClient.UNIVERSITY_ID).isEmpty()
             && !config.getProperty(DosvClient.USER).isEmpty()
             && !config.getProperty(DosvClient.PW).isEmpty()
             && !config.getProperty("dosv_test_bid").isEmpty()
