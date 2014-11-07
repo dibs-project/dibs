@@ -31,6 +31,7 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 import de.huberlin.cms.hub.HubException.IllegalStateException;
+import de.huberlin.cms.hub.dosv.DosvSync;
 
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
@@ -47,6 +48,8 @@ public class ApplicationService {
 
     /** Aktionstyp: neuer Benutzer angelegt. */
     public static final String ACTION_TYPE_USER_CREATED = "user_created";
+    /** Aktionstyp: Benutzer ist mit dem DoSV verbunden. */
+    public static final String APPLICATION_TYPE_USER_CONNECTED_TO_DOSV = "user_connected_to_dosv";
     /** Aktionstyp: neue Information für einen Benutzer angelegt. */
     public static final String ACTION_TYPE_INFORMATION_CREATED = "information_created";
     /** Aktionstyp: neuer Studiengang angelegt. */
@@ -76,9 +79,10 @@ public class ApplicationService {
     private Properties config;
     private Connection db;
     private Journal journal;
-    private Map<String, Information.Type> informationTypes;
-    private Map<String, Criterion> criteria;
+    private HashMap<String, Information.Type> informationTypes;
+    private HashMap<String, Criterion> criteria;
     private QueryRunner queryRunner;
+    private DosvSync dosvSync;
 
     // TODO: dokumentieren
     public static void setupStorage(Connection db, boolean overwrite) {
@@ -148,12 +152,7 @@ public class ApplicationService {
     public ApplicationService(Connection db, Properties config) {
         this.db = db;
 
-        Properties defaults = new Properties();
-        defaults.setProperty("dosv_url",
-            "https://hsst.hochschulstart.de/hochschule/webservice/2/");
-        defaults.setProperty("dosv_user", "");
-        defaults.setProperty("dosv_password", "");
-        this.config = new Properties(defaults);
+        this.config = new Properties();
         this.config.putAll(config);
         this.journal = new Journal(this);
 
@@ -168,6 +167,7 @@ public class ApplicationService {
         this.criteria.put("qualification", new QualificationCriterion(args));
 
         this.queryRunner =  new QueryRunner();
+        this.dosvSync = new DosvSync(this);
     }
 
     /**
@@ -267,6 +267,7 @@ public class ApplicationService {
         if (type == null) {
             throw new ObjectNotFoundException(id);
         }
+
         try {
             Map<String, Object> args = this.queryRunner.query(this.db,
                 String.format("SELECT * FROM \"%s\" WHERE id = ?", typeId),
@@ -293,7 +294,6 @@ public class ApplicationService {
             if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
-            args.put("service", this);
             return new Application(args);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -344,15 +344,7 @@ public class ApplicationService {
     }
 
     /**
-     * Konfiguration. Folgende Einstellungen können gesetzt werden:
-     * <ul>
-     *     <li>
-     *         dosv_url: URL zur DoSV-API. Der Standardwert ist
-     *         "https://hsst.hochschulstart.de/hochschule/webservice/2/" (Testumgebung).
-     *     </li>
-     *     <li>dosv_user: Benutzername für die DoSV-API. Der Standardwert ist "".</li>
-     *     <li>dosv_password: Passwort für die DoSV-API. Der Standardwert ist "".</li>
-     * </ul>
+     * Konfiguration. Die Einstellungen sind in <code>default.properties</code> dokumentiert.
      */
     public Properties getConfig() {
         return config;
@@ -552,5 +544,12 @@ public class ApplicationService {
      */
     public QueryRunner getQueryRunner() {
         return this.queryRunner;
+    }
+
+     /**
+     * DoSV-Synchronisationsklasse.
+     */
+    public DosvSync getDosvSync() {
+        return dosvSync;
     }
 }

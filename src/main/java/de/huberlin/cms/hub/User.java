@@ -6,6 +6,7 @@
 package de.huberlin.cms.hub;
 
 import java.io.IOError;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,11 +24,15 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 public class User extends HubObject {
     private String name;
     private String email;
+    private String dosvBid;
+    private String dosvBan;
 
     User(Map<String, Object> args) {
         super(args);
         this.name = (String) args.get("name");
         this.email = (String) args.get("email");
+        this.dosvBid = (String) args.get("dosv_bid");
+        this.dosvBan = (String) args.get("dosv_ban");
     }
 
     /**
@@ -103,6 +108,41 @@ public class User extends HubObject {
     }
 
     /**
+     * Verbindet den Benutzer mit dem System des DoSV. Speichert bei Erfolg BID und BAN
+     * bei den Benutzerdaten.
+     *
+     * @param dosvBid DoSV-Benutzer-ID
+     * @param dosvBan DOSV-Benutzer-Autorisierungsnummer
+     *
+     * @return <code>true</code>, wenn der Benutzer verbunden wurde,
+     * <code>false</code> wenn er nicht authentifiziert werden konnte.
+     *
+     * @see de.huberlin.cms.hub.dosv.DosvSync#authenticate(String, String)
+     */
+    public boolean connectToDosv(String dosvBid, String dosvBan, User agent) {
+        if (!service.getDosvSync().authenticate(dosvBid, dosvBan)) {
+            return false;
+        };
+        try {
+            Connection db = service.getDb();
+            db.setAutoCommit(false);
+            service.getQueryRunner().update(this.service.getDb(),
+                "UPDATE \"user\" SET dosv_bid = ?, dosv_ban = ? WHERE id = ?", dosvBid,
+                dosvBan, id);
+            this.dosvBid = dosvBid;
+            this.dosvBan = dosvBan;
+            service.getJournal().record(ApplicationService.APPLICATION_TYPE_USER_CONNECTED_TO_DOSV,
+                id, HubObject.getId(agent), null);
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            // TODO Fehler bei Verletzung unique-constraint dosv_bid abfangen
+            throw new IOError(e);
+        }
+        return true;
+    }
+
+    /**
      * Name, mit dem der Benutzer von HUB angesprochen wird.
      */
     public String getName() {
@@ -114,5 +154,19 @@ public class User extends HubObject {
      */
     public String getEmail() {
         return this.email;
+    }
+
+    /**
+     * Bewerber-ID für das DoSV.
+     */
+    public String getDosvBid() {
+        return dosvBid;
+    }
+
+    /**
+     *  Bewerber-Autorisierungsnummer für das DoSV.
+     */
+    public String getDosvBan() {
+        return dosvBan;
     }
 }
