@@ -10,7 +10,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -28,23 +30,24 @@ public class Course extends HubObject {
     private int capacity;
     private String allocationRuleId;
     private boolean published;
-    private boolean dosvPushed;
+    private Date modificationTime;
 
     Course(String id, String name, int capacity, String allocationRuleId, boolean published,
-        boolean dosvPushed, ApplicationService service) {
+        Date modificationTime, ApplicationService service) {
         super(id, service);
         this.name = name;
         this.capacity = capacity;
         this.allocationRuleId = allocationRuleId;
         this.published = published;
-        this.dosvPushed = dosvPushed;
+        this.modificationTime = modificationTime;
     }
 
     Course(ResultSet results, ApplicationService service) throws SQLException {
         // initialisiert den Studiengang über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
             results.getInt("capacity"), results.getString("allocation_rule_id"),
-            results.getBoolean("published"), results.getBoolean("dosv_pushed"), service);
+            results.getBoolean("published"), results.getTimestamp("modification_time"),
+            service);
     }
 
     /**
@@ -172,6 +175,7 @@ public class Course extends HubObject {
      * Publiziert den Studiengang.
      */
     public void publish(User agent) {
+        Date now = new Date();
         AllocationRule allocationRule = getAllocationRule();
         if (allocationRule == null || allocationRule.getQuota() == null) {
             throw new IllegalStateException("course_incomplete");
@@ -180,9 +184,10 @@ public class Course extends HubObject {
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
-            String sql = "UPDATE course SET published = TRUE WHERE id = ?";
+            String sql = "UPDATE course SET published = TRUE, modification_time = ? WHERE id = ?";
             PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, getId());
+            statement.setTimestamp(1, new Timestamp(now.getTime()));
+            statement.setString(2, getId());
             statement.executeUpdate();
             service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_PUBLISHED,
                 this.id, HubObject.getId(agent), null);
@@ -192,6 +197,7 @@ public class Course extends HubObject {
             throw new IOError(e);
         }
         published = true;
+        modificationTime = now;
     }
 
     /**
@@ -199,17 +205,19 @@ public class Course extends HubObject {
      * diesen Studiengang vorliegen.
      */
     public void unpublish(User agent) {
+        Date now = new Date();
         // NOTE Bewerbungsabfrage kann noch optimiert werden
         if (!getApplications().isEmpty()) {
             throw new IllegalStateException("course_has_applications");
         }
+        // NOTE Race Condition: SELECT-UPDATE
         try {
             Connection db = service.getDb();
-            // NOTE Race Condition: SELECT-UPDATE
             db.setAutoCommit(false);
-            String sql = "UPDATE course SET published = FALSE WHERE id = ?";
+            String sql = "UPDATE course SET published = FALSE, modification_time = ? WHERE id = ?";
             PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, getId());
+            statement.setTimestamp(1, new Timestamp(now.getTime()));
+            statement.setString(2, getId());
             statement.executeUpdate();
             service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_UNPUBLISHED,
                 this.id, HubObject.getId(agent), null);
@@ -219,6 +227,7 @@ public class Course extends HubObject {
             throw new IOError(e);
         }
         published = false;
+        modificationTime = now;
     }
 
     /**
@@ -250,9 +259,9 @@ public class Course extends HubObject {
     }
 
     /**
-     * Abgeschlossene Übertragung in das DoSV.
+     * Zeitpunkt der letzten Modifikation des Studiengangs.
      */
-    public boolean isDosvPushed() {
-        return dosvPushed;
+    public Date getModificationTime() {
+        return modificationTime;
     }
 }

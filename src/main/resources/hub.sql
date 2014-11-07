@@ -10,8 +10,7 @@ CREATE TABLE settings (
     id VARCHAR(256) PRIMARY KEY,
     semester VARCHAR(6),
     storage_version VARCHAR(256),
-    dosv_applicants_update_time TIMESTAMP,
-    dosv_applications_update_time TIMESTAMP
+    dosv_sync_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE quota (
@@ -37,7 +36,7 @@ CREATE TABLE course (
     capacity INT NOT NULL,
     allocation_rule_id VARCHAR(256) REFERENCES allocation_rule,
     published BOOLEAN NOT NULL DEFAULT FALSE,
-    dosv_pushed BOOLEAN NOT NULL DEFAULT FALSE
+    modification_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE journal_record (

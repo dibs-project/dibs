@@ -10,8 +10,10 @@ import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studien
 import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.OEFFENTLICH_SICHTBAR;
 
 import java.io.IOError;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -60,6 +62,7 @@ public class DosvSync {
     private ApplicationService service;
 
     public DosvSync(ApplicationService service) {
+        this.service = service;
         Properties dosvConfig = service.getConfig();
         Settings settings = service.getSettings();
         dosvConfig.setProperty(DosvClient.SEMESTER, settings.getSemester().substring(4, 6));
@@ -91,16 +94,31 @@ public class DosvSync {
      * Synchronisiert Studiengänge, Bewerbungen, und Ranglisten mit dem System des DoSV.
      */
     public void synchronize() {
+        Timestamp newSyncTime = new Timestamp(new Date().getTime());
         pushCourses();
+        try {
+            Connection db = service.getDb();
+            db.setAutoCommit(false);
+            PreparedStatement statement =
+                db.prepareStatement("UPDATE settings SET dosv_sync_time = ?");
+            statement.setTimestamp(1, newSyncTime);
+            statement.executeUpdate();
+            // FIXME Journal
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
     private void pushCourses() {
         List<Studienangebot> studiangebote = new ArrayList<>();
         List<Studienpaket> studienpakete = new ArrayList<>();
+        Date dosvSynctime = service.getSettings().getDosvSyncTime();
         for (Course course : service.getCourses()) {
-            if (course.isDosvPushed()) {
+            if (dosvSynctime.after(course.getModificationTime())) {
                 continue;
             }
+            // FIXME Studienangebote nur als IN_VORBEREITUNG übertragen, publizierte dann auf OEFFENTLICH_SICHTBAR setzen
             StudienangebotsStatus studienangebotsStatus;
             if (!course.isPublished()) {
                 studienangebotsStatus = IN_VORBEREITUNG;
@@ -217,13 +235,5 @@ public class DosvSync {
         } catch (BewerberauswahlServiceFehler e) {
             throw new RuntimeException(e);
         }
-        try {
-            String sql = "UPDATE course SET dosv_pushed = TRUE";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
     }
-
 }

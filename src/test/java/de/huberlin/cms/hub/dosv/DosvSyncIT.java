@@ -50,8 +50,10 @@ public class DosvSyncIT extends HubTest {
     }
 
     @Test
-    public void testCoursePushPublished() {
+    public void testCoursePush() {
         service.getDosvSync().synchronize();
-        assertTrue(service.getCourse(course.getId()).isDosvPushed());
+        course.unpublish(null);
+        service.getDosvSync().synchronize();
+        assertTrue(service.getSettings().getDosvSyncTime().after(course.getModificationTime()));
     }
 }

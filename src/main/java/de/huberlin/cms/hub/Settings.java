@@ -17,25 +17,22 @@ import java.util.Date;
 public class Settings extends HubObject {
     private String semester;
     private String storageVersion;
-    private Date dosvApplicantsUpdateTime;
-    private Date dosvApplicationsUpdateTime;
+    private Date dosvSyncTime;
 
     Settings(String id, String semester, String storageVersion,
-            Date dosvApplicantsUpdateTime, Date dosvApplicationsUpdateTime,
+            Date dosvUpdateTime,
             ApplicationService service) {
         super(id, service);
         this.semester = semester;
         this.storageVersion = storageVersion;
-        this.dosvApplicantsUpdateTime = dosvApplicantsUpdateTime;
-        this.dosvApplicationsUpdateTime = dosvApplicationsUpdateTime;
+        this.dosvSyncTime = dosvUpdateTime;
     }
 
     Settings(ResultSet results, ApplicationService service) throws SQLException {
         // initialisiert die Einstellungen über den Datenbankcursor
         this(results.getString("id"), results.getString("semester"),
             results.getString("storage_version"),
-            results.getTimestamp("dosv_applicants_update_time"),
-            results.getTimestamp("dosv_applications_update_time"), service);
+            results.getTimestamp("dosv_sync_time"), service);
     }
 
     /**
@@ -55,16 +52,9 @@ public class Settings extends HubObject {
     }
 
     /**
-     * Letzter Update-Zeitpunkt der Bewerber, bzw.&nbsp;Bewerberstammdaten.
+     * Letzter Update-Zeitpunkt der mit dem DoSV synchronisierten Daten.
      */
-    public Date getDosvApplicantsUpdateTime() {
-        return this.dosvApplicantsUpdateTime;
-    }
-
-    /**
-     * Letzer Update-Zeitpunkt der Bewerbungen, bzw.&nbsp;Bewerbungsstatus.
-     */
-    public Date getDosvApplicationsUpdateTime() {
-        return this.dosvApplicationsUpdateTime;
+    public Date getDosvSyncTime() {
+        return this.dosvSyncTime;
     }
 }

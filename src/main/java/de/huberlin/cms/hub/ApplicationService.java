@@ -27,8 +27,8 @@ import java.util.Set;
 
 import org.apache.commons.collections4.Predicate;
 
-import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 import de.huberlin.cms.hub.HubException.IllegalStateException;
+import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 import de.huberlin.cms.hub.dosv.DosvSync;
 
 /**
