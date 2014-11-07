@@ -58,27 +58,28 @@ import de.huberlin.cms.hub.Settings;
  * @author Markus Michler
  */
 public class DosvSync {
-    private DosvClient dosvClient;
     private ApplicationService service;
+    private Properties dosvConfig;
 
     public DosvSync(ApplicationService service) {
         this.service = service;
-        Properties dosvConfig = service.getConfig();
+        dosvConfig = new Properties();
+        dosvConfig.putAll(service.getConfig());
         Settings settings = service.getSettings();
         dosvConfig.setProperty(DosvClient.SEMESTER, settings.getSemester().substring(4, 6));
         dosvConfig.setProperty(DosvClient.YEAR, settings.getSemester().substring(0, 4));
-        dosvClient = new DosvClient(dosvConfig);
     }
 
     /**
      * @param dosvBid DoSV-Benutzer-ID
-     * @param dosvBan DOSV-Benutzer-Autorisierungsnummer
+     * @param dosvBan DoSV-Benutzer-Autorisierungsnummer
      * @return <code>true</code>, wenn der Benutzer authentifiziert wurde,
      * ansonsten <code>false</code>.
      */
     public boolean authenticate(String dosvBid, String dosvBan) {
         try {
-            dosvClient.abrufenStammdatenDurchHS(dosvBid, dosvBan);
+            // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+            new DosvClient(dosvConfig).abrufenStammdatenDurchHS(dosvBid, dosvBan);
             return true;
         } catch (BenutzerServiceFehler e) {
             if (e.getFaultInfo() instanceof UnbekannterBenutzerFehler
@@ -212,7 +213,8 @@ public class DosvSync {
         }
         try {
             List<StudienangebotErgebnis> studienangebotErgebnisse =
-                dosvClient.anlegenAendernStudienangeboteDurchHS(studiangebote);
+             // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+                new DosvClient(dosvConfig).anlegenAendernStudienangeboteDurchHS(studiangebote);
             for (StudienangebotErgebnis studienangebotErgebnis : studienangebotErgebnisse) {
                 if (studienangebotErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
                     throw new RuntimeException(
@@ -222,7 +224,8 @@ public class DosvSync {
                 }
             }
             List<StudienpaketErgebnis> studienpaketErgebnisse =
-                dosvClient.anlegenAendernStudienpaketeDurchHS(studienpakete);
+             // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+                new DosvClient(dosvConfig).anlegenAendernStudienpaketeDurchHS(studienpakete);
             for (StudienpaketErgebnis studienpaketErgebnis : studienpaketErgebnisse) {
                 if (studienpaketErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
                     throw new RuntimeException(

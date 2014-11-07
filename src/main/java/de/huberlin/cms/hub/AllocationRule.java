@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Random;
 
 import de.huberlin.cms.hub.HubException.IllegalStateException;
@@ -30,11 +31,16 @@ public class AllocationRule extends HubObject {
         super(id, service);
     }
 
-    AllocationRule(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert das Vergabeschema über den Datenbankcursor
-        this(results.getString("id"), service);
-        this.quotaId = results.getString("quota_id");
+    AllocationRule(HashMap<String, Object> args) throws SQLException {
+            super((String) args.get("id"), (ApplicationService) args.get("service"));
+            this.quotaId = (String) args.get("quota_id");
     }
+
+    AllocationRule(ResultSet results, ApplicationService service) throws SQLException {
+     // initialisiert das Vergabeschema über den Datenbankcursor
+     this(results.getString("id"), service);
+     this.quotaId = results.getString("quota_id");
+     }
 
     /**
      * Erstellt und verknüpft eine Quote.
