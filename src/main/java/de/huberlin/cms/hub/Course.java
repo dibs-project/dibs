@@ -37,6 +37,7 @@ public class Course extends HubObject {
         this.name = (String) args.get("name");
         this.capacity = (Integer) args.get("capacity");
         this.allocationRuleId = (String) args.get("allocation_rule_id");
+        this.modificationTime = (Date) args.get("modification_time");
     }
 
     Course(String id, String name, int capacity, String allocationRuleId, boolean published,
@@ -53,8 +54,8 @@ public class Course extends HubObject {
         // initialisiert den Studiengang über den Datenbankcursor
         this(results.getString("id"), results.getString("name"),
             results.getInt("capacity"), results.getString("allocation_rule_id"),
-            results.getBoolean("published"), results.getTimestamp("modification_time"),
-            service);
+            results.getBoolean("published"),
+            new Date(results.getTimestamp("modification_time").getTime()), service);
     }
 
     /**
@@ -154,13 +155,6 @@ public class Course extends HubObject {
     }
 
     /**
-     * Generiert die Rangliste für den Studiengang.
-     */
-    public void generateRankings() {
-        this.getAllocationRule().getQuota().generateRanking();
-    }
-
-    /**
      * Liste aller Bewerbungen, die für diesen Studiengang abgegeben wurden.
      */
     public List<Application> getApplications() {
@@ -186,8 +180,15 @@ public class Course extends HubObject {
     }
 
     /**
+     * Generiert die Rangliste für den Studiengang.
+     */
+    public void generateRankings() {
+        this.getAllocationRule().getQuota().generateRanking();
+    }
+
+    /**
      * Ruft die Rangliste für den Studiengang ab.
-     * 
+     *
      * @return Rangliste
      */
     public List<Rank> getRankings() {

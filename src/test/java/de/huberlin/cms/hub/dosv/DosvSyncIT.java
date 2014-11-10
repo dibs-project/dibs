@@ -10,6 +10,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.util.Date;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -54,6 +55,7 @@ public class DosvSyncIT extends HubTest {
         service.getDosvSync().synchronize();
         course.unpublish(null);
         service.getDosvSync().synchronize();
-        assertTrue(service.getSettings().getDosvSyncTime().after(course.getModificationTime()));
+        assertTrue(service.getSettings().getDosvSyncTime()
+            .after(course.getModificationTime()));
     }
 }

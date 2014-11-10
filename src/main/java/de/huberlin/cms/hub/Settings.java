@@ -32,7 +32,7 @@ public class Settings extends HubObject {
         // initialisiert die Einstellungen über den Datenbankcursor
         this(results.getString("id"), results.getString("semester"),
             results.getString("storage_version"),
-            results.getTimestamp("dosv_sync_time"), service);
+            new Date(results.getTimestamp("dosv_sync_time").getTime()), service);
     }
 
     /**
