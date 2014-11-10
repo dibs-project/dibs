@@ -79,8 +79,8 @@ public class ApplicationService {
     private Properties config;
     private Connection db;
     private Journal journal;
-    private HashMap<String, Information.Type> informationTypes;
-    private HashMap<String, Criterion> criteria;
+    private Map<String, Information.Type> informationTypes;
+    private Map<String, Criterion> criteria;
     private QueryRunner queryRunner;
     private DosvSync dosvSync;
 
@@ -294,6 +294,7 @@ public class ApplicationService {
             if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
+            args.put("service", this);
             return new Application(args);
         } catch (SQLException e) {
             throw new IOError(e);

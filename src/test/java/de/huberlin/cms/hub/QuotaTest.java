@@ -120,7 +120,7 @@ public class QuotaTest extends HubTest {
     @Test
     public void testLotnumber() {
         quota1 = this.service.getCourse(this.course.getId()).getAllocationRule().getQuota();
-//        List<Rank> ranking = quota1.generateRanking();
-//        assertTrue(ranking.get(0).getLotnumber() < ranking.get(1).getLotnumber());
+        List<Rank> ranking = quota1.generateRanking();
+        assertTrue(ranking.get(0).getLotnumber() < ranking.get(1).getLotnumber());
     }
 }

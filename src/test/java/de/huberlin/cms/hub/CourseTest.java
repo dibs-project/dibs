@@ -33,12 +33,11 @@ public class CourseTest extends HubTest {
     @Test
     public void testApply() {
         Application application = course.apply(user.getId(), null);
-        System.out.println("dfasdfd" + application.getEvaluations(null).size());
         Evaluation evaluation = application.getEvaluationByCriterionId("qualification");
-//        assertTrue(user.getApplications(null).contains(application));
-//        assertEquals(Evaluation.STATUS_INFORMATION_MISSING, evaluation.getStatus());
-//        assertNull(evaluation.getInformation());
-//        assertNull(evaluation.getValue());
+        assertTrue(user.getApplications(null).contains(application));
+        assertEquals(Evaluation.STATUS_INFORMATION_MISSING, evaluation.getStatus());
+        assertNull(evaluation.getInformation());
+        assertNull(evaluation.getValue());
     }
 
     @Test
