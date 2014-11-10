@@ -26,11 +26,6 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.hochschulstart.hochschulschnittstelle.benutzerservicev1_0.BenutzerServiceFehler;
-import de.hochschulstart.hochschulschnittstelle.bewerberauswahlserviceparamv1_0.StudienpaketErgebnis;
-import de.hochschulstart.hochschulschnittstelle.bewerberauswahlservicev1_0.BewerberauswahlServiceFehler;
-import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Bewerberplatzbedarf;
-import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Paketbestandteil;
-import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Studienpaket;
 import de.hochschulstart.hochschulschnittstelle.commonv1_0.AutorisierungsFehler;
 import de.hochschulstart.hochschulschnittstelle.commonv1_0.UnbekannterBenutzerFehler;
 import de.hochschulstart.hochschulschnittstelle.studiengaengeserviceparamv1_0.StudienangebotErgebnis;
@@ -49,7 +44,6 @@ import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studiengang;
 import de.hu_berlin.dosv.DosvClient;
 import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Course;
-import de.huberlin.cms.hub.HubObject;
 import de.huberlin.cms.hub.Settings;
 
 /**
