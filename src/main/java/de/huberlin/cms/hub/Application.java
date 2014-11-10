@@ -61,11 +61,13 @@ public class Application extends HubObject {
             Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
                 "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?",
                 new MapHandler(), this.id, criterionId);
+            System.out.println(args);
             if (args == null) {
                 throw new IllegalArgumentException(
                     "illegal criterionId: evaluation does not exist");
             }
             args.put("service", service);
+            System.out.println(args);
             return new Evaluation(args);
         } catch (SQLException e) {
             throw new IOError(e);
