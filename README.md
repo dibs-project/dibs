@@ -20,6 +20,9 @@ Führe einfach folgenden Befehl aus um HUB zu bauen:
 HUB einrichten
 --------------
 
+Um HUB zu konfigurieren, kopiere die Datei `default.properties` nach `hub.properties`
+und passe sie deinen Bedürfnissen an.
+
 HUB benötigt eine PostgreSQL-Datenbank. Bei Bedarf kannst du eine Datenbank (inkl.
 Datenbankbenutzer) lokal erstellen, indem du mit dem Werkzeug `psql` als
 PostgreSQL-Superuser (oft `postgres`) folgende Befehle ausführst:
@@ -29,6 +32,10 @@ PostgreSQL-Superuser (oft `postgres`) folgende Befehle ausführst:
 
 Hier sind für den Benutzernamen, das Passwort und den Datenbanknamen "hub" gewählt, die
 Werte sind aber beliebig.
+
+Für die Synchronisation von HUB mit dem Dialogorientierten Serviceverfahren müssen die
+Webservices konfiguriert werden. Versehe hierfür die Schlüssel mit dem Präfix `dosv_` mit
+Werten.
 
 Hergestellt mit
 ---------------
@@ -42,6 +49,8 @@ Hergestellt mit
    https://commons.apache.org/proper/commons-lang/
  * Apache Commons Collections (4.0) von The Apache Software Foundation -
    https://commons.apache.org/proper/commons-collections/
+ * Apache Commons DbUtils (1.6) von The Apache Software Foundation -
+   http://commons.apache.org/proper/commons-dbutils/
  * Java Servlet API (3.1) von Oracle - https://java.net/projects/servlet-spec/
  * Jersey (2.11) von Oracle - https://jersey.java.net/
  * FreeMarker (2.3) von Attila Szegedi, Daniel Dekany, Jonathan Revusky -

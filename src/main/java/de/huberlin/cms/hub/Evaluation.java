@@ -6,9 +6,8 @@
 package de.huberlin.cms.hub;
 
 import java.io.IOError;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Bewertung eines Bewerbers (bzw.&nbsp;von Informationen eines Bewerbers) anhand eines
@@ -28,8 +27,8 @@ public class Evaluation extends HubObject {
     private Double value;
     private String status;
 
-    Evaluation(HashMap<String, Object> args) {
-        super((String) args.get("id"), (ApplicationService) args.get("service"));
+    Evaluation(Map<String, Object> args) {
+        super(args);
         this.applicationId = (String) args.get("application_id");
         this.criterionId = (String) args.get("criterion_id");
         this.informationId = (String) args.get("information_id");
@@ -43,13 +42,9 @@ public class Evaluation extends HubObject {
         this.status = STATUS_EVALUATED;
 
         try {
-            PreparedStatement statement = this.service.getDb().prepareStatement(
-                "UPDATE evaluation SET information_id = ?, value = ?, status = ? WHERE id = ?");
-            statement.setString(1, this.informationId);
-            statement.setObject(2, this.value);
-            statement.setString(3, this.status);
-            statement.setString(4, this.id);
-            statement.executeUpdate();
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE evaluation SET information_id = ?, value = ?, status = ? WHERE id = ?",
+                this.informationId, this.value, this.status, this.id);
         } catch (SQLException e) {
             throw new IOError(e);
         }

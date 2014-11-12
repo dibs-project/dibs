@@ -52,6 +52,12 @@ public class ApplicationServiceTest extends HubTest {
     }
 
     @Test
+    public void testGetApplicationNonExisting() {
+        this.exception.expect(ObjectNotFoundException.class);
+        this.service.getApplication("foo");
+    }
+
+    @Test
     public void testAuthenticate() {
         User user = this.service.authenticate(this.user.getCredential());
         assertNotNull(user);
@@ -119,6 +125,12 @@ public class ApplicationServiceTest extends HubTest {
     public void testGetCourseNonExisting() {
         this.exception.expect(ObjectNotFoundException.class);
         this.service.getCourse("foo");
+    }
+
+    @Test()
+    public void testGetQuotaNonExisting() {
+        this.exception.expect(ObjectNotFoundException.class);
+        this.service.getQuota("foo");
     }
 
     @Test
