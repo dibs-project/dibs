@@ -3,7 +3,7 @@
 [#escape x as x?html]
 
 [@page]
-    <h1>Reynholm University Bewerbung</h1>
+    <h1>Willkommen, ${user.name}!</h1>
 [/@page]
 
 [/#escape]
