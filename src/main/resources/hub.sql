@@ -2,7 +2,10 @@ CREATE TABLE "user" (
     id VARCHAR(256) PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
     email VARCHAR(256) UNIQUE NOT NULL,
-    credential VARCHAR(256) UNIQUE NOT NULL
+    credential VARCHAR(256) UNIQUE NOT NULL,
+    role VARCHAR(256) NOT NULL,
+    dosv_bid VARCHAR(256) UNIQUE,
+    dosv_ban VARCHAR(256)
 );
 
 CREATE TABLE settings (
@@ -67,6 +70,15 @@ CREATE TABLE evaluation (
     information_id VARCHAR(256),
     value FLOAT,
     status VARCHAR(256) NOT NULL
+);
+
+CREATE TABLE rank (
+    id VARCHAR(256) PRIMARY KEY,
+    quota_id VARCHAR(256) REFERENCES quota NOT NULL,
+    user_id VARCHAR(256) REFERENCES "user" NOT NULL,
+    application_id VARCHAR(256) REFERENCES application NOT NULL,
+    index INT NOT NULL,
+    lotnumber INT NOT NULL
 );
 
 CREATE TABLE session (

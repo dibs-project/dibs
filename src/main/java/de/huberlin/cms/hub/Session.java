@@ -6,11 +6,12 @@
 package de.huberlin.cms.hub;
 
 import java.io.IOError;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
+
+import org.apache.commons.dbutils.QueryRunner;
 
 // TODO: document
 public class Session extends HubObject {
@@ -20,7 +21,7 @@ public class Session extends HubObject {
     private Date endTime;
 
     Session(Map<String, Object> args) {
-        super((String) args.get("id"), (ApplicationService) args.get("service"));
+        super(args);
         this.userId = (String) args.get("user_id");
         this.device = (String) args.get("device");
         this.startTime = (Date) args.get("start_time");
@@ -31,12 +32,10 @@ public class Session extends HubObject {
     public void end() {
         try {
             Timestamp now = new Timestamp(new Date().getTime());
-            PreparedStatement statement = this.getService().getDb().prepareStatement(
-                "UPDATE session SET end_time = ? WHERE id = ? AND end_time > ?");
-            statement.setTimestamp(1, now);
-            statement.setString(2, this.getId());
-            statement.setTimestamp(3, now);
-            if (statement.executeUpdate() == 1) {
+            int count = new QueryRunner().update(this.service.getDb(),
+                "UPDATE session SET end_time = ? WHERE id = ? AND end_time > ?", now,
+                this.getId(), now);
+            if (count == 1) {
                 this.endTime = now;
             }
         } catch (SQLException e) {

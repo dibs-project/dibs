@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -28,9 +27,13 @@ import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.collections4.Predicate;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 
-import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 import de.huberlin.cms.hub.HubException.IllegalStateException;
+import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+import de.huberlin.cms.hub.dosv.DosvSync;
 
 /**
  * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
@@ -47,6 +50,8 @@ public class ApplicationService {
 
     /** Aktionstyp: neuer Benutzer angelegt. */
     public static final String ACTION_TYPE_USER_CREATED = "user_created";
+    /** Aktionstyp: Benutzer ist mit dem DoSV verbunden. */
+    public static final String APPLICATION_TYPE_USER_CONNECTED_TO_DOSV = "user_connected_to_dosv";
     /** Aktionstyp: neue Information für einen Benutzer angelegt. */
     public static final String ACTION_TYPE_INFORMATION_CREATED = "information_created";
     /** Aktionstyp: neuer Studiengang angelegt. */
@@ -76,8 +81,10 @@ public class ApplicationService {
     private Properties config;
     private Connection db;
     private Journal journal;
-    private HashMap<String, Information.Type> informationTypes;
-    private HashMap<String, Criterion> criteria;
+    private Map<String, Information.Type> informationTypes;
+    private Map<String, Criterion> criteria;
+    private QueryRunner queryRunner;
+    private DosvSync dosvSync;
 
     // TODO: dokumentieren
     public static void setupStorage(Connection db, boolean overwrite) {
@@ -90,7 +97,7 @@ public class ApplicationService {
                 // TODO: Tabellen automatisch aus hub.sql lesen
                 String[] tables = {"user", "settings", "quota", "quota_ranking_criteria",
                     "allocation_rule", "course", "journal_record", "qualification",
-                    "application", "evaluation", "session"};
+                    "application", "evaluation", "rank", "session"};
                 for (String table : tables) {
                     statement = db.prepareStatement(
                         String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
@@ -130,6 +137,10 @@ public class ApplicationService {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+
+        // TODO: recursive transaction
+        ApplicationService service = new ApplicationService(db, new Properties());
+        service.createUser("Administrator", "admin", "admin:admin", User.ROLE_ADMIN);
     }
 
     // TODO: dokumentieren
@@ -147,12 +158,7 @@ public class ApplicationService {
     public ApplicationService(Connection db, Properties config) {
         this.db = db;
 
-        Properties defaults = new Properties();
-        defaults.setProperty("dosv_url",
-            "https://hsst.hochschulstart.de/hochschule/webservice/2/");
-        defaults.setProperty("dosv_user", "");
-        defaults.setProperty("dosv_password", "");
-        this.config = new Properties(defaults);
+        this.config = new Properties();
         this.config.putAll(config);
         this.journal = new Journal(this);
 
@@ -160,8 +166,14 @@ public class ApplicationService {
         this.informationTypes.put("qualification", new Qualification.Type());
 
         this.criteria = new HashMap<String, Criterion>();
-        this.criteria.put("qualification", new QualificationCriterion("qualification",
-            informationTypes.get("qualification"), this));
+        Map<String, Object> args = new HashMap<String, Object>();
+        args.put("id", "qualification");
+        args.put("requiredInformationType", informationTypes.get("qualification"));
+        args.put("service", this);
+        this.criteria.put("qualification", new QualificationCriterion(args));
+
+        this.queryRunner = new QueryRunner();
+        this.dosvSync = new DosvSync(this);
     }
 
     /**
@@ -172,7 +184,7 @@ public class ApplicationService {
      * TODO
      * @return Angelegter Benutzer
      */
-    public User createUser(String name, String email, String credential) {
+    public User createUser(String name, String email, String credential, String role) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
@@ -184,13 +196,9 @@ public class ApplicationService {
         try {
             this.db.setAutoCommit(false);
             String id = String.format("user:%s", new Random().nextInt());
-            PreparedStatement statement =
-                db.prepareStatement("INSERT INTO \"user\" VALUES (?, ?, ?, ?)");
-            statement.setString(1, id);
-            statement.setString(2, name);
-            statement.setString(3, email);
-            statement.setString(4, credential);
-            statement.executeUpdate();
+            new QueryRunner().insert(this.getDb(),
+                "INSERT INTO \"user\" VALUES(?, ?, ?, ?, ?)",
+                new MapHandler(), id, name, email, credential, role);
             // TODO: check for duplicate email
             journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
             this.db.commit();
@@ -211,14 +219,13 @@ public class ApplicationService {
      */
     public User getUser(String id) {
         try {
-            PreparedStatement statement =
-                this.db.prepareStatement("SELECT * FROM \"user\" WHERE id = ?");
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            Map<String, Object> args = this.queryRunner.query(this.db,
+                "SELECT * FROM \"user\" WHERE id = ?", new MapHandler(), id);
+            if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
-            return new User(results, this);
+            args.put("service", this);
+            return new User(args);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -232,11 +239,11 @@ public class ApplicationService {
     public List<User> getUsers() {
         try {
             ArrayList<User> users = new ArrayList<User>();
-            PreparedStatement statement =
-                this.db.prepareStatement("SELECT * FROM \"user\"");
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                users.add(new User(results, this));
+            List<Map<String, Object>> queryResults = this.queryRunner.query(this.db,
+                "SELECT * FROM \"user\"", new MapListHandler());
+            for (Map<String, Object> args : queryResults) {
+                args.put("service", this);
+                users.add(new User(args));
             }
             return users;
         } catch (SQLException e) {
@@ -258,14 +265,13 @@ public class ApplicationService {
         }
 
         try {
-            PreparedStatement statement = this.db.prepareStatement(
-                String.format("SELECT * FROM \"%s\" WHERE id = ?", typeId));
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            Map<String, Object> args = this.queryRunner.query(this.db,
+                String.format("SELECT * FROM \"%s\" WHERE id = ?", typeId),
+                new MapHandler(), id);
+            if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
-            return type.newInstance(results, this);
+            return type.newInstance(args, this);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -279,19 +285,12 @@ public class ApplicationService {
      */
     public Application getApplication(String id) {
         try {
-            String sql = "SELECT * FROM application WHERE id = ?";
-            PreparedStatement statement = this.db.prepareStatement(sql);
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            Map<String, Object> args = this.queryRunner.query(
+                this.db, "SELECT * FROM application WHERE id = ?", new MapHandler(), id);
+            if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
-            HashMap<String, Object> args = new HashMap<String, Object>();
-            args.put("id", results.getString("id"));
             args.put("service", this);
-            args.put("user_id", results.getString("user_id"));
-            args.put("course_id", results.getString("course_id"));
-            args.put("status", results.getString("status"));
             return new Application(args);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -307,20 +306,11 @@ public class ApplicationService {
      */
     public Evaluation getEvaluation(String id, User agent) {
         try {
-            PreparedStatement statement =
-                this.db.prepareStatement("SELECT * FROM evaluation WHERE id = ?");
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            Map<String, Object> args = this.queryRunner.query(
+                this.db, "SELECT * FROM evaluation WHERE id = ?", new MapHandler(), id);
+            if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
-            HashMap<String, Object> args = new HashMap<String, Object>();
-            args.put("id", results.getString("id"));
-            args.put("application_id", results.getString("application_id"));
-            args.put("criterion_id", results.getString("criterion_id"));
-            args.put("information_id", results.getString("information_id"));
-            args.put("value", results.getObject("value"));
-            args.put("status", results.getString("status"));
             args.put("service", this);
             return new Evaluation(args);
         } catch (SQLException e) {
@@ -337,20 +327,20 @@ public class ApplicationService {
     * @return Registrierter Nutzer
     */
     public User register(String name, String email, String credential) {
-        return this.createUser(name, email, credential);
+        return this.createUser(name, email, credential, User.ROLE_APPLICANT);
     }
 
     // TODO: document
     public User authenticate(String credential) {
         try {
-            PreparedStatement statement = this.getDb().prepareStatement(
-                "SELECT * FROM \"user\" WHERE credential = ?");
-            statement.setString(1, credential);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            Map<String, Object> args = new QueryRunner().query(this.getDb(),
+                "SELECT * FROM \"user\" WHERE credential = ?", new MapHandler(),
+                credential);
+            if (args == null) {
                 return null;
             }
-            return new User(results, this);
+            args.put("service", this);
+            return new User(args);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -372,14 +362,9 @@ public class ApplicationService {
             startTime.getTime() + 30 * 24 * 60 * 60 * 1000L);
 
         try {
-            PreparedStatement statement = this.getDb().prepareStatement(
-                "INSERT INTO session VALUES (?, ?, ?, ?, ?)");
-            statement.setString(1, id);
-            statement.setString(2, user.getId());
-            statement.setString(3, device);
-            statement.setTimestamp(4, startTime);
-            statement.setTimestamp(5, endTime);
-            statement.executeUpdate();
+            new QueryRunner().insert(this.getDb(),
+                "INSERT INTO session VALUES (?, ?, ?, ?, ?)", new MapHandler(), id,
+                user.getId(), device, startTime, endTime);
             return this.getSession(id);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -394,19 +379,11 @@ public class ApplicationService {
     // TODO: document
     public Session getSession(String id) {
         try {
-            PreparedStatement statement =
-                this.getDb().prepareStatement("SELECT * FROM session WHERE id = ?");
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            Map<String, Object> args = new QueryRunner().query(this.getDb(),
+                "SELECT * FROM session WHERE id = ?", new MapHandler(), id);
+            if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
-            HashMap<String, Object> args = new HashMap<>();
-            args.put("id", results.getString("id"));
-            args.put("user_id", results.getString("user_id"));
-            args.put("device", results.getString("device"));
-            args.put("start_time", results.getTimestamp("start_time"));
-            args.put("end_time", results.getTimestamp("end_time"));
             args.put("service", this);
             return new Session(args);
         } catch (SQLException e) {
@@ -422,10 +399,8 @@ public class ApplicationService {
      */
     public void setSemester(String semester) {
         try {
-            PreparedStatement statement =
-                db.prepareStatement("UPDATE settings SET semester = ?");
-            statement.setString(1, semester);
-            statement.executeUpdate();
+            this.queryRunner.update(this.getDb(), "UPDATE settings SET semester = ?",
+                semester);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -439,15 +414,7 @@ public class ApplicationService {
     }
 
     /**
-     * Konfiguration. Folgende Einstellungen können gesetzt werden:
-     * <ul>
-     *     <li>
-     *         dosv_url: URL zur DoSV-API. Der Standardwert ist
-     *         "https://hsst.hochschulstart.de/hochschule/webservice/2/" (Testumgebung).
-     *     </li>
-     *     <li>dosv_user: Benutzername für die DoSV-API. Der Standardwert ist "".</li>
-     *     <li>dosv_password: Passwort für die DoSV-API. Der Standardwert ist "".</li>
-     * </ul>
+     * Konfiguration. Die Einstellungen sind in <code>default.properties</code> dokumentiert.
      */
     public Properties getConfig() {
         return config;
@@ -460,10 +427,10 @@ public class ApplicationService {
      */
     public Settings getSettings() {
         try {
-            PreparedStatement statement = db.prepareStatement("SELECT * FROM settings");
-            ResultSet results = statement.executeQuery();
-            results.next();
-            return new Settings(results, this);
+            Map<String, Object> args = this.queryRunner.query(this.db,
+                "SELECT * FROM settings", new MapHandler());
+            args.put("service", this);
+            return new Settings(args);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -490,12 +457,8 @@ public class ApplicationService {
         try {
             this.db.setAutoCommit(false);
             String id = String.format("course:%s", new Random().nextInt());
-            PreparedStatement statement =
-                db.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
-            statement.setString(1, id);
-            statement.setString(2, name);
-            statement.setInt(3, capacity);
-            statement.executeUpdate();
+            this.queryRunner.insert(this.getDb(), "INSERT INTO course VALUES(?, ?, ?)",
+                new MapHandler(), id, name, capacity);
             journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
                 name);
             this.db.commit();
@@ -516,14 +479,13 @@ public class ApplicationService {
      */
     public Course getCourse(String id) {
         try {
-            PreparedStatement statement =
-                this.db.prepareStatement("SELECT * FROM course WHERE id = ?");
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            Map<String, Object> args = this.queryRunner.query(this.db,
+                "SELECT * FROM course WHERE id = ?", new MapHandler(), id);
+            if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
-            return new Course(results, this);
+            args.put("service", this);
+            return new Course(args);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -537,12 +499,12 @@ public class ApplicationService {
     public List<Course> getCourses() {
         try {
             ArrayList<Course> courses = new ArrayList<Course>();
-            PreparedStatement statement =
-                this.db.prepareStatement("SELECT * FROM course");
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                courses.add(new Course(results, this));
-            }
+            List<Map<String, Object>> queryResults = this.queryRunner.query(this.db,
+                "SELECT * FROM course", new MapListHandler());
+            for (Map<String, Object> args : queryResults) {
+               args.put("service", this);
+               courses.add(new Course(args));
+           }
             return courses;
         } catch (SQLException e) {
             throw new IOError(e);
@@ -557,14 +519,13 @@ public class ApplicationService {
      */
     public AllocationRule getAllocationRule(String id) {
         try {
-            PreparedStatement statement =
-                this.db.prepareStatement("SELECT * FROM allocation_rule WHERE id = ?");
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            Map<String, Object> args = this.queryRunner.query(this.db,
+                "SELECT * FROM allocation_rule WHERE id = ?", new MapHandler(), id);
+            if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
-            return new AllocationRule(results, this);
+            args.put("service", this);
+            return new AllocationRule(args);
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -578,17 +539,11 @@ public class ApplicationService {
      */
     public Quota getQuota(String id) {
         try {
-            String sql = "SELECT * FROM quota WHERE id = ?";
-            PreparedStatement statement = this.db.prepareStatement(sql);
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            Map<String, Object> args = this.queryRunner.query(
+                this.db, "SELECT * FROM quota WHERE id = ?", new MapHandler(), id);
+            if (args == null) {
                 throw new ObjectNotFoundException(id);
             }
-            HashMap<String, Object> args = new HashMap<String, Object>();
-            args.put("id", id);
-            args.put("name", results.getString("name"));
-            args.put("percentage", results.getInt("percentage"));
             args.put("service", this);
             return new Quota(args);
         } catch (SQLException e) {
@@ -651,5 +606,21 @@ public class ApplicationService {
      */
     public Map<String, Criterion> getCriteria() {
         return unmodifiableMap(this.criteria);
+    }
+
+    /**
+     * Führt Datenbankabfragen aus. Das Abfrageergebnis wird mit Hilfe des
+     * <code>ResultSetHandler<code> in eine <code>Map</code> oder eine Liste von Maps
+     * umgewandelt.
+     */
+    public QueryRunner getQueryRunner() {
+        return this.queryRunner;
+    }
+
+     /**
+     * DoSV-Synchronisationsklasse.
+     */
+    public DosvSync getDosvSync() {
+        return dosvSync;
     }
 }

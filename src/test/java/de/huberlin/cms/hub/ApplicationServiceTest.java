@@ -28,7 +28,8 @@ public class ApplicationServiceTest extends HubTest {
     @Test
     public void testCreateUser() {
         String email = "moss@example.org";
-        User user = this.service.createUser("Maurice", email, email + ":secr3t");
+        User user = this.service.createUser("Maurice", email, email + ":secr3t",
+            User.ROLE_APPLICANT);
         assertEquals(email, user.getEmail());
         assertTrue(this.service.getUsers().contains(user));
     }
@@ -37,7 +38,8 @@ public class ApplicationServiceTest extends HubTest {
     public void testCreateUserEmptyEmail() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("email");
-        this.service.createUser("Maurice", "", "moss@example.org:secre3t");
+        this.service.createUser("Maurice", "", "moss@example.org:secre3t",
+            User.ROLE_APPLICANT);
     }
 
     @Test
@@ -49,6 +51,12 @@ public class ApplicationServiceTest extends HubTest {
     public void testGetUserNonExisting() {
         this.exception.expect(ObjectNotFoundException.class);
         this.service.getUser("foo");
+    }
+
+    @Test
+    public void testGetApplicationNonExisting() {
+        this.exception.expect(ObjectNotFoundException.class);
+        this.service.getApplication("foo");
     }
 
     @Test
@@ -119,6 +127,12 @@ public class ApplicationServiceTest extends HubTest {
     public void testGetCourseNonExisting() {
         this.exception.expect(ObjectNotFoundException.class);
         this.service.getCourse("foo");
+    }
+
+    @Test()
+    public void testGetQuotaNonExisting() {
+        this.exception.expect(ObjectNotFoundException.class);
+        this.service.getQuota("foo");
     }
 
     @Test

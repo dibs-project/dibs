@@ -5,6 +5,8 @@
 
 package de.huberlin.cms.hub;
 
+import java.util.Map;
+
 /**
  * Kriterium, welches die Hochschulzugangsberechtigung abbildet.
  *
@@ -13,9 +15,9 @@ package de.huberlin.cms.hub;
 
 public class QualificationCriterion extends Criterion  {
 
-    QualificationCriterion(String id, Information.Type requiredInformationType,
-            ApplicationService service) {
-        super("qualification", requiredInformationType, service);
+    QualificationCriterion(Map<String, Object> args) {
+        super(args);
+        this.id = "qualification";
     }
 
     @Override
