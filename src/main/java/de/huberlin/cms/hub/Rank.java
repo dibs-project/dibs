@@ -2,10 +2,11 @@ package de.huberlin.cms.hub;
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+
+import org.apache.commons.dbutils.handlers.MapHandler;
 
 
 /**
@@ -21,8 +22,8 @@ public class Rank extends HubObject {
     private int index;
     private int lotnumber;
 
-    Rank(HashMap<String, Object> args) {
-        super((String) args.get("id"), (ApplicationService) args.get("service"));
+    Rank(Map<String, Object> args) {
+        super(args);
         quotaId = (String) args.get("quota_id");
         userId = (String) args.get("user_id");
         applicationId = (String) args.get("application_id");
@@ -33,21 +34,16 @@ public class Rank extends HubObject {
     /**
      * Legt einen neuen Ranglisteneintrag an.
      */
-    public static Rank create(HashMap<String, Object> args) {
+    public static Rank create(Map<String, Object> args) {
         try {
             ApplicationService service = (ApplicationService) args.get("service");
             Connection db = service.getDb();
             db.setAutoCommit(false);
             String id = "rank:" + Integer.toString(new Random().nextInt());
-            PreparedStatement statement =
-                db.prepareStatement("INSERT INTO rank VALUES(?, ?, ?, ?, ?, ?)");
-            statement.setString(1, id);
-            statement.setString(2, (String) args.get("quota_id"));
-            statement.setString(3, (String) args.get("user_id"));
-            statement.setString(4, (String) args.get("application_id"));
-            statement.setInt(5, (int) args.get("index"));
-            statement.setInt(6, (int) args.get("lotnumber"));
-            statement.executeUpdate();
+            service.getQueryRunner().insert(service.getDb(), "INSERT INTO rank VALUES(?, ?, ?, ?, ?, ?)",
+                new MapHandler(), id, (String) args.get("quota_id"),
+                (String) args.get("user_id"), (String) args.get("application_id"),
+                (int) args.get("index"), (int) args.get("lotnumber"));
             db.commit();
             db.setAutoCommit(true);
             args.put("id", id);

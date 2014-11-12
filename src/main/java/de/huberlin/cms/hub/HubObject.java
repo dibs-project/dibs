@@ -5,6 +5,8 @@
 
 package de.huberlin.cms.hub;
 
+import java.util.Map;
+
 /**
  * Objekt im HUB-Universum.
  *
@@ -27,9 +29,9 @@ public abstract class HubObject {
     /**
      * Initialisert das Objekt.
      */
-    protected HubObject(String id, ApplicationService service) {
-        this.id = id;
-        this.service = service;
+    protected HubObject(Map<String, Object> args) {
+        this.id = (String) args.get("id");
+        this.service = (ApplicationService) args.get("service");
     }
 
     /**

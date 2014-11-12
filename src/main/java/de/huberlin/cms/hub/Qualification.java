@@ -9,13 +9,13 @@ import static de.huberlin.cms.hub.Util.isInRange;
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Random;
+
+import org.apache.commons.dbutils.handlers.MapHandler;
 
 /**
  * Hochschulreife (bzw. Hochschulzugangsberechtigung).
@@ -25,15 +25,9 @@ import java.util.Random;
 public class Qualification extends Information {
     private double grade;
 
-    Qualification(String id, String userId, double grade, ApplicationService service) {
-        super(id, userId, service);
-        this.grade = grade;
-    }
-
-    Qualification(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert die Hochschulreife über den Datenbankcursor
-        this(results.getString("id"), results.getString("user_id"),
-            results.getDouble("grade"), service);
+    Qualification(Map<String, Object> args) {
+        super(args);
+        this.grade = (Double) args.get("grade");
     }
 
     /**
@@ -62,9 +56,10 @@ public class Qualification extends Information {
         }
 
         @Override
-        public Information newInstance(ResultSet results, ApplicationService service)
+        public Information newInstance(Map<String, Object> args, ApplicationService service)
                 throws SQLException {
-            return new Qualification(results, service);
+            args.put("service", service);
+            return new Qualification(args);
         }
 
         /**
@@ -74,7 +69,7 @@ public class Qualification extends Information {
          *     die Note im Bereich 1,0 bis 6,0.
          */
         @Override
-        public Information create(HashMap<String, Object> args, User user, User agent) {
+        public Information create(Map<String, Object> args, User user, User agent) {
             HashSet<String> keys = new HashSet<String>(Arrays.asList("grade"));
             if (!args.keySet().equals(keys)) {
                 throw new IllegalArgumentException("illegal args: improper keys");
@@ -90,12 +85,8 @@ public class Qualification extends Information {
             try {
                 db.setAutoCommit(false);
                 String id = "qualification:" + Integer.toString(new Random().nextInt());
-                PreparedStatement statement =
-                    db.prepareStatement("INSERT INTO qualification VALUES (?, ?, ?)");
-                statement.setString(1, id);
-                statement.setString(2, user.getId());
-                statement.setDouble(3, grade);
-                statement.executeUpdate();
+                service.getQueryRunner().insert(service.getDb(), "INSERT INTO qualification VALUES (?, ?, ?)",
+                    new MapHandler(), id, user.getId(), grade);
                 service.getJournal().record(ApplicationService.ACTION_TYPE_INFORMATION_CREATED,
                     user.getId(), HubObject.getId(agent), id);
                 db.commit();

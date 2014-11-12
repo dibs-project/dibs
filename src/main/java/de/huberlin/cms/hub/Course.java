@@ -7,13 +7,14 @@ package de.huberlin.cms.hub;
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 
@@ -29,27 +30,12 @@ public class Course extends HubObject {
     private String allocationRuleId;
     private boolean published;
 
-    Course(HashMap<String, Object> args) {
-        super((String) args.get("id"), (ApplicationService) args.get("service"));
+    Course(Map<String, Object> args) {
+        super(args);
         this.name = (String) args.get("name");
         this.capacity = (Integer) args.get("capacity");
         this.allocationRuleId = (String) args.get("allocation_rule_id");
-    }
-
-    Course(String id, String name, int capacity, String allocationRuleId, boolean published,
-        ApplicationService service) {
-        super(id, service);
-        this.name = name;
-        this.capacity = capacity;
-        this.allocationRuleId = allocationRuleId;
-        this.published = published;
-    }
-
-    Course(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert den Studiengang über den Datenbankcursor
-        this(results.getString("id"), results.getString("name"),
-            results.getInt("capacity"), results.getString("allocation_rule_id"),
-            results.getBoolean("published"), service);
+        this.published = (Boolean) args.get("published");
     }
 
     /**
@@ -67,14 +53,10 @@ public class Course extends HubObject {
             Connection db = service.getDb();
             db.setAutoCommit(false);
             String ruleId = "allocation_rule:" + Integer.toString(new Random().nextInt());
-            String sql = "INSERT INTO allocation_rule VALUES (?)";
-            PreparedStatement statement = db.prepareStatement(sql);
-            statement.setString(1, ruleId);
-            statement.executeUpdate();
-            statement = db.prepareStatement("UPDATE course SET allocation_rule_id = ? WHERE id = ?");
-            statement.setString(1, ruleId);
-            statement.setString(2, this.id);
-            statement.executeUpdate();
+            service.getQueryRunner().insert(service.getDb(), "INSERT INTO allocation_rule VALUES (?)",
+                new MapHandler(), ruleId);
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE course SET allocation_rule_id = ? WHERE id = ?", ruleId, this.id);
             this.allocationRuleId = ruleId;
             service.getJournal().record(
                 ApplicationService.ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED,
@@ -103,13 +85,9 @@ public class Course extends HubObject {
             service.getDb().setAutoCommit(false);
             String applicationId =
                 String.format("application:%s", new Random().nextInt());
-            String sql = "INSERT INTO application VALUES (?, ?, ?, ?)";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, applicationId);
-            statement.setString(2, userId);
-            statement.setString(3, this.id);
-            statement.setString(4, Application.STATUS_INCOMPLETE);
-            statement.executeUpdate();
+            service.getQueryRunner().insert(service.getDb(),
+                "INSERT INTO application VALUES (?, ?, ?, ?)", new MapHandler(),
+                applicationId, userId, this.id, Application.STATUS_INCOMPLETE);
             Application application = this.service.getApplication(applicationId);
 
             // Bewertung für jedes Kriterium der Verteilungsregel erstellen
@@ -118,15 +96,10 @@ public class Course extends HubObject {
                 this.getAllocationRule().getQuota().getRankingCriteria();
             for (Criterion criterion : criteria) {
                 String id = String.format("evaluation:%s", new Random().nextInt());
-                statement = this.service.getDb().prepareStatement(
-                    "INSERT INTO evaluation VALUES (?, ?, ?, ?, ?, ?)");
-                statement.setString(1, id);
-                statement.setString(2, applicationId);
-                statement.setString(3, criterion.getId());
-                statement.setString(4, null);
-                statement.setObject(5, null);
-                statement.setString(6, Evaluation.STATUS_INFORMATION_MISSING);
-                statement.executeUpdate();
+                service.getQueryRunner().insert(service.getDb(),
+                    "INSERT INTO evaluation VALUES (?, ?, ?, ?, ?, ?)", new MapHandler(),
+                    id, applicationId, criterion.getId(), null,
+                    null, Evaluation.STATUS_INFORMATION_MISSING);
             }
 
             // Vorhandene Informationen der Bewerbung zuordnen
@@ -161,16 +134,11 @@ public class Course extends HubObject {
     public List<Application> getApplications() {
         try {
             List<Application> applications = new ArrayList<Application>();
-            String sql = "SELECT * FROM application WHERE course_id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                HashMap<String, Object> args = new HashMap<String, Object>();
-                args.put("id", results.getString("id"));
-                args.put("user_id", results.getString("user_id"));
-                args.put("course_id", results.getString("course_id"));
-                args.put("status", results.getString("status"));
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            queryResults = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM application WHERE course_id = ?",
+                new MapListHandler(), id);
+            for (Map<String, Object> args : queryResults) {
                 args.put("service", this.getService());
                 applications.add(new Application(args));
             }
@@ -188,19 +156,12 @@ public class Course extends HubObject {
     public List<Rank> getRankings() {
         ArrayList<Rank> ranking = new ArrayList<Rank>();
         try {
-            String sql = "SELECT * FROM rank WHERE quota_id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, this.getAllocationRule().getQuota().getId());
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                HashMap<String, Object> args = new HashMap<String, Object>();
-                args.put("id", results.getString("id"));
-                args.put("quota_id", results.getString("quota_id"));
-                args.put("user_id", results.getString("user_id"));
-                args.put("application_id", results.getString("application_id"));
-                args.put("index", results.getInt("index"));
-                args.put("lotnumber", results.getInt("lotnumber"));
-                args.put("service", this.service);
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            queryResults = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM rank WHERE quota_id = ?", new MapListHandler(),
+                this.getAllocationRule().getQuota().getId());
+            for (Map<String, Object> args : queryResults) {
+                args.put("service", this.getService());
                 ranking.add(new Rank(args));
             }
             return ranking;
@@ -221,10 +182,8 @@ public class Course extends HubObject {
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
-            String sql = "UPDATE course SET published = TRUE WHERE id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, getId());
-            statement.executeUpdate();
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE course SET published = TRUE WHERE id = ?", getId());
             service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_PUBLISHED,
                 this.id, HubObject.getId(agent), null);
             db.commit();
@@ -248,10 +207,8 @@ public class Course extends HubObject {
             Connection db = service.getDb();
             // NOTE Race Condition: SELECT-UPDATE
             db.setAutoCommit(false);
-            String sql = "UPDATE course SET published = FALSE WHERE id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, getId());
-            statement.executeUpdate();
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE course SET published = FALSE WHERE id = ?", getId());
             service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_UNPUBLISHED,
                 this.id, HubObject.getId(agent), null);
             db.commit();
