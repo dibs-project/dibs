@@ -65,7 +65,7 @@ public class ApplicationServiceTest extends HubTest {
     }
 
     @Test
-    public void testAuthenticateWrongCredential() {
+    public void testAuthenticateBadCredential() {
         assertNull(this.service.authenticate("foo:bar"));
     }
 
@@ -73,12 +73,12 @@ public class ApplicationServiceTest extends HubTest {
     public void testLogin() {
         Session session = this.service.login(this.user.getCredential(), "localhost");
         assertNotNull(session);
-        assertEquals(session.getUser(), this.user);
+        assertEquals(this.user, session.getUser());
         assertTrue(session.isValid());
     }
 
     @Test
-    public void testLoginWrongCredential() {
+    public void testLoginBadCredential() {
         assertNull(this.service.login("foo:bar", "localhost"));
     }
 

@@ -13,7 +13,11 @@ import java.util.Map;
 
 import org.apache.commons.dbutils.QueryRunner;
 
-// TODO: document
+/**
+ * User session.
+ *
+ * @author Sven Pfaller
+ */
 public class Session extends HubObject {
     private final String userId;
     private final String device;
@@ -28,7 +32,10 @@ public class Session extends HubObject {
         this.endTime = (Date) args.get("end_time");
     }
 
-    // TODO: document
+    /**
+     * Ends the session. Sets the <code>endTime</code> to now. Does nothing if the session
+     * has already ended.
+     */
     public void end() {
         try {
             Timestamp now = new Timestamp(new Date().getTime());
@@ -43,27 +50,39 @@ public class Session extends HubObject {
         }
     }
 
-    // TODO: document
+    /**
+     * User the session belongs to.
+     */
     public User getUser() {
         return this.service.getUser(this.userId);
     }
 
-    // TODO: document
+    /**
+     * Device from which the session was initiated.
+     */
     public String getDevice() {
         return this.device;
     }
 
-    // TODO: document
+    /**
+     * Start time.
+     */
     public Date getStartTime() {
         return this.startTime;
     }
 
-    // TODO: document
+    /**
+     * End time. Indicates when the session expires (future date) or when it has expired
+     * (past date).
+     */
     public Date getEndTime() {
         return this.endTime;
     }
 
-    // TODO: document
+    /**
+     * <code>true</code> if the session is valid, i.e. not yet expired, <code>false</code>
+     * otherwise.
+     */
     public boolean isValid() {
         return this.endTime.after(new Date());
     }

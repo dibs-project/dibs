@@ -78,6 +78,8 @@ public class ApplicationService {
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =
         new HashSet<String>(Arrays.asList("required_information_type_id"));
 
+    private static final long MONTH_DURATION = 30 * 24 * 60 * 60 * 1000L;
+
     private Properties config;
     private Connection db;
     private Journal journal;
@@ -173,12 +175,12 @@ public class ApplicationService {
     }
 
     /**
-     * Legt einen neuen Benutzer an.
+     * Creates a new user.
      *
-     * @param name Name, mit dem der Benutzer von HUB angesprochen wird
-     * @param email Email-Adresse
-     * TODO
-     * @return Angelegter Benutzer
+     * @param name name which HUB uses to address the user
+     * @param email email address
+     * @param credential credential
+     * @return new user
      */
     public User createUser(String name, String email, String credential) {
         if (name.isEmpty()) {
@@ -187,19 +189,20 @@ public class ApplicationService {
         if (email.isEmpty()) {
             throw new IllegalArgumentException("illegal email: empty");
         }
-        // TODO
+        // TODO: validate credential
 
         try {
             this.db.setAutoCommit(false);
             String id = String.format("user:%s", new Random().nextInt());
-            this.queryRunner.insert(this.getDb(), "INSERT INTO \"user\" VALUES(?, ?, ?, ?)",
-                new MapHandler(), id, name, email, credential);
-            // TODO: check for duplicate email
+            this.queryRunner.insert(this.getDb(),
+                "INSERT INTO \"user\" VALUES(?, ?, ?, ?)", new MapHandler(), id, name,
+                email, credential);
             journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getUser(id);
         } catch (SQLException e) {
+            // TODO: check for duplicate email
             throw new IOError(e);
         }
     }
@@ -314,12 +317,12 @@ public class ApplicationService {
     }
 
     /**
-    * Registriert einen neuen Benutzer.
+    * Registers a new applicant.
     *
-    * @param name Name, mit dem der Benutzer von HUB angesprochen wird
-    * @param email Email-Adresse
-    * TODO
-    * @return Registrierter Nutzer
+     * @param name name which HUB uses to address the user
+     * @param email email address
+     * @param credential credential
+    * @return new applicant
     */
     public User register(String name, String email, String credential) {
         return this.createUser(name, email, credential);
@@ -343,7 +346,9 @@ public class ApplicationService {
 
     // TODO: document
     public Session login(String credential, String device) {
-        // TODO: validate
+        if (device.isEmpty()) {
+            throw new IllegalArgumentException("device_empty");
+        }
 
         User user = this.authenticate(credential);
         if (user == null) {
@@ -352,9 +357,8 @@ public class ApplicationService {
 
         String id = String.format("session:%s", new Random().nextInt());
         Timestamp startTime = new Timestamp(new Date().getTime());
-        // TODO: const
-        Timestamp endTime = new Timestamp(
-            startTime.getTime() + 30 * 24 * 60 * 60 * 1000L);
+        Timestamp endTime = new Timestamp(startTime.getTime() +
+            ApplicationService.MONTH_DURATION);
 
         try {
             new QueryRunner().insert(this.getDb(),
