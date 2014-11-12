@@ -15,6 +15,11 @@
                 <nav>
                     <a href="/">Reynholm University Bewerbung</a>
                     <a href="/courses/">Studiengänge</a>
+                    [#if user??]
+                         <form method="POST" action="/logout/">
+                            ${user.name} <button>Abmelden</button>
+                         </form>
+                    [/#if]
                 </nav>
             </header>
 
@@ -23,6 +28,12 @@
             </div>
         </body>
     </html>
+[/#macro]
+
+[#macro form_error]
+    [#if formError??]
+        <p>Fehler: ${formError}</p>
+    [/#if]
 [/#macro]
 
 [/#escape]
