@@ -150,20 +150,22 @@ public class User extends HubObject {
     }
 
     /**
-     * Name, mit dem der Benutzer von HUB angesprochen wird.
+     * Name which HUB uses to address the user.
      */
     public String getName() {
         return this.name;
     }
 
     /**
-     * Email-Adresse.
+     * Email address.
      */
     public String getEmail() {
         return this.email;
     }
 
-    // TODO: document
+    /**
+     * Credential.
+     */
     public String getCredential() {
         return this.credential;
     }
