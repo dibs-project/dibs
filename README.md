@@ -49,6 +49,8 @@ Hergestellt mit
    https://commons.apache.org/proper/commons-lang/
  * Apache Commons Collections (4.0) von The Apache Software Foundation -
    https://commons.apache.org/proper/commons-collections/
+ * Apache Commons DbUtils (1.6) von The Apache Software Foundation -
+   http://commons.apache.org/proper/commons-dbutils/
  * Java Servlet API (3.1) von Oracle - https://java.net/projects/servlet-spec/
  * Jersey (2.11) von Oracle - https://jersey.java.net/
  * FreeMarker (2.3) von Attila Szegedi, Daniel Dekany, Jonathan Revusky -

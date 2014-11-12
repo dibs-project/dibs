@@ -9,11 +9,11 @@ import static de.huberlin.cms.hub.Util.isInRange;
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+
+import org.apache.commons.dbutils.handlers.MapHandler;
 
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 
@@ -27,20 +27,10 @@ import de.huberlin.cms.hub.HubException.IllegalStateException;
 public class AllocationRule extends HubObject {
     private String quotaId;
 
-    AllocationRule(String id, ApplicationService service) {
-        super(id, service);
+    AllocationRule(Map<String, Object> args) {
+        super(args);
+        this.quotaId = (String) args.get("quota_id");
     }
-
-    AllocationRule(HashMap<String, Object> args) throws SQLException {
-            super((String) args.get("id"), (ApplicationService) args.get("service"));
-            this.quotaId = (String) args.get("quota_id");
-    }
-
-    AllocationRule(ResultSet results, ApplicationService service) throws SQLException {
-     // initialisiert das Vergabeschema über den Datenbankcursor
-     this(results.getString("id"), service);
-     this.quotaId = results.getString("quota_id");
-     }
 
     /**
      * Erstellt und verknüpft eine Quote.
@@ -66,17 +56,10 @@ public class AllocationRule extends HubObject {
             Connection db = service.getDb();
             db.setAutoCommit(false);
             String quotaId = "quota:" + Integer.toString(new Random().nextInt());
-            String sql = "INSERT INTO quota VALUES (?, ?, ?)";
-            PreparedStatement statement = db.prepareStatement(sql);
-            statement.setString(1, quotaId);
-            statement.setString(2, name);
-            statement.setDouble(3, percentage);
-            statement.executeUpdate();
-            sql = "UPDATE allocation_rule SET quota_id = ? WHERE id = ?";
-            statement = db.prepareStatement(sql);
-            statement.setString(1, quotaId);
-            statement.setString(2, this.id);
-            statement.executeUpdate();
+            service.getQueryRunner().insert(service.getDb(), "INSERT INTO quota VALUES (?, ?, ?)",
+                new MapHandler(), quotaId, name, percentage);
+            service.getQueryRunner().update(this.service.getDb(),
+                "UPDATE allocation_rule SET quota_id = ? WHERE id = ?", quotaId, this.id);
             this.quotaId = quotaId;
             service.getJournal().record(ApplicationService.ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED,
                 this.id, HubObject.getId(agent), quotaId);
@@ -100,12 +83,11 @@ public class AllocationRule extends HubObject {
      */
     public Course getCourse() {
         try {
-            String sql = "SELECT * FROM course WHERE allocation_rule_id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            results.next();
-            return new Course(results, service);
+            Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM course WHERE allocation_rule_id = ?",
+                new MapHandler(), id);
+            args.put("service", service);
+            return new Course(args);
         } catch (SQLException e) {
             throw new IOError(e);
         }

@@ -5,34 +5,26 @@
 
 package de.huberlin.cms.hub;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Date;
+import java.util.Map;
+import java.sql.Timestamp;
 
 /**
  * Einstellungen und globale Daten des Bewerbungssystems.
  *
  * @author Sven Pfaller
+ * @author Markus Michler
  */
 public class Settings extends HubObject {
     private String semester;
     private String storageVersion;
     private Date dosvSyncTime;
 
-    Settings(String id, String semester, String storageVersion,
-            Date dosvUpdateTime,
-            ApplicationService service) {
-        super(id, service);
-        this.semester = semester;
-        this.storageVersion = storageVersion;
-        this.dosvSyncTime = dosvUpdateTime;
-    }
-
-    Settings(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert die Einstellungen über den Datenbankcursor
-        this(results.getString("id"), results.getString("semester"),
-            results.getString("storage_version"),
-            new Date(results.getTimestamp("dosv_sync_time").getTime()), service);
+    Settings(Map<String, Object> args) {
+        super(args);
+        this.semester = (String) args.get("semester");
+        this.storageVersion = (String) args.get("storage_version");
+        this.dosvSyncTime = new Date(((Timestamp)args.get("dosv_sync_time")).getTime());
     }
 
     /**

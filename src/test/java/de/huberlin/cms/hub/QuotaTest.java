@@ -8,6 +8,7 @@ package de.huberlin.cms.hub;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,13 +43,31 @@ public class QuotaTest extends HubTest {
         app2 = course.apply(user2.getId(), null);
         app3 = course.apply(user3.getId(), null);
         eval1 = app1.getEvaluations(null);
-        info1 = new Qualification("1", app1.getUser().getId(), 2, service);
+        Map<String, Object> args1 = new HashMap<String, Object>();
+        args1.put("id", "1");
+        args1.put("user_id", app1.getUser().getId());
+        args1.put("grade", 2.0);
+        args1.put("service", this.service);
+        info1 = new Qualification(args1);
+
         eval1.get(0).assignInformation(info1);
         eval2 = app2.getEvaluations(null);
-        info2 = new Qualification("2", app2.getUser().getId(), 3, service);
+        Map<String, Object> args2 = new HashMap<String, Object>();
+        args2.put("id", "2");
+        args2.put("user_id", app2.getUser().getId());
+        args2.put("grade", 3.0);
+        args2.put("service", this.service);
+        info2 = new Qualification(args2);
+
         eval2.get(0).assignInformation(info2);
         eval3 = app3.getEvaluations(null);
-        info3 = new Qualification("3", app3.getUser().getId(), 2, service);
+        Map<String, Object> args3 = new HashMap<String, Object>();
+        args3.put("id", "3");
+        args3.put("user_id", app3.getUser().getId());
+        args3.put("grade", 2.0);
+        args3.put("service", this.service);
+        info3 = new Qualification(args3);
+
         eval3.get(0).assignInformation(info3);
     }
 
