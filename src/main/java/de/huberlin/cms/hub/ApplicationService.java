@@ -304,6 +304,7 @@ public class ApplicationService {
             args.put("user_id", results.getString("user_id"));
             args.put("course_id", results.getString("course_id"));
             args.put("status", results.getString("status"));
+            args.put("modification_time", results.getString("modification_time"));
             return new Application(args);
         } catch (SQLException e) {
             throw new IOError(e);

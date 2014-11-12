@@ -5,6 +5,8 @@
 
 package de.huberlin.cms.hub.dosv;
 
+import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.EINGEGANGEN;
+import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.GUELTIG;
 import static de.hochschulstart.hochschulschnittstelle.commonv1_0.ErgebnisStatus.ZURUECKGEWIESEN;
 import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.IN_VORBEREITUNG;
 import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.OEFFENTLICH_SICHTBAR;
@@ -26,6 +28,12 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.hochschulstart.hochschulschnittstelle.benutzerservicev1_0.BenutzerServiceFehler;
+import de.hochschulstart.hochschulschnittstelle.bewerbungenserviceparamv1_0.BewerbungErgebnis;
+import de.hochschulstart.hochschulschnittstelle.bewerbungenservicev1_0.BewerbungenServiceFehler;
+import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.Bewerbung;
+import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus;
+import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsSchluessel;
+import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.Einfachstudienangebotsbewerbung;
 import de.hochschulstart.hochschulschnittstelle.commonv1_0.AutorisierungsFehler;
 import de.hochschulstart.hochschulschnittstelle.commonv1_0.UnbekannterBenutzerFehler;
 import de.hochschulstart.hochschulschnittstelle.studiengaengeserviceparamv1_0.StudienangebotErgebnis;
@@ -42,9 +50,11 @@ import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studienangebot
 import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studienfach;
 import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studiengang;
 import de.hu_berlin.dosv.DosvClient;
+import de.huberlin.cms.hub.Application;
 import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.Settings;
+import de.huberlin.cms.hub.User;
 
 /**
  * Synchronisiationsklasse für Studiengänge, Bewerbungen und Ranglisten mit dem DoSV.
@@ -197,5 +207,117 @@ public class DosvSync {
         } catch (StudiengaengeServiceFehler e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private boolean pushApplicationStatus() {
+        boolean done = true;
+        List<Bewerbung> bewerbungenNeu = new ArrayList<>();
+        List<Bewerbung> bewerbungenGeaendert = new ArrayList<>();
+        List<Application> applications = service.getApplications();
+        for (Application application : applications) {
+            if (application.isDosvPushed()) {
+                continue;
+            }
+            EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
+                new EinfachstudienangebotsSchluessel();
+            einfachstudienangebotsSchluessel.setStudienfachSchluessel(application
+                .getCourse().getDosvSubjectKey());
+            einfachstudienangebotsSchluessel.setAbschlussSchluessel(application
+                .getCourse().getDosvDegreeKey());
+
+            User user = application.getUser();
+            Einfachstudienangebotsbewerbung einfachstudienangebotsbewerbung =
+                new Einfachstudienangebotsbewerbung();
+            einfachstudienangebotsbewerbung.setBewerberId(user.getDosvBid());
+            einfachstudienangebotsbewerbung.setBewerberBAN(user.getDosvBan());
+            einfachstudienangebotsbewerbung.setBewerberEmailAdresse(user.getEmail());
+            GregorianCalendar cal = new GregorianCalendar();
+            cal.setTime(new Date());
+            try {
+                einfachstudienangebotsbewerbung.setEingangsZeitpunkt(DatatypeFactory
+                    .newInstance().newXMLGregorianCalendar(cal));
+            } catch (DatatypeConfigurationException e) {
+                // unerreichbar
+                throw new RuntimeException(e);
+            }
+            einfachstudienangebotsbewerbung
+                .setEinfachstudienangebotsSchluessel(einfachstudienangebotsSchluessel);
+
+            BewerbungsBearbeitungsstatus bewerbungsBearbeitungsstatus = null;
+            if (application.getDosvVersion() == 0) {
+                bewerbungsBearbeitungsstatus = EINGEGANGEN;
+                bewerbungenNeu.add(einfachstudienangebotsbewerbung);
+            } else {
+                bewerbungsBearbeitungsstatus = GUELTIG;
+                bewerbungenGeaendert.add(einfachstudienangebotsbewerbung);
+            }
+            einfachstudienangebotsbewerbung
+                .setBearbeitungsstatus(bewerbungsBearbeitungsstatus);
+        }
+
+        List<BewerbungErgebnis> zurueckgewiesen = new ArrayList<>();
+        try {
+            /** SAF 301 */
+      // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+            for (BewerbungErgebnis bewerbungErgebnis : new DosvClient(dosvConfig)
+                .uebermittelnNeueBewerbungenAnSeSt(bewerbungenNeu)) {
+                if (bewerbungErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
+                    BewerbungsSchluessel bewerbungsSchluessel =
+                        bewerbungErgebnis.getBewerbungsSchluessel();
+                    throw new RuntimeException(bewerbungsSchluessel.getBewerberId()
+                        + ", " + bewerbungsSchluessel.getAbschlussSchluessel() + ": "
+                        + bewerbungErgebnis.getGrundZurueckweisung());
+                }
+            }
+
+            /** SAF 302 */
+      // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+            for (BewerbungErgebnis bewerbungErgebnis : new DosvClient(dosvConfig)
+                .uebermittelnGeaenderteBewerbungenAnSeSt(bewerbungenGeaendert)) {
+                if (bewerbungErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
+                    /** Account zur Löschung vorgesehen */
+                    if (bewerbungErgebnis.getGrundZurueckweisung().contains("30235")) {
+                        zurueckgewiesen.add(bewerbungErgebnis);
+                        // Wie gehen wir mit solchen Bewerbungen und den Nutzern um?
+                    }
+                    /** Versionskonflikt */
+                    if (bewerbungErgebnis.getGrundZurueckweisung().contains("30233")) {
+                        done = false;
+                        zurueckgewiesen.add(bewerbungErgebnis);
+                    } else {
+                        BewerbungsSchluessel bewerbungsSchluessel =
+                            bewerbungErgebnis.getBewerbungsSchluessel();
+                        throw new RuntimeException(bewerbungsSchluessel.getBewerberId()
+                            + ", " + bewerbungsSchluessel.getAbschlussSchluessel() + ": "
+                            + bewerbungErgebnis.getGrundZurueckweisung());
+                    }
+                }
+            }
+        } catch (BewerbungenServiceFehler e) {
+            throw new RuntimeException(e);
+        }
+
+        for (Application application : applications) {
+            boolean pushed = true;
+            for (BewerbungErgebnis bewerbungErgebnis : zurueckgewiesen) {
+                if (bewerbungErgebnis.getBewerbungsSchluessel().getBewerberId()
+                    .equals(application.getUser().getDosvBid())) {
+                    pushed = false;
+                }
+            }
+            try {
+                if (!pushed) {
+                    continue;
+                }
+                String sql = "UPDATE application SET dosv_pushed = TRUE, "
+                        + "dosv_version = dosv_version + 1 WHERE id = ?";
+                PreparedStatement statement = service.getDb().prepareStatement(sql);
+                statement.setString(1, application.getId());
+                statement.executeUpdate();
+            } catch (SQLException e) {
+                throw new IOError(e);
+            }
+        }
+        return done;
     }
 }
