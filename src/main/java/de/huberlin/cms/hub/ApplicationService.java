@@ -166,7 +166,7 @@ public class ApplicationService {
         args.put("service", this);
         this.criteria.put("qualification", new QualificationCriterion(args));
 
-        this.queryRunner =  new QueryRunner();
+        this.queryRunner = new QueryRunner();
         this.dosvSync = new DosvSync(this);
     }
 
@@ -540,8 +540,9 @@ public class ApplicationService {
     }
 
     /**
-     * Ausführer der Datenbankabfrage, welcher das Abfrageergebnis mit Hilfe des
-     * <code>ResultSetHandler<code> in ein <code>Map</code> oder Liste des Maps umwandert.
+     * Führt Datenbankabfragen aus. Das Abfrageergebnis wird mit Hilfe des
+     * <code>ResultSetHandler<code> in eine <code>Map</code> oder eine Liste von Maps
+     * umgewandelt.
      */
     public QueryRunner getQueryRunner() {
         return this.queryRunner;
