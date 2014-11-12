@@ -22,7 +22,9 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
  * @author Markus Michler
  */
 public class User extends HubObject {
+    /** Role: applicant. */
     public static String ROLE_APPLICANT = "applicant";
+    /** Role: administrator. */
     public static String ROLE_ADMIN = "admin";
 
     private String name;
