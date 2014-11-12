@@ -7,8 +7,6 @@ package de.huberlin.cms.hub;
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +18,9 @@ import java.util.Random;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
+
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 
@@ -34,8 +35,8 @@ public class Quota extends HubObject {
     private final String name;
     private final int percentage;
 
-    Quota(HashMap<String, Object> args) {
-        super((String) args.get("id"), (ApplicationService) args.get("service"));
+    Quota(Map<String, Object> args) {
+        super(args);
         this.name = (String) args.get("name");
         this.percentage = (Integer) args.get("percentage");
     }
@@ -55,11 +56,8 @@ public class Quota extends HubObject {
         Connection db = service.getDb();
         try {
             db.setAutoCommit(false);
-            String sql = "INSERT INTO quota_ranking_criteria VALUES(?, ?)";
-            PreparedStatement statement = db.prepareStatement(sql);
-            statement.setString(1, id);
-            statement.setString(2, criterionId);
-            statement.executeUpdate();
+            service.getQueryRunner().insert(service.getDb(), "INSERT INTO quota_ranking_criteria VALUES(?, ?)",
+                new MapHandler(), id, criterionId);
             service.getJournal().record(ApplicationService.ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED,
                 this.id, HubObject.getId(agent), criterionId);
             db.commit();
@@ -133,13 +131,12 @@ public class Quota extends HubObject {
     public List<Criterion> getRankingCriteria() {
         List<Criterion> rankingCriteria = new ArrayList<Criterion>();
         try {
-            String query = "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(query);
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                rankingCriteria.add(service.getCriteria().get(
-                    results.getString("criterion_id")));
+            String sql = "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            queryResults = service.getQueryRunner().query(service.getDb(), sql,
+                new MapListHandler(), id);
+            for (Map<String, Object> args : queryResults) {
+                rankingCriteria.add(service.getCriteria().get(args.get("criterion_id")));
             }
             return rankingCriteria;
         } catch (SQLException e) {
@@ -176,15 +173,10 @@ public class Quota extends HubObject {
                     + "LEFT JOIN course ON app.course_id = course.id "
                     + "LEFT JOIN allocation_rule ON course.allocation_rule_id = allocation_rule.id "
                     + "WHERE allocation_rule.quota_id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, this.id);
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                HashMap<String, Object> args = new HashMap<String, Object>();
-                args.put("id", results.getString("id"));
-                args.put("user_id", results.getString("user_id"));
-                args.put("course_id", results.getString("course_id"));
-                args.put("status", results.getString("status"));
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            queryResults = service.getQueryRunner().query(service.getDb(), sql,
+                new MapListHandler(), this.id);
+            for (Map<String, Object> args : queryResults) {
                 args.put("service", this.service);
                 applications.add(new Application(args));
             }
@@ -203,17 +195,10 @@ public class Quota extends HubObject {
         ArrayList<Rank> ranking = new ArrayList<Rank>();
         try {
             String sql = "SELECT * FROM rank WHERE quota_id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, this.id);
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                HashMap<String, Object> args = new HashMap<String, Object>();
-                args.put("id", results.getString("id"));
-                args.put("quota_id", results.getString("quota_id"));
-                args.put("user_id", results.getString("user_id"));
-                args.put("application_id", results.getString("application_id"));
-                args.put("index", results.getInt("index"));
-                args.put("lotnumber", results.getInt("lotnumber"));
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            queryResults = service.getQueryRunner().query(service.getDb(), sql,
+                new MapListHandler(), this.id);
+            for (Map<String, Object> args : queryResults) {
                 args.put("service", this.service);
                 ranking.add(new Rank(args));
             }
@@ -245,12 +230,11 @@ public class Quota extends HubObject {
      */
     public AllocationRule getAllocationRule() {
         try {
-            String sql = "SELECT * FROM allocation_rule WHERE quota_id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            results.next();
-            return new AllocationRule(results, service);
+            Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM allocation_rule WHERE quota_id = ?",
+                new MapHandler(), id);
+            args.put("service", service);
+            return new AllocationRule(args);
         } catch (SQLException e) {
             throw new IOError(e);
         }

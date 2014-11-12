@@ -60,7 +60,7 @@ CREATE TABLE application (
     course_id VARCHAR(256) REFERENCES course NOT NULL,
     status VARCHAR(256) NOT NULL,
     modification_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    dosv_version INT NOT NULL DEFAULT 0,
+    dosv_version INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE evaluation (

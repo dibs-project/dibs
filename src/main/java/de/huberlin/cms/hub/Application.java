@@ -8,15 +8,17 @@ package de.huberlin.cms.hub;
 import static java.util.Collections.nCopies;
 
 import java.io.IOError;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -42,12 +44,16 @@ public class Application extends HubObject {
     private final String userId;
     private final String courseId;
     private String status;
+    private Date modificationTime;
+    private final int dosvVersion;
 
-    Application(HashMap<String, Object> args) {
-        super((String) args.get("id"), (ApplicationService) args.get("service"));
+    Application(Map<String, Object> args) {
+        super(args);
         this.userId = (String) args.get("user_id");
         this.courseId = (String) args.get("course_id");
         this.status = (String) args.get("status");
+        this.modificationTime = (Date) args.get("modification_time");
+        this.dosvVersion = (int) args.get("dosv_version");
     }
 
     /**
@@ -58,23 +64,14 @@ public class Application extends HubObject {
      */
     public Evaluation getEvaluationByCriterionId(String criterionId) {
         try {
-            PreparedStatement statement = this.service.getDb().prepareStatement(
-                "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?");
-            statement.setString(1, this.id);
-            statement.setString(2, criterionId);
-            ResultSet results = statement.executeQuery();
-            if (!results.next()) {
+            Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM evaluation WHERE application_id = ? AND criterion_id = ?",
+                new MapHandler(), this.id, criterionId);
+            if (args == null) {
                 throw new IllegalArgumentException(
                     "illegal criterionId: evaluation does not exist");
             }
-            HashMap<String, Object> args = new HashMap<String, Object>();
-            args.put("id", results.getString("id"));
-            args.put("application_id", results.getString("application_id"));
-            args.put("criterion_id", results.getString("criterion_id"));
-            args.put("information_id", results.getString("information_id"));
-            args.put("value", results.getObject("value"));
-            args.put("status", results.getString("status"));
-            args.put("service", this.service);
+            args.put("service", service);
             return new Evaluation(args);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -109,22 +106,17 @@ public class Application extends HubObject {
         try {
             ArrayList<Evaluation> evaluations = new ArrayList<Evaluation>();
             // NOTE: optimierter Query
-            PreparedStatement statement = this.service.getDb().prepareStatement(
-                String.format("SELECT * FROM evaluation %s", filterSql));
+            String sql = String.format("SELECT * FROM evaluation %s", filterSql);
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            Object[] params = new Object[filterValues.size()];
             for (int i = 0; i < filterValues.size(); i++) {
-                statement.setObject(i + 1, filterValues.get(i));
+                params[i] = filterValues.get(i);
             }
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                HashMap<String, Object> args = new HashMap<String, Object>();
-                args.put("id", results.getString("id"));
-                args.put("application_id", results.getString("application_id"));
-                args.put("criterion_id", results.getString("criterion_id"));
-                args.put("information_id", results.getString("information_id"));
-                args.put("value", results.getObject("value"));
-                args.put("status", results.getString("status"));
-                args.put("service", this.service);
-                evaluations.add(new Evaluation(args));
+            queryResults = service.getQueryRunner().query(service.getDb(), sql,
+                new MapListHandler(), params);
+            for (Map<String, Object> map : queryResults) {
+                map.put("service", this.getService());
+                evaluations.add(new Evaluation(map));
             }
             return evaluations;
         } catch (SQLException e) {
@@ -142,14 +134,12 @@ public class Application extends HubObject {
     }
 
     void setStatus(String status, User agent) {
-        this.status = status;
+        Date now = new Date();
         try {
             service.getDb().setAutoCommit(false);
-            String sql = "UPDATE application SET status = ? WHERE id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, status);
-            statement.setString(2, this.id);
-            statement.executeUpdate();
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE application SET status = ?, modification_time = ? WHERE id = ?",
+                status, new Timestamp(now.getTime()), this.id);
             service.getJournal().record(ApplicationService.ACTION_TYPE_APPLICATION_STATUS_SET,
                 this.id, HubObject.getId(agent), status);
             service.getDb().commit();
@@ -157,6 +147,8 @@ public class Application extends HubObject {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+        this.status = status;
+        modificationTime = now;
     }
 
     void assignInformation(Information information) {
@@ -200,5 +192,19 @@ public class Application extends HubObject {
      */
     public String getStatus() {
         return status;
+    }
+
+    /**
+     * Zeitpunkt der letzten Modifikation der Bewerbung.
+     */
+    public Date getModificationTime() {
+        return modificationTime;
+    }
+
+    /**
+     * Version der Bewerbung im System des DoSV.
+     */
+    public int getDosvVersion() {
+        return dosvVersion;
     }
 }

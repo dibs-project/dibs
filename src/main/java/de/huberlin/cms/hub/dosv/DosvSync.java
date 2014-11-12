@@ -133,12 +133,13 @@ public class DosvSync {
                 studienangebotsStatus = OEFFENTLICH_SICHTBAR;
             }
 
+            // TODO Feld Course.subject
             String dosvSubjectKey = Integer.toString(course.getName().hashCode());
             // TODO Studienangebot nicht übertragen, wenn die Zulassung begonnen hat.
             /** Studienangebot - SAF 101 */
             Studienfach studienfach = new Studienfach();
             studienfach.setSchluessel(dosvSubjectKey);
-            studienfach.setNameDe(course.getName()); // TODO Feld Course.subject
+            studienfach.setNameDe(course.getName());
             Abschluss abschluss = new Abschluss();
             abschluss.setSchluessel("bachelor");
             abschluss.setNameDe("bachelor"); // TODO Feld Course.degree
@@ -213,17 +214,21 @@ public class DosvSync {
         boolean done = true;
         List<Bewerbung> bewerbungenNeu = new ArrayList<>();
         List<Bewerbung> bewerbungenGeaendert = new ArrayList<>();
+        Date dosvSynctime = service.getSettings().getDosvSyncTime();
+
+        // TODO sollte durch Filterung durch WHERE optimiert werden
         List<Application> applications = service.getApplications();
         for (Application application : applications) {
-            if (application.isDosvPushed()) {
+            if (dosvSynctime.after(application.getModificationTime())) {
                 continue;
             }
             EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
                 new EinfachstudienangebotsSchluessel();
-            einfachstudienangebotsSchluessel.setStudienfachSchluessel(application
-                .getCourse().getDosvSubjectKey());
-            einfachstudienangebotsSchluessel.setAbschlussSchluessel(application
-                .getCourse().getDosvDegreeKey());
+            // TODO Feld Course.subject
+            einfachstudienangebotsSchluessel.setStudienfachSchluessel(
+                Integer.toString(application.getCourse().getName().hashCode()));
+            // TODO Feld Course.degree
+            einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
 
             User user = application.getUser();
             Einfachstudienangebotsbewerbung einfachstudienangebotsbewerbung =

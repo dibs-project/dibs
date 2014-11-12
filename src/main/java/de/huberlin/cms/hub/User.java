@@ -7,12 +7,13 @@ package de.huberlin.cms.hub;
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.dbutils.handlers.MapListHandler;
 
 /**
  * Benutzer, der mit dem Bewerbungssystem interagiert.
@@ -26,20 +27,12 @@ public class User extends HubObject {
     private String dosvBid;
     private String dosvBan;
 
-    User(String id, String name, String email, String dosvBid, String dosvBan,
-        ApplicationService service) {
-        super(id, service);
-        this.name = name;
-        this.email = email;
-        this.dosvBid = dosvBid;
-        this.dosvBan = dosvBan;
-    }
-
-    User(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert den Benutzer über den Datenbankcursor
-        this(results.getString("id"), results.getString("name"),
-            results.getString("email"), results.getString("dosv_bid"),
-            results.getString("dosv_ban"), service);
+    User(Map<String, Object> args) {
+        super(args);
+        this.name = (String) args.get("name");
+        this.email = (String) args.get("email");
+        this.dosvBid = (String) args.get("dosv_bid");
+        this.dosvBan = (String) args.get("dosv_ban");
     }
 
     /**
@@ -76,15 +69,14 @@ public class User extends HubObject {
      */
     public List<Information> getInformationSet(User agent) {
         ArrayList<Information> informationSet = new ArrayList<Information>();
-        for (Information.Type type : this.service.getInformationTypes().values()) {
+        for (Information.Type type : service.getInformationTypes().values()) {
             try {
-                PreparedStatement statement = this.service.getDb().prepareStatement(
-                    String.format("SELECT * FROM \"%s\" WHERE user_id = ?",
-                        type.getId()));
-                statement.setString(1, this.id);
-                ResultSet results = statement.executeQuery();
-                while (results.next()) {
-                    informationSet.add(type.newInstance(results, this.service));
+                String sql = String.format("SELECT * FROM \"%s\" WHERE user_id = ?", type.getId());
+                List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+                queryResults = service.getQueryRunner().query(service.getDb(),
+                    sql, new MapListHandler(), this.id);
+                for (Map<String, Object> args : queryResults) {
+                    informationSet.add(type.newInstance(args, service));
                 }
             } catch (SQLException e) {
                 throw new IOError(e);
@@ -102,19 +94,13 @@ public class User extends HubObject {
     public List<Application> getApplications(User agent) {
         try {
             List<Application> applications = new ArrayList<Application>();
-            String sql = "SELECT * FROM application WHERE user_id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                HashMap<String, Object> args = new HashMap<String, Object>();
-                args.put("id", results.getString("id"));
-                args.put("service", this.getService());
-                args.put("user_id", results.getString("user_id"));
-                args.put("course_id", results.getString("course_id"));
-                args.put("status", results.getString("status"));
-                applications.add(new Application(args));
-            }
+            List<Map<String, Object>> queryResults = service.getQueryRunner().query(
+                service.getDb(), "SELECT * FROM application WHERE user_id = ?",
+                new MapListHandler(), this.getId());
+            for(Map<String, Object> args : queryResults) {
+               args.put("service", service);
+               applications.add(new Application(args));
+           }
             return applications;
         } catch (SQLException e) {
             throw new IOError(e);
@@ -140,12 +126,9 @@ public class User extends HubObject {
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
-            String sql = "UPDATE \"user\" SET dosv_bid = ?, dosv_ban = ? WHERE id = ?";
-            PreparedStatement statement = db.prepareStatement(sql);
-            statement.setString(1, dosvBid);
-            statement.setString(2, dosvBan);
-            statement.setString(3, id);
-            statement.executeUpdate();
+            service.getQueryRunner().update(this.service.getDb(),
+                "UPDATE \"user\" SET dosv_bid = ?, dosv_ban = ? WHERE id = ?", dosvBid,
+                dosvBan, id);
             this.dosvBid = dosvBid;
             this.dosvBan = dosvBan;
             service.getJournal().record(ApplicationService.APPLICATION_TYPE_USER_CONNECTED_TO_DOSV,
