@@ -37,6 +37,7 @@ public class User extends HubObject {
         this.name = (String) args.get("name");
         this.email = (String) args.get("email");
         this.credential = (String) args.get("credential");
+        this.role = (String) args.get("role");
         this.dosvBid = (String) args.get("dosv_bid");
         this.dosvBan = (String) args.get("dosv_ban");
     }
