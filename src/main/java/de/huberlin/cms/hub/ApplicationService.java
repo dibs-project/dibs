@@ -14,8 +14,10 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,8 +31,8 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
-import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 import de.huberlin.cms.hub.HubException.IllegalStateException;
+import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 import de.huberlin.cms.hub.dosv.DosvSync;
 
 /**
@@ -76,6 +78,8 @@ public class ApplicationService {
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =
         new HashSet<String>(Arrays.asList("required_information_type_id"));
 
+    private static final long MONTH_DURATION = 30 * 24 * 60 * 60 * 1000L;
+
     private Properties config;
     private Connection db;
     private Journal journal;
@@ -95,7 +99,7 @@ public class ApplicationService {
                 // TODO: Tabellen automatisch aus hub.sql lesen
                 String[] tables = {"user", "settings", "quota", "quota_ranking_criteria",
                     "allocation_rule", "course", "journal_record", "qualification",
-                    "application", "evaluation", "rank"};
+                    "application", "evaluation", "rank", "session"};
                 for (String table : tables) {
                     statement = db.prepareStatement(
                         String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
@@ -171,33 +175,34 @@ public class ApplicationService {
     }
 
     /**
-     * Legt einen neuen Benutzer an.
+     * Creates a new user.
      *
-     * @param name Name, mit dem der Benutzer von HUB angesprochen wird
-     * @param email Email-Adresse
-     * @return Angelegter Benutzer
-     * @throws IllegalArgumentException wenn <code>name</code> oder <code>email</code>
-     *     leer ist
+     * @param name name which HUB uses to address the user
+     * @param email email address
+     * @param credential credential
+     * @return new user
      */
-    public User createUser(String name, String email) {
+    public User createUser(String name, String email, String credential) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
         if (email.isEmpty()) {
             throw new IllegalArgumentException("illegal email: empty");
         }
+        // TODO: validate credential
 
         try {
             this.db.setAutoCommit(false);
-            // TODO: besseres Format für zufällige IDs
-            String id = Integer.toString(new Random().nextInt());
-            this.queryRunner.insert(this.getDb(), "INSERT INTO \"user\" VALUES(?, ?, ?)",
-                new MapHandler(), id, name, email);
+            String id = String.format("user:%s", new Random().nextInt());
+            this.queryRunner.insert(this.getDb(),
+                "INSERT INTO \"user\" VALUES(?, ?, ?, ?)", new MapHandler(), id, name,
+                email, credential);
             journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getUser(id);
         } catch (SQLException e) {
+            // TODO: check for duplicate email
             throw new IOError(e);
         }
     }
@@ -242,17 +247,6 @@ public class ApplicationService {
         } catch (SQLException e) {
             throw new IOError(e);
         }
-    }
-
-    /**
-    * Registriert einen neuen Benutzer.
-    *
-    * @param name Name, mit dem der Benutzer von HUB angesprochen wird
-    * @param email Email-Adresse
-    * @return Registrierter Nutzer
-    */
-    public User register(String name, String email) {
-        return this.createUser(name, email);
     }
 
     /**
@@ -323,6 +317,80 @@ public class ApplicationService {
     }
 
     /**
+    * Registers a new applicant.
+    *
+     * @param name name which HUB uses to address the user
+     * @param email email address
+     * @param credential credential
+    * @return new applicant
+    */
+    public User register(String name, String email, String credential) {
+        return this.createUser(name, email, credential);
+    }
+
+    // TODO: document
+    public User authenticate(String credential) {
+        try {
+            Map<String, Object> args = new QueryRunner().query(this.getDb(),
+                "SELECT * FROM \"user\" WHERE credential = ?", new MapHandler(),
+                credential);
+            if (args == null) {
+                return null;
+            }
+            args.put("service", this);
+            return new User(args);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    // TODO: document
+    public Session login(String credential, String device) {
+        if (device.isEmpty()) {
+            throw new IllegalArgumentException("device_empty");
+        }
+
+        User user = this.authenticate(credential);
+        if (user == null) {
+            return null;
+        }
+
+        String id = String.format("session:%s", new Random().nextInt());
+        Timestamp startTime = new Timestamp(new Date().getTime());
+        Timestamp endTime = new Timestamp(startTime.getTime() +
+            ApplicationService.MONTH_DURATION);
+
+        try {
+            new QueryRunner().insert(this.getDb(),
+                "INSERT INTO session VALUES (?, ?, ?, ?, ?)", new MapHandler(), id,
+                user.getId(), device, startTime, endTime);
+            return this.getSession(id);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    // TODO: document
+    public void logout(Session session) {
+        session.end();
+    }
+
+    // TODO: document
+    public Session getSession(String id) {
+        try {
+            Map<String, Object> args = new QueryRunner().query(this.getDb(),
+                "SELECT * FROM session WHERE id = ?", new MapHandler(), id);
+            if (args == null) {
+                throw new ObjectNotFoundException(id);
+            }
+            args.put("service", this);
+            return new Session(args);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
      * Stellt das aktuelle Semester für das Bewerbungssystem ein.
      *
      * @param semester Neues aktuelles Semester.
@@ -387,7 +455,7 @@ public class ApplicationService {
 
         try {
             this.db.setAutoCommit(false);
-            String id = "course:" + Integer.toString(new Random().nextInt());
+            String id = String.format("course:%s", new Random().nextInt());
             this.queryRunner.insert(this.getDb(), "INSERT INTO course VALUES(?, ?, ?)",
                 new MapHandler(), id, name, capacity);
             journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),

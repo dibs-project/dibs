@@ -38,14 +38,16 @@ public class DosvSyncIT extends HubTest {
 
     @Test
     public void testUserConnectToDosv() {
-        User dosvUser = service.createUser("dosv-testuser", "test@example.org");
+        User dosvUser = service.createUser("dosv-testuser", "test@example.org",
+            "test@example.org:secr3t");
         assertTrue(dosvUser.connectToDosv(bid, ban, null));
         assertEquals(bid, service.getUser(dosvUser.getId()).getDosvBid());
     }
 
     @Test
     public void testUserConnectToDosvBadBid() {
-        User dosvUser = service.createUser("dosv-testuser", "test@example.org");
+        User dosvUser = service.createUser("dosv-testuser", "test@example.org",
+            "test@example.org:secr3t");
         assertFalse(dosvUser.connectToDosv("BadBid", ban, null));
     }
 }

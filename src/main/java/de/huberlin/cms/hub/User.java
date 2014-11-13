@@ -24,6 +24,7 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 public class User extends HubObject {
     private String name;
     private String email;
+    private String credential;
     private String dosvBid;
     private String dosvBan;
 
@@ -31,6 +32,7 @@ public class User extends HubObject {
         super(args);
         this.name = (String) args.get("name");
         this.email = (String) args.get("email");
+        this.credential = (String) args.get("credential");
         this.dosvBid = (String) args.get("dosv_bid");
         this.dosvBan = (String) args.get("dosv_ban");
     }
@@ -143,17 +145,24 @@ public class User extends HubObject {
     }
 
     /**
-     * Name, mit dem der Benutzer von HUB angesprochen wird.
+     * Name which HUB uses to address the user.
      */
     public String getName() {
         return this.name;
     }
 
     /**
-     * Email-Adresse.
+     * Email address.
      */
     public String getEmail() {
         return this.email;
+    }
+
+    /**
+     * Credential.
+     */
+    public String getCredential() {
+        return this.credential;
     }
 
     /**

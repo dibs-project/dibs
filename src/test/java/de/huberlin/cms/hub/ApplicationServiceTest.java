@@ -6,6 +6,8 @@
 package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -26,7 +28,7 @@ public class ApplicationServiceTest extends HubTest {
     @Test
     public void testCreateUser() {
         String email = "moss@example.org";
-        User user = this.service.createUser("Maurice", email);
+        User user = this.service.createUser("Maurice", email, email + ":secr3t");
         assertEquals(email, user.getEmail());
         assertTrue(this.service.getUsers().contains(user));
     }
@@ -35,7 +37,7 @@ public class ApplicationServiceTest extends HubTest {
     public void testCreateUserEmptyEmail() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("email");
-        this.service.createUser("Maurice", "");
+        this.service.createUser("Maurice", "", "moss@example.org:secre3t");
     }
 
     @Test
@@ -53,6 +55,31 @@ public class ApplicationServiceTest extends HubTest {
     public void testGetApplicationNonExisting() {
         this.exception.expect(ObjectNotFoundException.class);
         this.service.getApplication("foo");
+    }
+
+    @Test
+    public void testAuthenticate() {
+        User user = this.service.authenticate(this.user.getCredential());
+        assertNotNull(user);
+        assertEquals(this.user, user);
+    }
+
+    @Test
+    public void testAuthenticateBadCredential() {
+        assertNull(this.service.authenticate("foo:bar"));
+    }
+
+    @Test
+    public void testLogin() {
+        Session session = this.service.login(this.user.getCredential(), "localhost");
+        assertNotNull(session);
+        assertEquals(this.user, session.getUser());
+        assertTrue(session.isValid());
+    }
+
+    @Test
+    public void testLoginBadCredential() {
+        assertNull(this.service.login("foo:bar", "localhost"));
     }
 
     @Test

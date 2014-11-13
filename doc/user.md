@@ -10,9 +10,9 @@ Struktur:
   .--------------------. .----------. .-------------------.
   | ApplicationService | | Settings | | User              |
   |--------------------| '----------' |-------------------|
-  | register           |              | createInformation |
-  | createUser         |              '-------------------'
-  | createCourse       |
+  | createUser         |              | createInformation |
+  | createCourse       |              '-------------------'
+  | register           |
   '--------------------'
 
   .-------------. .-------------. .------------.
@@ -30,9 +30,9 @@ Struktur:
   '----------------------'                                                                 
  
 
-  .---------.
-  | Journal |
-  '---------'
+  .---------. .---------.
+  | Session | | Journal |
+  '---------' '---------'
 ```
 
 Ablauf:
