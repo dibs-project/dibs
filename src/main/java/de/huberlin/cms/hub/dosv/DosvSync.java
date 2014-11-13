@@ -250,11 +250,13 @@ public class DosvSync {
                 .setEinfachstudienangebotsSchluessel(einfachstudienangebotsSchluessel);
 
             BewerbungsBearbeitungsstatus bewerbungsBearbeitungsstatus = null;
-            if (application.getDosvVersion() == 0) {
+            int dosvVersion = application.getDosvVersion();
+            if (dosvVersion == -1) {
                 bewerbungsBearbeitungsstatus = EINGEGANGEN;
                 bewerbungenNeu.add(einfachstudienangebotsbewerbung);
             } else {
                 bewerbungsBearbeitungsstatus = GUELTIG;
+                einfachstudienangebotsbewerbung.setVersionSeSt(dosvVersion);
                 bewerbungenGeaendert.add(einfachstudienangebotsbewerbung);
             }
             einfachstudienangebotsbewerbung
