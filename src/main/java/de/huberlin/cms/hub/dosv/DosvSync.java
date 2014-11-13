@@ -143,7 +143,7 @@ public class DosvSync {
             studienfach.setNameDe(course.getName());
             Abschluss abschluss = new Abschluss();
             abschluss.setSchluessel("bachelor");
-            abschluss.setNameDe("bachelor"); // TODO Feld Course.degree
+            abschluss.setNameDe("Bachelor"); // TODO Feld Course.degree
 
             Studiengang studiengang = new Studiengang();
             studiengang.setNameDe(course.getName());
