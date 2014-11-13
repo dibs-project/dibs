@@ -101,6 +101,7 @@ public class DosvSync {
     public void synchronize() {
         Date newSyncTime = new Date();
         pushCourses();
+        pushApplicationStatus();
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -260,10 +261,9 @@ public class DosvSync {
                 .setBearbeitungsstatus(bewerbungsBearbeitungsstatus);
         }
 
-        List<BewerbungErgebnis> zurueckgewiesen = new ArrayList<>();
         try {
             /** SAF 301 */
-      // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+            // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
             for (BewerbungErgebnis bewerbungErgebnis : new DosvClient(dosvConfig)
                 .uebermittelnNeueBewerbungenAnSeSt(bewerbungenNeu)) {
                 if (bewerbungErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
@@ -276,19 +276,17 @@ public class DosvSync {
             }
 
             /** SAF 302 */
-      // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+            // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
             for (BewerbungErgebnis bewerbungErgebnis : new DosvClient(dosvConfig)
                 .uebermittelnGeaenderteBewerbungenAnSeSt(bewerbungenGeaendert)) {
                 if (bewerbungErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
                     /** Account zur Löschung vorgesehen */
                     if (bewerbungErgebnis.getGrundZurueckweisung().contains("30235")) {
-                        zurueckgewiesen.add(bewerbungErgebnis);
-                        // Wie gehen wir mit solchen Bewerbungen und den Nutzern um?
+                        // TODO Fehlerbehandlung, Benachrichtigung des Benutzers
                     }
                     /** Versionskonflikt */
                     if (bewerbungErgebnis.getGrundZurueckweisung().contains("30233")) {
                         done = false;
-                        zurueckgewiesen.add(bewerbungErgebnis);
                     } else {
                         BewerbungsSchluessel bewerbungsSchluessel =
                             bewerbungErgebnis.getBewerbungsSchluessel();
@@ -302,27 +300,6 @@ public class DosvSync {
             throw new RuntimeException(e);
         }
 
-        for (Application application : applications) {
-            boolean pushed = true;
-            for (BewerbungErgebnis bewerbungErgebnis : zurueckgewiesen) {
-                if (bewerbungErgebnis.getBewerbungsSchluessel().getBewerberId()
-                    .equals(application.getUser().getDosvBid())) {
-                    pushed = false;
-                }
-            }
-            try {
-                if (!pushed) {
-                    continue;
-                }
-                String sql = "UPDATE application SET dosv_pushed = TRUE, "
-                        + "dosv_version = dosv_version + 1 WHERE id = ?";
-                PreparedStatement statement = service.getDb().prepareStatement(sql);
-                statement.setString(1, application.getId());
-                statement.executeUpdate();
-            } catch (SQLException e) {
-                throw new IOError(e);
-            }
-        }
         return done;
     }
 }

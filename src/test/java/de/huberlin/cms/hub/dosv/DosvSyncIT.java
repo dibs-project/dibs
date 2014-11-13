@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.hu_berlin.dosv.DosvClient;
+import de.huberlin.cms.hub.Application;
 import de.huberlin.cms.hub.HubTest;
 import de.huberlin.cms.hub.User;
 
@@ -56,5 +57,14 @@ public class DosvSyncIT extends HubTest {
         service.getDosvSync().synchronize();
         assertTrue(service.getSettings().getDosvSyncTime()
             .after(course.getModificationTime()));
+    }
+
+    @Test
+    public void testCourseApply() {
+        user.connectToDosv(bid, ban, null);
+        Application application = course.apply(user.getId(), null);
+        service.getDosvSync().synchronize();
+        assertTrue(service.getSettings().getDosvSyncTime()
+            .after(application.getModificationTime()));
     }
 }

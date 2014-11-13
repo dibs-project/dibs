@@ -84,6 +84,9 @@ public class Course extends HubObject {
         if (!service.getCourse(id).isPublished()) {
             throw new IllegalStateException("course_published");
         }
+        if (service.getUser(userId).getDosvBid() == null) {
+            throw new IllegalStateException("user_not_connected");
+        }
         // NOTE Race Condition: SELECT-INSERT
         try {
             service.getDb().setAutoCommit(false);
