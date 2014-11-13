@@ -123,15 +123,16 @@ public class DosvSync {
                 studienangebotsStatus = OEFFENTLICH_SICHTBAR;
             }
 
+            // TODO Feld Course.subject
             String dosvSubjectKey = Integer.toString(course.getName().hashCode());
             // TODO Studienangebot nicht übertragen, wenn die Zulassung begonnen hat.
             /** Studienangebot - SAF 101 */
             Studienfach studienfach = new Studienfach();
             studienfach.setSchluessel(dosvSubjectKey);
-            studienfach.setNameDe(course.getName()); // TODO Feld Course.subject
+            studienfach.setNameDe(course.getName());
             Abschluss abschluss = new Abschluss();
             abschluss.setSchluessel("bachelor");
-            abschluss.setNameDe("bachelor"); // TODO Feld Course.degree
+            abschluss.setNameDe("Bachelor"); // TODO Feld Course.degree
 
             Studiengang studiengang = new Studiengang();
             studiengang.setNameDe(course.getName());
