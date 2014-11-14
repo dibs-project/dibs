@@ -28,6 +28,9 @@ by using the tool `psql` as PostgreSQL-Superuser (in most cases `postgres`) with
 
 By default the Username, Password and Databasename is set to "hub".
 
+Before Synchronizing from HUB to "Dialogorientierten Serviceverfahren" 
+the Webservices must be configured. Insert Values für keys with dosv_ Prefix.
+
 Created with
 ------------
 
@@ -40,6 +43,8 @@ Created with
    https://commons.apache.org/proper/commons-lang/
  * Apache Commons Collections (4.0) from The Apache Software Foundation -
    https://commons.apache.org/proper/commons-collections/
+ * Apache Commons DbUtils (1.6) von The Apache Software Foundation - 
+   http://commons.apache.org/proper/commons-dbutils/
  * Java Servlet API (3.1) from Oracle - https://java.net/projects/servlet-spec/
  * Jersey (2.11) from Oracle - https://jersey.java.net/
  * FreeMarker (2.3) from Attila Szegedi, Daniel Dekany, Jonathan Revusky -
