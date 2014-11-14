@@ -1,34 +1,23 @@
-HUB-Entwicklerdokumentation
-===========================
+Development Environment Setup
+-----------------------------
 
-Entwicklungsumgebung einrichten
--------------------------------
+To set up the Test Environment, copy `test.default.properties` to
+`test.properties` and customize it to your needs.
 
-Um die Testumgebung zu konfigurieren, kopiere die Datei `test.default.properties` nach
-`test.properties` und passe sie deinen Bedürfnissen an.
+HUB needs a PostgreSQL-Datenbank for Testing. By default we assume that there is a 
+local Database named "hub_test". `README.md` its described how to Setup a Database.
 
-Zum Testen benötigt HUB eine PostgreSQL-Datenbank. Standardmäßig wird angenommen, dass
-eine lokale Datenbank mit dem Namen "hub_test" existiert. In `README.md` ist beschrieben,
-wie bei Bedarf eine lokale Datenbank erstellt werden kann.
+Testing HUB 
+-----------
 
-Für das Testen der Anbindung an das DoSV existieren Integration Tests.
-Für jene muss ein Benutzerkonto auf der Testumgebung bei Hochschulstart angelegt und die 
-BID und BAN dieses Kontos in `test.properties` eingetragen werden.
-
-HUB testen
-----------
-
-Führe einfach folgenden Befehl aus um alle Testfälle durch zu spielen:
+To run all tests:
 
     mvn test
 
-Um nur die Integration Tests auszuführen nutze den Befehl
+start HUB-Development Server 
+----------------------------
 
-    mvn test-compile failsafe:integration-test
-
-HUB-Entwicklungsserver ausführen
---------------------------------
-
-Starte den HUB-Entwicklungsserver mit:
+Start the HUB-Development Server:
 
     ./hub.sh
+    
