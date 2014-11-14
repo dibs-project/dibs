@@ -10,7 +10,7 @@ CREATE TABLE settings (
     id VARCHAR(256) PRIMARY KEY,
     semester VARCHAR(6),
     storage_version VARCHAR(256),
-    dosv_sync_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    dosv_sync_time TIMESTAMP NOT NULL
 );
 
 CREATE TABLE quota (
@@ -79,4 +79,5 @@ CREATE TABLE rank (
     lotnumber INT NOT NULL
 );
 
-INSERT INTO settings (id, semester, storage_version) VALUES ('settings', '2014WS', '0');
+INSERT INTO settings (id, semester, storage_version, dosv_sync_time) VALUES ('settings', '2014WS', '0',
+    CURRENT_TIMESTAMP);

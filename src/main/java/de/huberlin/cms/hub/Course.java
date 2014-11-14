@@ -39,7 +39,7 @@ public class Course extends HubObject {
         this.capacity = (Integer) args.get("capacity");
         this.allocationRuleId = (String) args.get("allocation_rule_id");
         this.published = (Boolean) args.get("published");
-        this.modificationTime = (Date) args.get("modification_time");
+        this.modificationTime = new Date(((Timestamp) args.get("modification_time")).getTime());
     }
 
     /**
@@ -126,52 +126,10 @@ public class Course extends HubObject {
     }
 
     /**
-     * Liste aller Bewerbungen, die für diesen Studiengang abgegeben wurden.
-     */
-    public List<Application> getApplications() {
-        try {
-            List<Application> applications = new ArrayList<Application>();
-            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
-            queryResults = service.getQueryRunner().query(service.getDb(),
-                "SELECT * FROM application WHERE course_id = ?",
-                new MapListHandler(), id);
-            for (Map<String, Object> args : queryResults) {
-                args.put("service", this.getService());
-                applications.add(new Application(args));
-            }
-            return applications;
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
      * Generiert die Rangliste für den Studiengang.
      */
     public void generateRankings() {
         this.getAllocationRule().getQuota().generateRanking();
-    }
-
-    /**
-     * Ruft die Rangliste für den Studiengang ab.
-     *
-     * @return Rangliste
-     */
-    public List<Rank> getRankings() {
-        ArrayList<Rank> ranking = new ArrayList<Rank>();
-        try {
-            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
-            queryResults = service.getQueryRunner().query(service.getDb(),
-                "SELECT * FROM rank WHERE quota_id = ?", new MapListHandler(),
-                this.getAllocationRule().getQuota().getId());
-            for (Map<String, Object> args : queryResults) {
-                args.put("service", this.getService());
-                ranking.add(new Rank(args));
-            }
-            return ranking;
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
     }
 
     /**
@@ -188,7 +146,7 @@ public class Course extends HubObject {
             Connection db = service.getDb();
             db.setAutoCommit(false);
             service.getQueryRunner().update(service.getDb(),
-                "UPDATE course SET published = TRUE, modification_time = ?  WHERE id = ?",
+                "UPDATE course SET published = TRUE, modification_time = ? WHERE id = ?",
                 new Timestamp(now.getTime()), getId());
             service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_PUBLISHED,
                 this.id, HubObject.getId(agent), null);
@@ -248,6 +206,48 @@ public class Course extends HubObject {
      */
     public AllocationRule getAllocationRule() {
         return allocationRuleId != null ? service.getAllocationRule(allocationRuleId) : null;
+    }
+
+    /**
+     * Liste aller Bewerbungen, die für diesen Studiengang abgegeben wurden.
+     */
+    public List<Application> getApplications() {
+        try {
+            List<Application> applications = new ArrayList<Application>();
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            queryResults = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM application WHERE course_id = ?",
+                new MapListHandler(), id);
+            for (Map<String, Object> args : queryResults) {
+                args.put("service", this.getService());
+                applications.add(new Application(args));
+            }
+            return applications;
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Ruft die Rangliste für den Studiengang ab.
+     *
+     * @return Rangliste
+     */
+    public List<Rank> getRankings() {
+        ArrayList<Rank> ranking = new ArrayList<Rank>();
+        try {
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            queryResults = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM rank WHERE quota_id = ?", new MapListHandler(),
+                this.getAllocationRule().getQuota().getId());
+            for (Map<String, Object> args : queryResults) {
+                args.put("service", this.getService());
+                ranking.add(new Rank(args));
+            }
+            return ranking;
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
     /**

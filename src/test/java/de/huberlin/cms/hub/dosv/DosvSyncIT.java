@@ -50,7 +50,7 @@ public class DosvSyncIT extends HubTest {
     }
 
     @Test
-    public void testCoursePublish() {
+    public void testSynchronizeCourseModified() {
         service.getDosvSync().synchronize();
         course.unpublish(null);
         service.getDosvSync().synchronize();
