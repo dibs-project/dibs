@@ -120,6 +120,7 @@ public class Pages implements Closeable {
             int capacity = Integer.parseInt(form.getFirst("capacity"));
             Course course =
                 this.service.createCourse(form.getFirst("name"), capacity, this.agent);
+            course.createAllocationRule(agent).createQuota("Performance", 100, agent);
             URI url = UriBuilder.fromUri("/courses/{id}").build(course.getId());
             return Response.seeOther(url).build();
         } catch (IllegalArgumentException e) {
