@@ -1,18 +1,18 @@
-HUB-Benutzerdokumentation
-=========================
+HUB-User Documentation
+======================
 
-Übersicht
+Overview
 ---------
 
-Struktur:
+Structure:
 
 ```
   .--------------------. .----------. .-------------------.
   | ApplicationService | | Settings | | User              |
   |--------------------| '----------' |-------------------|
-  | createUser         |              | createInformation |
-  | createCourse       |              '-------------------'
-  | register           |
+  | register           |              | createInformation |
+  | createUser         |              '-------------------'
+  | createCourse       |
   '--------------------'
 
   .-------------. .-------------. .------------.
@@ -30,12 +30,12 @@ Struktur:
   '----------------------'                                                                 
  
 
-  .---------. .---------.
-  | Session | | Journal |
-  '---------' '---------'
+  .---------.
+  | Journal |
+  '---------'
 ```
 
-Ablauf:
+Process:
 
 ```
    . Applicant                            | Employee                        | System
