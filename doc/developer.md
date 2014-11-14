@@ -20,4 +20,3 @@ start HUB-Development Server
 Start the HUB-Development Server:
 
     ./hub.sh
-    
