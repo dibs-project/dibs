@@ -7,12 +7,20 @@ To set up the Test Environment, copy `test.default.properties` to
 HUB needs a PostgreSQL-Datenbank for Testing. By default we assume that there is a 
 local Database named "hub_test". `README.md` its described how to Setup a Database.
 
+To Test the Connection to DoSV we use Integration Tests. 
+For it to work, you need to create an Account on the Test-Portal from Hochschulstart
+and set BID and BAN in test.properties.
+
 Testing HUB 
 -----------
 
 To run all tests:
 
     mvn test
+    
+To run only Integration Tests:
+
+    mvn test-compile failsafe:integration-test
 
 start HUB-Development Server 
 ----------------------------
