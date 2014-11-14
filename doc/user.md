@@ -62,9 +62,9 @@ a backend method.
 
 The user interface is built upon:
 
- * (Java Servlet)[https://java.net/projects/servlet-spec/]
- * (Jersey)[https://jersey.java.net/]
- * (FreeMarker)[http://freemarker.org/]
+ * [Java Servlet](https://java.net/projects/servlet-spec/)
+ * [Jersey](https://jersey.java.net/)
+ * [FreeMarker](http://freemarker.org/)
 
 Web application resources are located at `src/main/webapp`. Templates can be found in the
 `templates` subdirectory.
