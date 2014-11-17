@@ -18,8 +18,7 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
- * Regel, nach der Studienplätze für einen Studiengang an die Bewerber vergeben werden
- * (Vergabeschema).
+ * Rule for allocating a contingent of available places to a course's applicants.
  *
  * @author Phuong Anh Ha
  * @author Markus Michler
