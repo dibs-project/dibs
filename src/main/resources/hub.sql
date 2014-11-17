@@ -1,7 +1,8 @@
 CREATE TABLE "user" (
     id VARCHAR(256) PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
-    email VARCHAR(256) NOT NULL,
+    email VARCHAR(256) UNIQUE NOT NULL,
+    credential VARCHAR(256) UNIQUE NOT NULL,
     dosv_bid VARCHAR(256) UNIQUE,
     dosv_ban VARCHAR(256)
 );
@@ -77,6 +78,14 @@ CREATE TABLE rank (
     application_id VARCHAR(256) REFERENCES application NOT NULL,
     index INT NOT NULL,
     lotnumber INT NOT NULL
+);
+
+CREATE TABLE session (
+    id VARCHAR(256) PRIMARY KEY,
+    user_id VARCHAR(256) REFERENCES "user" NOT NULL,
+    device VARCHAR(256) NOT NULL,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL
 );
 
 INSERT INTO settings (id, semester, storage_version, dosv_sync_time) VALUES ('settings', '2014WS', '0',

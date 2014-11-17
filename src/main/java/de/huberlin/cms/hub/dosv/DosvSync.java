@@ -11,7 +11,6 @@ import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studien
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
