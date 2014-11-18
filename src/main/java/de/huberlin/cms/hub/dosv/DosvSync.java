@@ -46,16 +46,26 @@ import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.Settings;
 
 /**
- * Synchronisiationsklasse für Studiengänge, Bewerbungen und Ranglisten mit dem DoSV.
+ * DoSV synchronisation class for Courses, Applications and Ranks.
+ * <p>
+ * <b>Data Mapping between HUB and the DoSV system</b></br>
+ * </p>
+ * <p>
+ * Courses:
+ * <ul>
+ * <li><code>published -> oeffentlich_sichtbar</code></li>
+ * <li><code>unpublished -> in_vorbereitung</code></li>
+ * <li><code>abschluss.schluessel</code> is always <code>"bachelor"</code></li>
+ * <li><code>studienfach.schluessel = course.getId().hashCode()</code></li>
+ * <li><code>integrationseinstellungen.bewerbungsort: hochschule</code></li>
+ * <li><code>integrationseinstellungen.*bescheidVersandart: hochschule</code></li>
+ * <li><code>studienfach.nameDE, einfachstudienangebot.nameDE, *.beschreibungDE =
+ * course.name</code></li>
+ * </p>
  *
  * @author Markus Michler
  */
 public class DosvSync {
-    /**
-     * Data Mapping between HUB and the DoSV system:
-     * FIXME
-     *
-     */
 
     private ApplicationService service;
     private Properties dosvConfig;
