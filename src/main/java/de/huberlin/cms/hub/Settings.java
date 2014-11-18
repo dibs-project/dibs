@@ -24,7 +24,7 @@ public class Settings extends HubObject {
         super(args);
         this.semester = (String) args.get("semester");
         this.storageVersion = (String) args.get("storage_version");
-        this.dosvSyncTime = new Date(((Timestamp)args.get("dosv_sync_time")).getTime());
+        this.dosvSyncTime = new Date(((Timestamp) args.get("dosv_sync_time")).getTime());
     }
 
     /**

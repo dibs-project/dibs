@@ -25,8 +25,8 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
- * Quote, welche die Kriterien für die Ranglistenerstellung für einen Teil der Plätze
- * eines Studiengangs beinhaltet.
+ * Contains the criteria for the creation of a ranking list for a percentage of a course's
+ * available places.
  *
  * @author Markus Michler
  * @author David Koschnick
@@ -188,7 +188,7 @@ public class Quota extends HubObject {
 
     /**
      * Ruft die Rangliste für die Quote ab.
-     * 
+     *
      * @return Rangliste
      */
     public List<Rank> getRanking() {

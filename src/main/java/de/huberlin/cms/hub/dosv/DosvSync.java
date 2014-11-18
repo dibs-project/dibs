@@ -13,7 +13,6 @@ import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studien
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -57,11 +56,27 @@ import de.huberlin.cms.hub.Settings;
 import de.huberlin.cms.hub.User;
 
 /**
- * Synchronisiationsklasse für Studiengänge, Bewerbungen und Ranglisten mit dem DoSV.
+ * DoSV synchronisation class for Courses, Applications and Ranks.
+ * <p>
+ * <b>Data Mapping between HUB and the DoSV system</b></br>
+ * </p>
+ * <p>
+ * Courses:
+ * <ul>
+ * <li><code>published -> oeffentlich_sichtbar</code></li>
+ * <li><code>unpublished -> in_vorbereitung</code></li>
+ * <li><code>abschluss.schluessel</code> is always <code>"bachelor"</code></li>
+ * <li><code>studienfach.schluessel = course.getId().hashCode()</code></li>
+ * <li><code>integrationseinstellungen.bewerbungsort: hochschule</code></li>
+ * <li><code>integrationseinstellungen.*bescheidVersandart: hochschule</code></li>
+ * <li><code>studienfach.nameDE, einfachstudienangebot.nameDE, *.beschreibungDE =
+ * course.name</code></li>
+ * </p>
  *
  * @author Markus Michler
  */
 public class DosvSync {
+
     private ApplicationService service;
     private Properties dosvConfig;
 
@@ -105,10 +120,8 @@ public class DosvSync {
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
-            PreparedStatement statement =
-                db.prepareStatement("UPDATE settings SET dosv_sync_time = ?");
-            statement.setTimestamp(1, new Timestamp(newSyncTime.getTime()));
-            statement.executeUpdate();
+            service.getQueryRunner().update(db, "UPDATE settings SET dosv_sync_time = ?",
+                new Timestamp(newSyncTime.getTime()));
             service.getJournal().record(
                 ApplicationService.ACTION_TYPE_DOSV_SYNC_SYNCHRONIZED, null, null, null);
             db.setAutoCommit(true);
@@ -118,24 +131,20 @@ public class DosvSync {
     }
 
     private void pushCourses() {
-        List<Studienangebot> studiangebote = new ArrayList<>();
+        List<Studienangebot> studienangebote = new ArrayList<>();
 
-        Date dosvSynctime = service.getSettings().getDosvSyncTime();
+        Date dosvSyncTime = service.getSettings().getDosvSyncTime();
         for (Course course : service.getCourses()) {
-            if (dosvSynctime.after(course.getModificationTime())) {
+            if (dosvSyncTime.after(course.getModificationTime())) {
                 continue;
             }
             // TODO Studienangebote können nur im Status IN_VORBEREITUNG geändert werden,
             // deshalb Änderung und Sichtbarmachung auf zwei übertragene Objekte aufteilen.
-            StudienangebotsStatus studienangebotsStatus;
-            if (!course.isPublished()) {
-                studienangebotsStatus = IN_VORBEREITUNG;
-            } else {
-                studienangebotsStatus = OEFFENTLICH_SICHTBAR;
-            }
+            StudienangebotsStatus studienangebotsStatus =
+                course.isPublished() ? OEFFENTLICH_SICHTBAR : IN_VORBEREITUNG;
 
             // TODO Feld Course.subject
-            String dosvSubjectKey = Integer.toString(course.getName().hashCode());
+            String dosvSubjectKey = Integer.toString(course.getId().hashCode());
             // TODO Studienangebot nicht übertragen, wenn die Zulassung begonnen hat.
             /** Studienangebot - SAF 101 */
             Studienfach studienfach = new Studienfach();
@@ -178,7 +187,7 @@ public class DosvSync {
             xmlCal.add(duration); // TODO Ende Bewerbungsfrist in Course
             koordinierungsangebotsdaten.setEndeBewerbungsfrist(xmlCal);
             koordinierungsangebotsdaten
-                .setUrlHSBewerbungsportal("http://studienplatz.hu-berlin.de/");
+                .setUrlHSBewerbungsportal("http://example.org/"); // TODO Konfigurierbar
 
             Einfachstudienangebot einfachstudienangebot = new Einfachstudienangebot();
             einfachstudienangebot.setNameDe(course.getName());
@@ -190,14 +199,14 @@ public class DosvSync {
                 .setKoordinierungsangebotsdaten(koordinierungsangebotsdaten);
             einfachstudienangebot.setStatus(studienangebotsStatus);
 
-            studiangebote.add(einfachstudienangebot);
+            studienangebote.add(einfachstudienangebot);
 
             // TODO Studienpaket (SAF 401) nur anlegen/ändern, wenn die Zulassung begonnen hat.
         }
         try {
             List<StudienangebotErgebnis> studienangebotErgebnisse =
              // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
-                new DosvClient(dosvConfig).anlegenAendernStudienangeboteDurchHS(studiangebote);
+                new DosvClient(dosvConfig).anlegenAendernStudienangeboteDurchHS(studienangebote);
             for (StudienangebotErgebnis studienangebotErgebnis : studienangebotErgebnisse) {
                 if (studienangebotErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
                     throw new RuntimeException(
