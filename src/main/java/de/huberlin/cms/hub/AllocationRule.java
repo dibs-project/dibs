@@ -9,14 +9,16 @@ import static de.huberlin.cms.hub.Util.isInRange;
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.dbutils.handlers.MapHandler;
+
+import de.huberlin.cms.hub.HubException.IllegalStateException;
+
 /**
- * Regel, nach der Studienplätze für einen Studiengang an die Bewerber vergeben werden
- * (Vergabeschema).
+ * Rule for allocating a contingent of available places to a course's applicants.
  *
  * @author Phuong Anh Ha
  * @author Markus Michler
@@ -24,14 +26,9 @@ import java.util.Random;
 public class AllocationRule extends HubObject {
     private String quotaId;
 
-    AllocationRule(String id, ApplicationService service) {
-        super(id, service);
-    }
-
-    AllocationRule(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert das Vergabeschema über den Datenbankcursor
-        this(results.getString("id"), service);
-        this.quotaId = results.getString("quota_id");
+    AllocationRule(Map<String, Object> args) {
+        super(args);
+        this.quotaId = (String) args.get("quota_id");
     }
 
     /**
@@ -49,21 +46,19 @@ public class AllocationRule extends HubObject {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
+        Course course = getCourse();
+        if (course.isPublished()) {
+            throw new IllegalStateException("course_published");
+        }
+        // NOTE Race Condition: SELECT-UPDATE
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
             String quotaId = "quota:" + Integer.toString(new Random().nextInt());
-            String sql = "INSERT INTO quota VALUES (?, ?, ?)";
-            PreparedStatement statement = db.prepareStatement(sql);
-            statement.setString(1, quotaId);
-            statement.setString(2, name);
-            statement.setDouble(3, percentage);
-            statement.executeUpdate();
-            sql = "UPDATE allocation_rule SET quota_id = ? WHERE id = ?";
-            statement = db.prepareStatement(sql);
-            statement.setString(1, quotaId);
-            statement.setString(2, this.id);
-            statement.executeUpdate();
+            service.getQueryRunner().insert(service.getDb(), "INSERT INTO quota VALUES (?, ?, ?)",
+                new MapHandler(), quotaId, name, percentage);
+            service.getQueryRunner().update(this.service.getDb(),
+                "UPDATE allocation_rule SET quota_id = ? WHERE id = ?", quotaId, this.id);
             this.quotaId = quotaId;
             service.getJournal().record(ApplicationService.ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED,
                 this.id, HubObject.getId(agent), quotaId);
@@ -80,5 +75,20 @@ public class AllocationRule extends HubObject {
      */
     public Quota getQuota() {
         return quotaId != null ? service.getQuota(quotaId) : null;
+    }
+
+    /**
+     * Studiengang, zu dem diese Vergaberegel gehört.
+     */
+    public Course getCourse() {
+        try {
+            Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM course WHERE allocation_rule_id = ?",
+                new MapHandler(), id);
+            args.put("service", service);
+            return new Course(args);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 }

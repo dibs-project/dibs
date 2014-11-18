@@ -7,14 +7,19 @@ package de.huberlin.cms.hub;
 
 import java.io.IOError;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
+
+import de.huberlin.cms.hub.HubException.IllegalStateException;
+
 /**
- * Studiengang.
+ * University course which users apply for.
  *
  * @author Phuong Anh Ha
  * @author Markus Michler
@@ -23,19 +28,14 @@ public class Course extends HubObject {
     private String name;
     private int capacity;
     private String allocationRuleId;
+    private boolean published;
 
-    Course(String id, String name, int capacity, String allocationRuleId,
-        ApplicationService service) {
-        super(id, service);
-        this.name = name;
-        this.capacity = capacity;
-        this.allocationRuleId = allocationRuleId;
-    }
-
-    Course(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert den Studiengang über den Datenbankcursor
-        this(results.getString("id"), results.getString("name"),
-            results.getInt("capacity"), results.getString("allocation_rule_id"), service);
+    Course(Map<String, Object> args) {
+        super(args);
+        this.name = (String) args.get("name");
+        this.capacity = (Integer) args.get("capacity");
+        this.allocationRuleId = (String) args.get("allocation_rule_id");
+        this.published = (Boolean) args.get("published");
     }
 
     /**
@@ -45,19 +45,18 @@ public class Course extends HubObject {
      * @return angelegte und verknüpfte Vergaberegel
      */
     public AllocationRule createAllocationRule(User agent) {
+        if (service.getCourse(id).isPublished()) {
+            throw new IllegalStateException("course_published");
+        }
+        //NOTE Race Condition: SELECT-UPDATE
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
             String ruleId = "allocation_rule:" + Integer.toString(new Random().nextInt());
-            String sql = "INSERT INTO allocation_rule VALUES (?)";
-            PreparedStatement statement = db.prepareStatement(sql);
-            statement.setString(1, ruleId);
-            statement.executeUpdate();
-            sql = "UPDATE course SET allocation_rule_id = ? WHERE id = ?";
-            statement = db.prepareStatement(sql);
-            statement.setString(1, ruleId);
-            statement.setString(2, this.id);
-            statement.executeUpdate();
+            service.getQueryRunner().insert(service.getDb(), "INSERT INTO allocation_rule VALUES (?)",
+                new MapHandler(), ruleId);
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE course SET allocation_rule_id = ? WHERE id = ?", ruleId, this.id);
             this.allocationRuleId = ruleId;
             service.getJournal().record(
                 ApplicationService.ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED,
@@ -71,26 +70,24 @@ public class Course extends HubObject {
     }
 
     /**
-     * Legt eine Bewerbung auf den Studiengang an.
+     * Legt eine Bewerbung auf einen publizierten Studiengang an.
      *
      * @param userId ID des Bewerbers
      * @param agent ausführender Benutzer
      * @return angelegte Bewerbung
      */
     public Application apply(String userId, User agent) {
-        // TODO: sicherstellen, dass Metadaten komplett sind (= Vergaberegel und Quote)
-
+        if (!service.getCourse(id).isPublished()) {
+            throw new IllegalStateException("course_published");
+        }
+        // NOTE Race Condition: SELECT-INSERT
         try {
             service.getDb().setAutoCommit(false);
             String applicationId =
                 String.format("application:%s", new Random().nextInt());
-            String sql = "INSERT INTO application VALUES (?, ?, ?, ?)";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, applicationId);
-            statement.setString(2, userId);
-            statement.setString(3, this.id);
-            statement.setString(4, Application.STATUS_INCOMPLETE);
-            statement.executeUpdate();
+            service.getQueryRunner().insert(service.getDb(),
+                "INSERT INTO application VALUES (?, ?, ?, ?)", new MapHandler(),
+                applicationId, userId, this.id, Application.STATUS_INCOMPLETE);
             Application application = this.service.getApplication(applicationId);
 
             // Bewertung für jedes Kriterium der Verteilungsregel erstellen
@@ -99,15 +96,10 @@ public class Course extends HubObject {
                 this.getAllocationRule().getQuota().getRankingCriteria();
             for (Criterion criterion : criteria) {
                 String id = String.format("evaluation:%s", new Random().nextInt());
-                statement = this.service.getDb().prepareStatement(
-                    "INSERT INTO evaluation VALUES (?, ?, ?, ?, ?, ?)");
-                statement.setString(1, id);
-                statement.setString(2, applicationId);
-                statement.setString(3, criterion.getId());
-                statement.setString(4, null);
-                statement.setObject(5, null);
-                statement.setString(6, Evaluation.STATUS_INFORMATION_MISSING);
-                statement.executeUpdate();
+                service.getQueryRunner().insert(service.getDb(),
+                    "INSERT INTO evaluation VALUES (?, ?, ?, ?, ?, ?)", new MapHandler(),
+                    id, applicationId, criterion.getId(), null,
+                    null, Evaluation.STATUS_INFORMATION_MISSING);
             }
 
             // Vorhandene Informationen der Bewerbung zuordnen
@@ -130,6 +122,104 @@ public class Course extends HubObject {
     }
 
     /**
+     * Generiert die Rangliste für den Studiengang.
+     */
+    public void generateRankings() {
+        this.getAllocationRule().getQuota().generateRanking();
+    }
+
+    /**
+     * Liste aller Bewerbungen, die für diesen Studiengang abgegeben wurden.
+     */
+    public List<Application> getApplications() {
+        try {
+            List<Application> applications = new ArrayList<Application>();
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            queryResults = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM application WHERE course_id = ?",
+                new MapListHandler(), id);
+            for (Map<String, Object> args : queryResults) {
+                args.put("service", this.getService());
+                applications.add(new Application(args));
+            }
+            return applications;
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Ruft die Rangliste für den Studiengang ab.
+     *
+     * @return Rangliste
+     */
+    public List<Rank> getRankings() {
+        ArrayList<Rank> ranking = new ArrayList<Rank>();
+        try {
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            queryResults = service.getQueryRunner().query(service.getDb(),
+                "SELECT * FROM rank WHERE quota_id = ?", new MapListHandler(),
+                this.getAllocationRule().getQuota().getId());
+            for (Map<String, Object> args : queryResults) {
+                args.put("service", this.getService());
+                ranking.add(new Rank(args));
+            }
+            return ranking;
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Publiziert den Studiengang.
+     */
+    public void publish(User agent) {
+        AllocationRule allocationRule = getAllocationRule();
+        if (allocationRule == null || allocationRule.getQuota() == null) {
+            throw new IllegalStateException("course_incomplete");
+        }
+        // NOTE Race Condition: SELECT-UPDATE
+        try {
+            Connection db = service.getDb();
+            db.setAutoCommit(false);
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE course SET published = TRUE WHERE id = ?", getId());
+            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_PUBLISHED,
+                this.id, HubObject.getId(agent), null);
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+        published = true;
+    }
+
+    /**
+     * Zieht die Publikation zurück. Kann nur erfolgen, wenn noch keine Bewerbungen auf
+     * diesen Studiengang vorliegen.
+     */
+    public void unpublish(User agent) {
+        // NOTE Bewerbungsabfrage kann noch optimiert werden
+        if (!getApplications().isEmpty()) {
+            throw new IllegalStateException("course_has_applications");
+        }
+        try {
+            Connection db = service.getDb();
+            // NOTE Race Condition: SELECT-UPDATE
+            db.setAutoCommit(false);
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE course SET published = FALSE WHERE id = ?", getId());
+            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_UNPUBLISHED,
+                this.id, HubObject.getId(agent), null);
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+        published = false;
+    }
+
+    /**
      * Name des Studiengangs.
      */
     public String getName() {
@@ -149,4 +239,13 @@ public class Course extends HubObject {
     public AllocationRule getAllocationRule() {
         return allocationRuleId != null ? service.getAllocationRule(allocationRuleId) : null;
     }
+
+    /**
+     * Publikationsstatus des Studiengangs.
+     */
+    public boolean isPublished() {
+        return published;
+    }
+
+
 }

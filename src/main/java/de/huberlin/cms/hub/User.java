@@ -6,12 +6,14 @@
 package de.huberlin.cms.hub;
 
 import java.io.IOError;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.dbutils.handlers.MapListHandler;
 
 /**
  * Benutzer, der mit dem Bewerbungssystem interagiert.
@@ -22,17 +24,17 @@ import java.util.List;
 public class User extends HubObject {
     private String name;
     private String email;
+    private String credential;
+    private String dosvBid;
+    private String dosvBan;
 
-    User(String id, String name, String email, ApplicationService service) {
-        super(id, service);
-        this.name = name;
-        this.email = email;
-    }
-
-    User(ResultSet results, ApplicationService service) throws SQLException {
-        // initialisiert den Benutzer über den Datenbankcursor
-        this(results.getString("id"), results.getString("name"),
-            results.getString("email"), service);
+    User(Map<String, Object> args) {
+        super(args);
+        this.name = (String) args.get("name");
+        this.email = (String) args.get("email");
+        this.credential = (String) args.get("credential");
+        this.dosvBid = (String) args.get("dosv_bid");
+        this.dosvBan = (String) args.get("dosv_ban");
     }
 
     /**
@@ -69,15 +71,14 @@ public class User extends HubObject {
      */
     public List<Information> getInformationSet(User agent) {
         ArrayList<Information> informationSet = new ArrayList<Information>();
-        for (Information.Type type : this.service.getInformationTypes().values()) {
+        for (Information.Type type : service.getInformationTypes().values()) {
             try {
-                PreparedStatement statement = this.service.getDb().prepareStatement(
-                    String.format("SELECT * FROM \"%s\" WHERE user_id = ?",
-                        type.getId()));
-                statement.setString(1, this.id);
-                ResultSet results = statement.executeQuery();
-                while (results.next()) {
-                    informationSet.add(type.newInstance(results, this.service));
+                String sql = String.format("SELECT * FROM \"%s\" WHERE user_id = ?", type.getId());
+                List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+                queryResults = service.getQueryRunner().query(service.getDb(),
+                    sql, new MapListHandler(), this.id);
+                for (Map<String, Object> args : queryResults) {
+                    informationSet.add(type.newInstance(args, service));
                 }
             } catch (SQLException e) {
                 throw new IOError(e);
@@ -95,19 +96,13 @@ public class User extends HubObject {
     public List<Application> getApplications(User agent) {
         try {
             List<Application> applications = new ArrayList<Application>();
-            String sql = "SELECT * FROM application WHERE user_id = ?";
-            PreparedStatement statement = service.getDb().prepareStatement(sql);
-            statement.setString(1, id);
-            ResultSet results = statement.executeQuery();
-            while (results.next()) {
-                HashMap<String, Object> args = new HashMap<String, Object>();
-                args.put("id", results.getString("id"));
-                args.put("service", this.getService());
-                args.put("user_id", results.getString("user_id"));
-                args.put("course_id", results.getString("course_id"));
-                args.put("status", results.getString("status"));
-                applications.add(new Application(args));
-            }
+            List<Map<String, Object>> queryResults = service.getQueryRunner().query(
+                service.getDb(), "SELECT * FROM application WHERE user_id = ?",
+                new MapListHandler(), this.getId());
+            for(Map<String, Object> args : queryResults) {
+               args.put("service", service);
+               applications.add(new Application(args));
+           }
             return applications;
         } catch (SQLException e) {
             throw new IOError(e);
@@ -115,16 +110,72 @@ public class User extends HubObject {
     }
 
     /**
-     * Name, mit dem der Benutzer von HUB angesprochen wird.
+     * Verbindet den Benutzer mit dem System des DoSV. Speichert bei Erfolg BID und BAN
+     * bei den Benutzerdaten.
+     *
+     * @param dosvBid DoSV-Benutzer-ID
+     * @param dosvBan DOSV-Benutzer-Autorisierungsnummer
+     *
+     * @return <code>true</code>, wenn der Benutzer verbunden wurde,
+     * <code>false</code> wenn er nicht authentifiziert werden konnte.
+     *
+     * @see de.huberlin.cms.hub.dosv.DosvSync#authenticate(String, String)
+     */
+    public boolean connectToDosv(String dosvBid, String dosvBan, User agent) {
+        if (!service.getDosvSync().authenticate(dosvBid, dosvBan)) {
+            return false;
+        };
+        try {
+            Connection db = service.getDb();
+            db.setAutoCommit(false);
+            service.getQueryRunner().update(this.service.getDb(),
+                "UPDATE \"user\" SET dosv_bid = ?, dosv_ban = ? WHERE id = ?", dosvBid,
+                dosvBan, id);
+            this.dosvBid = dosvBid;
+            this.dosvBan = dosvBan;
+            service.getJournal().record(ApplicationService.APPLICATION_TYPE_USER_CONNECTED_TO_DOSV,
+                id, HubObject.getId(agent), null);
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            // TODO Fehler bei Verletzung unique-constraint dosv_bid abfangen
+            throw new IOError(e);
+        }
+        return true;
+    }
+
+    /**
+     * Name which HUB uses to address the user.
      */
     public String getName() {
         return this.name;
     }
 
     /**
-     * Email-Adresse.
+     * Email address.
      */
     public String getEmail() {
         return this.email;
+    }
+
+    /**
+     * Credential.
+     */
+    public String getCredential() {
+        return this.credential;
+    }
+
+    /**
+     * Bewerber-ID für das DoSV.
+     */
+    public String getDosvBid() {
+        return dosvBid;
+    }
+
+    /**
+     *  Bewerber-Autorisierungsnummer für das DoSV.
+     */
+    public String getDosvBan() {
+        return dosvBan;
     }
 }
