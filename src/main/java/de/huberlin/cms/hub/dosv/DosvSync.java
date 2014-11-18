@@ -7,9 +7,18 @@ package de.huberlin.cms.hub.dosv;
 
 import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.EINGEGANGEN;
 import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.GUELTIG;
+import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.ZUGELASSEN;
+import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.ZULASSUNGSANGEBOT_LIEGT_VOR;
+import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.ZURUECKGEZOGEN;
 import static de.hochschulstart.hochschulschnittstelle.commonv1_0.ErgebnisStatus.ZURUECKGEWIESEN;
 import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.IN_VORBEREITUNG;
 import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.OEFFENTLICH_SICHTBAR;
+import static de.huberlin.cms.hub.Application.STATUS_ADMITTED;
+import static de.huberlin.cms.hub.Application.STATUS_COMPLETE;
+import static de.huberlin.cms.hub.Application.STATUS_CONFIRMED;
+import static de.huberlin.cms.hub.Application.STATUS_INCOMPLETE;
+import static de.huberlin.cms.hub.Application.STATUS_VALID;
+import static de.huberlin.cms.hub.Application.STATUS_WITHDRAWN;
 
 import java.io.IOError;
 import java.sql.Connection;
@@ -18,7 +27,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -55,30 +66,57 @@ import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.Settings;
 import de.huberlin.cms.hub.User;
 
+// TODO document error handling
 /**
  * DoSV synchronisation class for Courses, Applications and Ranks.
  * <p>
  * <b>Data Mapping between HUB and the DoSV system</b></br>
  * </p>
  * <p>
- * Courses:
+ * General:
  * <ul>
- * <li><code>published -> oeffentlich_sichtbar</code></li>
- * <li><code>unpublished -> in_vorbereitung</code></li>
  * <li><code>abschluss.schluessel</code> is always <code>"bachelor"</code></li>
  * <li><code>studienfach.schluessel = course.getId().hashCode()</code></li>
+ * </ul>
+ * </p>
+ * <p>
+ * Courses:
+ * <ul>
+ * <li><code>published == true -> OEFFENTLICH_SICHTBAR</code></li>
+ * <li><code>published == false -> IN_VORBEREITUNG</code></li>
  * <li><code>integrationseinstellungen.bewerbungsort: hochschule</code></li>
  * <li><code>integrationseinstellungen.*bescheidVersandart: hochschule</code></li>
  * <li><code>studienfach.nameDE, einfachstudienangebot.nameDE, *.beschreibungDE =
  * course.name</code></li>
+ * </ul>
  * </p>
+ * <p>
+ * Applications:
+ * <ul>
+ * <li><code>STATUS_INCOMPLETE -> EINGEGANGEN</code></li>
+ * <li><code>STATUS_COMPLETE -> EINGEGANGEN</code></li>
+ * <li><code>STATUS_VALID -> GUELTIG</code></li>
+ * <li><code>STATUS_WITHDRAWN <-> ZURUECKGEZOGEN</code></li>
+ * <li><code>ZULASSUNGSANGEBOT_LIEGT_VOR -> STATUS_ADMITTED</code></li>
+ * <li><code>ZUGELASSEN -> STATUS_CONFIRMED</code></li>
+ * </ul>
+ * </p>
+ *
  *
  * @author Markus Michler
  */
 public class DosvSync {
-
     private ApplicationService service;
     private Properties dosvConfig;
+    private final static Map<String, BewerbungsBearbeitungsstatus> APPLICATION_DOSV_STATUS;
+
+    static {
+        APPLICATION_DOSV_STATUS = new HashMap<>();
+        APPLICATION_DOSV_STATUS.put(STATUS_INCOMPLETE, EINGEGANGEN);
+        APPLICATION_DOSV_STATUS.put(STATUS_COMPLETE, EINGEGANGEN);
+        APPLICATION_DOSV_STATUS.put(STATUS_VALID, GUELTIG);
+        APPLICATION_DOSV_STATUS.put(STATUS_WITHDRAWN, ZURUECKGEZOGEN);
+    }
 
     public DosvSync(ApplicationService service) {
         this.service = service;
@@ -236,7 +274,7 @@ public class DosvSync {
                 new EinfachstudienangebotsSchluessel();
             // TODO Feld Course.subject
             einfachstudienangebotsSchluessel.setStudienfachSchluessel(
-                Integer.toString(application.getCourse().getName().hashCode()));
+                Integer.toString(application.getCourse().getId().hashCode()));
             // TODO Feld Course.degree
             einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
 
@@ -258,18 +296,15 @@ public class DosvSync {
             einfachstudienangebotsbewerbung
                 .setEinfachstudienangebotsSchluessel(einfachstudienangebotsSchluessel);
 
-            BewerbungsBearbeitungsstatus bewerbungsBearbeitungsstatus = null;
             int dosvVersion = application.getDosvVersion();
             if (dosvVersion == -1) {
-                bewerbungsBearbeitungsstatus = EINGEGANGEN;
                 bewerbungenNeu.add(einfachstudienangebotsbewerbung);
             } else {
-                bewerbungsBearbeitungsstatus = GUELTIG;
                 einfachstudienangebotsbewerbung.setVersionSeSt(dosvVersion);
                 bewerbungenGeaendert.add(einfachstudienangebotsbewerbung);
             }
             einfachstudienangebotsbewerbung
-                .setBearbeitungsstatus(bewerbungsBearbeitungsstatus);
+                .setBearbeitungsstatus(APPLICATION_DOSV_STATUS.get(application.getStatus()));
         }
 
         try {
