@@ -19,7 +19,7 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 
 /**
- * Studiengang.
+ * University course which users apply for.
  *
  * @author Phuong Anh Ha
  * @author Markus Michler
@@ -150,7 +150,7 @@ public class Course extends HubObject {
 
     /**
      * Ruft die Rangliste für den Studiengang ab.
-     * 
+     *
      * @return Rangliste
      */
     public List<Rank> getRankings() {

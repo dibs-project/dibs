@@ -240,6 +240,10 @@ public class Pages implements Closeable {
             int capacity = Integer.parseInt(form.getFirst("capacity"));
             Course course =
                 this.service.createCourse(form.getFirst("name"), capacity, this.user);
+            // NOTE the first prototype does not feature a frontend for AllocationRule and
+            // Quota creation.
+            course.createAllocationRule(agent).createQuota("Performance", 100, this.user).
+                addRankingCriterion("qualification", this.user);
             URI url = UriBuilder.fromUri("/courses/{id}/").build(course.getId());
             return Response.seeOther(url).build();
 

@@ -1,7 +1,7 @@
 HUB
 ===
 
-Bewerbungssystem mit DoSV-Unterstützung.
+Application system with DoSV-support.
 
 Dependencies
 ------------
@@ -10,51 +10,50 @@ Dependencies
  * PostgreSQL   >= 9.2
  * Apache Maven >= 3.0
 
-HUB bauen
+Building HUB
 ---------
 
-Führe einfach folgenden Befehl aus um HUB zu bauen:
+For building HUB use:
 
     mvn compile
 
-HUB einrichten
---------------
+Configuring HUB
+---------------
 
-Um HUB zu konfigurieren, kopiere die Datei `default.properties` nach `hub.properties`
-und passe sie deinen Bedürfnissen an.
+In order to configure HUB, copy the file `default.properties` to `hub.properties`
+and edit them according to your needs.
 
-HUB benötigt eine PostgreSQL-Datenbank. Bei Bedarf kannst du eine Datenbank (inkl.
-Datenbankbenutzer) lokal erstellen, indem du mit dem Werkzeug `psql` als
-PostgreSQL-Superuser (oft `postgres`) folgende Befehle ausführst:
+HUB uses a PostgreSQL database. If needed you can create a local Database (with user),
+by using the tool `psql` as PostgreSQL superuser (in most cases `postgres`) with 
+the following commands:
 
     CREATE USER hub WITH PASSWORD 'hub';
     CREATE DATABASE hub WITH OWNER hub;
 
-Hier sind für den Benutzernamen, das Passwort und den Datenbanknamen "hub" gewählt, die
-Werte sind aber beliebig.
+By default, user name, password and database name are set to "hub".
 
-Für die Synchronisation von HUB mit dem Dialogorientierten Serviceverfahren müssen die
-Webservices konfiguriert werden. Versehe hierfür die Schlüssel mit dem Präfix `dosv_` mit
-Werten.
+Before synchronizing HUB to the "Dialogorientiertes Serviceverfahren",
+the web services must be configured: Insert values for keys with the `dosv_` 
+prefix.
 
-Hergestellt mit
----------------
+Created with
+------------
 
- * Java (7.0) von Oracle - https://www.java.com/
- * PostgreSQL (9.2) von The PostgreSQL Global Development Group -
+ * Java (7.0) by Oracle - https://www.java.com/
+ * PostgreSQL (9.2) by The PostgreSQL Global Development Group -
    http://www.postgresql.org/
- * PostgreSQL JDBC Driver (9.2) von The PostgreSQL Global Development Group -
+ * PostgreSQL JDBC Driver (9.2) by The PostgreSQL Global Development Group -
    http://jdbc.postgresql.org/
- * Apache Commons Lang (3.3) von The Apache Software Foundation -
+ * Apache Commons Lang (3.3) by The Apache Software Foundation -
    https://commons.apache.org/proper/commons-lang/
- * Apache Commons Collections (4.0) von The Apache Software Foundation -
+ * Apache Commons Collections (4.0) by The Apache Software Foundation -
    https://commons.apache.org/proper/commons-collections/
- * Apache Commons DbUtils (1.6) von The Apache Software Foundation -
+ * Apache Commons DbUtils (1.6) by The Apache Software Foundation - 
    http://commons.apache.org/proper/commons-dbutils/
- * Java Servlet API (3.1) von Oracle - https://java.net/projects/servlet-spec/
- * Jersey (2.11) von Oracle - https://jersey.java.net/
- * FreeMarker (2.3) von Attila Szegedi, Daniel Dekany, Jonathan Revusky -
+ * Java Servlet API (3.1) by Oracle - https://java.net/projects/servlet-spec/
+ * Jersey (2.11) by Oracle - https://jersey.java.net/
+ * FreeMarker (2.3) by Attila Szegedi, Daniel Dekany, Jonathan Revusky -
    http://freemarker.org/
- * Jetty (9.2) von Mort Bay Consulting Pty Ltd. - https://www.eclipse.org/jetty/
- * JUnit (4.11) von JUnit - http://junit.org/
- * Apache Maven (3.0) von The Apache Software Foundation - https://maven.apache.org/
+ * Jetty (9.2) by Mort Bay Consulting Pty Ltd. - https://www.eclipse.org/jetty/
+ * JUnit (4.11) by JUnit - http://junit.org/
+ * Apache Maven (3.0) by The Apache Software Foundation - https://maven.apache.org/
