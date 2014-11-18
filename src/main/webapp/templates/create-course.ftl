@@ -4,9 +4,7 @@
 
 [@page "Studiengang anlegen"]
     <form method="POST" action="/create-course/">
-        [#if error??]
-            <p>Fehler: ${error}</p>
-        [/#if]
+        [@form_error/]
         <label>
             <small>Name</small>
             <input name="name" value="${(form.name[0])!}"/>

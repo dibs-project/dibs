@@ -19,6 +19,11 @@
                         [#-- NOTE: wandert evtl. ins Dashboard --]
                         <li><a href="/courses/">Studiengänge</a></li>
                     </ul>
+                    [#if user??]
+                         <form method="POST" action="/logout/">
+                            ${user.name} <button>Abmelden</button>
+                         </form>
+                    [/#if]
                 </nav>
             </header>
 
@@ -29,6 +34,12 @@
             </div>
         </body>
     </html>
+[/#macro]
+
+[#macro form_error]
+    [#if formError??]
+        <p>Fehler: ${formError}</p>
+    [/#if]
 [/#macro]
 
 [/#escape]

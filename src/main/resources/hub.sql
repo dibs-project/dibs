@@ -3,6 +3,7 @@ CREATE TABLE "user" (
     name VARCHAR(256) NOT NULL,
     email VARCHAR(256) UNIQUE NOT NULL,
     credential VARCHAR(256) UNIQUE NOT NULL,
+    role VARCHAR(256) NOT NULL,
     dosv_bid VARCHAR(256) UNIQUE,
     dosv_ban VARCHAR(256)
 );

@@ -2,6 +2,12 @@
 [#include "page.ftl"/]
 [#escape x as x?html]
 
-[@page "Willkommen!"/]
+[@page "Willkommen, ${user.name}!"]
+    [#if user.role == "applicant"]
+        <p>Bewirb dich!</p>
+    [#elseif user.role == "admin"]
+        <p>Administriere!</p>
+    [/#if]
+[/@page]
 
 [/#escape]

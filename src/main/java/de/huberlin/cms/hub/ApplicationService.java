@@ -139,6 +139,10 @@ public class ApplicationService {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+
+        // TODO: recursive transaction
+        ApplicationService service = new ApplicationService(db, new Properties());
+        service.createUser("Administrator", "admin", "admin:admin", User.ROLE_ADMIN);
     }
 
     // TODO: dokumentieren
@@ -180,9 +184,10 @@ public class ApplicationService {
      * @param name name which HUB uses to address the user
      * @param email email address
      * @param credential credential
+     * @param role role
      * @return new user
      */
-    public User createUser(String name, String email, String credential) {
+    public User createUser(String name, String email, String credential, String role) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
@@ -190,13 +195,14 @@ public class ApplicationService {
             throw new IllegalArgumentException("illegal email: empty");
         }
         // TODO: validate credential
+        // TODO: validate role
 
         try {
             this.db.setAutoCommit(false);
             String id = String.format("user:%s", new Random().nextInt());
-            this.queryRunner.insert(this.getDb(),
-                "INSERT INTO \"user\" VALUES(?, ?, ?, ?)", new MapHandler(), id, name,
-                email, credential);
+            new QueryRunner().insert(this.getDb(),
+                "INSERT INTO \"user\" VALUES(?, ?, ?, ?, ?)",
+                new MapHandler(), id, name, email, credential, role);
             journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
             this.db.commit();
             this.db.setAutoCommit(true);
@@ -325,7 +331,7 @@ public class ApplicationService {
     * @return new applicant
     */
     public User register(String name, String email, String credential) {
-        return this.createUser(name, email, credential);
+        return this.createUser(name, email, credential, User.ROLE_APPLICANT);
     }
 
     // TODO: document
