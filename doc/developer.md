@@ -55,18 +55,3 @@ Code Conventions
    * *No wild card imports* to prevent naming conflicts and bugs introduced by third party
    API changes.
    * *Refactoring* is carried out in separate issues/branches and not mixed with features.
-
-Style-Richtlinien
------------------
-
-Farben:
-
- * Text / Primär: #333
- * Hintergrund:   #fff
-
-Größen:
-
- * Zeilenhöhe:             1.50rem
- * Margin / Padding:       1.50rem
- * Enges Margin / Padding: 0.25rem
- * Rahmenradius:           0.25rem
