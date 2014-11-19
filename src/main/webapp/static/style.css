@@ -83,58 +83,6 @@ a.button {
     cursor: pointer;
 }
 
-/* ==== Page ==== */
-
-body {
-    max-width: 80ch;
-    padding: 0 1.5rem;
-    margin: 0 auto;
-}
-
-header {
-    display: flex;
-    border-bottom: 1px solid #333;
-    justify-content: space-between;
-}
-
-header > h1 {
-    flex: none;
-    font-size: 1rem;
-}
-
-header > h1 a {
-    border-bottom: none;
-}
-
-header > nav {
-    flex: none;
-}
-
-header > nav ul {
-    display: flex;
-    padding: 0;
-    list-style: none;
-}
-
-header > nav li {
-    flex: none;
-}
-
-header > nav a,
-header > nav button {
-    padding: 0 0.25rem;
-    border-left: 1px solid #333;
-    border-bottom: none;
-    border-radius: 0;
-    background: transparent;
-    color: inherit;
-}
-
-header nav li:first-child a,
-header nav li:first-child button {
-    border-left: none;
-}
-
 /* ==== Section ==== */
 
 section.with-aside {
@@ -196,4 +144,56 @@ input {
 label > small {
     display: block;
     font-size: 1rem;
+}
+
+/* ==== Page ==== */
+
+body {
+    max-width: 80ch;
+    padding: 0 1.5rem;
+    margin: 0 auto;
+}
+
+header {
+    display: flex;
+    border-bottom: 1px solid #333;
+    justify-content: space-between;
+}
+
+header > h1 {
+    flex: none;
+    font-size: 1rem;
+}
+
+header > h1 a {
+    border-bottom: none;
+}
+
+header > nav {
+    flex: none;
+}
+
+header > nav ul {
+    display: flex;
+    padding: 0;
+    list-style: none;
+}
+
+header > nav li {
+    flex: none;
+}
+
+header > nav a,
+header > nav button {
+    padding: 0 0.25rem;
+    border-left: 1px solid #333;
+    border-bottom: none;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+}
+
+header > nav li:first-child a,
+header > nav li:first-child button {
+    border-left: none;
 }
