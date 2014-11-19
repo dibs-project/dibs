@@ -36,11 +36,11 @@ Before synchronizing HUB to the "Dialogorientiertes Serviceverfahren",
 the web services must be configured: Insert values for keys with the `dosv_` 
 prefix.
 
-Browser-Support
+Browser Support
 ---------------
 
-Wir unterstützen jeweils die aktuelle und eine vorhergende Version der bekannten Browser
-(Firefox, Chrome, Safari, Internet Explorer).
+We support the current and the previous version of the popular browsers (i.e. Firefox,
+Chrome, Safari, Internet Explorer)
 
 Created with
 ------------
