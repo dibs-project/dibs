@@ -13,7 +13,7 @@
             <small>Kapazität</small>
             <input name="capacity" value="${(form.capacity[0])!}"/>
         </label>
-        <p class="buttons"><button>Studiengang anlegen</button></p>
+        <p><button>Studiengang anlegen</button></p>
     </form>
 [/@page]
 

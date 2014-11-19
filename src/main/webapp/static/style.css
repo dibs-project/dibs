@@ -22,16 +22,17 @@
     font-weight: bold;
 }
 
-/* ==== Allgemein ==== */
+/* ==== General ==== */
 
 * {
     box-sizing: padding-box;
+    line-height: 1.5;
 }
 
 html {
-    background: white;
+    background: #fff;
     color: #333;
-    font: medium / 1.5 "Open Sans";
+    font-family: "Open Sans", sans-serif;
 }
 
 h1, h2, h3, p, ul, label {
@@ -70,12 +71,14 @@ a {
 button,
 a.button {
     display: inline-block;
+    margin: 0;
     padding: 0.25rem;
     border: none;
     border-radius: 0.25rem;
     background: #333;
     color: white;
-    font: inherit;
+    font-size: 1rem;
+    font-family: inherit;
     text-align: center;
     cursor: pointer;
 }
@@ -89,70 +92,94 @@ body {
 }
 
 header {
+    display: flex;
     border-bottom: 1px solid #333;
+    justify-content: space-between;
 }
 
-nav > ul {
+header > h1 {
+    flex: none;
+    font-size: 1rem;
+}
+
+header > h1 a {
+    border-bottom: none;
+}
+
+header > nav {
+    flex: none;
+}
+
+header > nav ul {
     display: flex;
     padding: 0;
     list-style: none;
 }
 
-nav > ul > li > a {
+header > nav li {
+    flex: none;
+}
+
+header > nav a,
+header > nav button {
     padding: 0 0.25rem;
     border-left: 1px solid #333;
     border-bottom: none;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
 }
 
-nav > ul > li:first-child > a {
+header nav li:first-child a,
+header nav li:first-child button {
     border-left: none;
 }
 
-/* ==== Content ==== */
+/* ==== Section ==== */
 
-.content {
+section.with-aside {
     display: flex;
     margin: 1.5rem 0;
 }
 
-.content-main {
+section.with-aside > .main {
     order: 0;
     flex: auto;
 }
 
-.content-main > :first-child {
+section.with-aside > .main > :first-child {
     margin-top: 0;
 }
 
-.content-main > :last-child {
+section.with-aside > .main > :last-child {
     margin-bottom: 0;
 }
 
-.content-actions {
+section.with-aside > aside {
     order: 1;
     flex: none;
     margin-left: 1.5rem;
 }
 
-.content-actions > ul {
+section.with-aside > aside ul {
     padding: 0;
     margin: 0;
     list-style: none;
 }
 
-.content-actions > ul > li {
+section.with-aside > aside li {
     margin: 0.25rem 0;
 }
 
-.content-actions > ul > li > a {
-    width: 100%;
+section.with-aside > aside button,
+section.with-aside > aside a.button {
+    display: block;
 }
 
 /* ==== Form ==== */
 
 form {
     max-width: 40ch;
-    margin: 0 auto;
 }
 
 input {
@@ -162,14 +189,11 @@ input {
     border: 1px solid #333;
     border-radius: 0.25rem;
     color: inherit;
-    font: inherit;
+    font-size: 1rem;
+    font-family: inherit;
 }
 
 label > small {
     display: block;
     font-size: 1rem;
-}
-
-p.buttons {
-    text-align: right;
 }

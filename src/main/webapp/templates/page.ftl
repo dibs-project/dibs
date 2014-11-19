@@ -13,22 +13,24 @@
 
         <body>
             <header>
-                <nav>
-                    <ul>
-                        <li><a href="/">Reynholm University Bewerbung</a></li>
-                        [#-- NOTE: wandert evtl. ins Dashboard --]
-                        <li><a href="/courses/">Studiengänge</a></li>
-                    </ul>
-                    [#if user??]
-                         <form method="POST" action="/logout/">
-                            ${user.name} <button>Abmelden</button>
-                         </form>
-                    [/#if]
-                </nav>
+                <h1><a href="/">Reynholm University Bewerbung</a></h1>
+                [#if user??]
+                    <nav>
+                        <ul>
+                            <li><a href="/">Home</a></li>
+                            <li><a href="/">${user.name}</a></li>
+                            <li>
+                                <form method="POST" action="/logout/">
+                                    <button>Abmelden</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </nav>
+                [/#if]
             </header>
 
             <div class="main">
-                <h1>${title}</h1>
+                <h1 class="title">${title}</h1>
 
                 [#nested/]
             </div>

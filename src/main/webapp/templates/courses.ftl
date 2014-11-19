@@ -3,8 +3,8 @@
 [#escape x as x?html]
 
 [@page "Studiengänge"]
-    <div class="content">
-        <div class="content-main">
+    <section class="with-aside">
+        <div class="main">
             <ul>
                 [#list service.courses as course]
                     <li><a href="/courses/${course.id}/">${course.name}</a></li>
@@ -12,12 +12,12 @@
             </ul>
         </div>
 
-        <aside class="content-actions">
+        <aside>
             <ul>
                 <li><a class="button" href="/create-course/">Studiengang anlegen</a></li>
             </ul>
         </aside>
-    </div>
+    </section>
 [/@page]
 
 [/#escape]
