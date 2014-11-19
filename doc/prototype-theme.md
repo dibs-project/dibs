@@ -4,15 +4,17 @@ HUB Prototype Theme
 Layout
 ------
 
---------------------------------
-| header                       |
-|------------------------------|
-| title                        |
-|------------------------------|
-| section main | section aside |
-|------------------------------|
-| ...                          |
---------------------------------
+```
+ --------------------------------
+ | header                       |
+ |------------------------------|
+ | title                        |
+ |------------------------------|
+ | section main | section aside |
+ |------------------------------|
+ | ...                          |
+ --------------------------------
+```
 
 Colors
 ------
@@ -25,25 +27,29 @@ Spacing
 
 General:
 
------------
-|         |
-|  Lorem  | < line height: 1.5rem
-|  ipsum  |
-|         | < vertical margin: 1.5rem
-|  Lorem  |
-|  ipsum  |
-|         |
------------
- ^
- horizontal padding: 1.5rem
+```
+ -----------
+ |         |
+ |  Lorem  | < line height: 1.5rem
+ |  ipsum  |
+ |         | < vertical margin: 1.5rem
+ |  Lorem  |
+ |  ipsum  |
+ |         |
+ -----------
+  ^
+  horizontal padding: 1.5rem
+```
 
 Button / Input:
 
-/------\ < border radius: 0.25rem
-|      | < padding: 0.25rem
-| Text |
-|      |
-\------/
+```
+ /------\ < border radius: 0.25rem
+ |      | < padding: 0.25rem
+ | Text |
+ |      |
+ \------/
+```
 
 Forms
 -----
