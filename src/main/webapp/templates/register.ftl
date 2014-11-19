@@ -2,15 +2,22 @@
 [#include "page.ftl"/]
 [#escape x as x?html]
 
-[@page]
-    <h1>Registrieren</h1>
-
+[@page "Registrieren"]
     <form method="POST" action="/register/">
         [@form_error/]
-        Name: <input name="name" value="${(form.name[0])!}"/> Email-Adresse:
-        <input name="email" value="${(form.email[0])!}"/> Passwort:
-        <input name="password" type="password" value="${(form.password[0])!}"/>
-        <button>Registrieren</button>
+        <label>
+            <small>Name</small>
+            <input name="name" value="${(form.name[0])!}"/>
+        </label>
+        <label>
+            <small>Email-Adresse</small>
+            <input name="email" value="${(form.email[0])!}"/>
+        </label>
+        <label>
+            <small>Passwort</small>
+            <input name="password" type="password" value="${(form.password[0])!}"/>
+        </label>
+        <p><button>Registrieren</button></p>
     </form>
 [/@page]
 
