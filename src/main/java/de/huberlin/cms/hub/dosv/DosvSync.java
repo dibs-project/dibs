@@ -96,9 +96,6 @@ import de.huberlin.cms.hub.User;
  * <li><code>STATUS_INCOMPLETE -> EINGEGANGEN</code></li>
  * <li><code>STATUS_COMPLETE -> EINGEGANGEN</code></li>
  * <li><code>STATUS_VALID -> GUELTIG</code></li>
- * <li><code>STATUS_WITHDRAWN <-> ZURUECKGEZOGEN</code></li>
- * <li><code>ZULASSUNGSANGEBOT_LIEGT_VOR -> STATUS_ADMITTED</code></li>
- * <li><code>ZUGELASSEN -> STATUS_CONFIRMED</code></li>
  * </ul>
  * </p>
  *
@@ -115,7 +112,6 @@ public class DosvSync {
         APPLICATION_DOSV_STATUS.put(STATUS_INCOMPLETE, EINGEGANGEN);
         APPLICATION_DOSV_STATUS.put(STATUS_COMPLETE, EINGEGANGEN);
         APPLICATION_DOSV_STATUS.put(STATUS_VALID, GUELTIG);
-        APPLICATION_DOSV_STATUS.put(STATUS_WITHDRAWN, ZURUECKGEZOGEN);
     }
 
     public DosvSync(ApplicationService service) {
