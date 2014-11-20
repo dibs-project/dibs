@@ -198,7 +198,7 @@ public class Application extends HubObject {
      * Zeitpunkt der letzten Modifikation der Bewerbung.
      */
     public Date getModificationTime() {
-        return modificationTime;
+        return new Date(modificationTime.getTime());
     }
 
     /**

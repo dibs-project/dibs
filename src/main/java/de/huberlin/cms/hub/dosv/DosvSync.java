@@ -96,12 +96,14 @@ import de.huberlin.cms.hub.User;
  * <li><code>STATUS_INCOMPLETE -> EINGEGANGEN</code></li>
  * <li><code>STATUS_COMPLETE -> EINGEGANGEN</code></li>
  * <li><code>STATUS_VALID -> GUELTIG</code></li>
- * <li><code>STATUS_WITHDRAWN <-> ZURUECKGEZOGEN</code></li>
  * <li><code>ZULASSUNGSANGEBOT_LIEGT_VOR -> STATUS_ADMITTED</code></li>
  * <li><code>ZUGELASSEN -> STATUS_CONFIRMED</code></li>
+ * <li><code>ZURUECKGEZOGEN -> STATUS_WITHDRAWN</code></li>
  * </ul>
+ * To avoid synchronisation conflicts between <code>STATUS_CONFIRMED</code> and
+ * <code>STATUS_WITHDRAWN</code>, users can withdraw their application only via Hochschulstart
+ * once the admission process has started.
  * </p>
- *
  *
  * @author Markus Michler
  */
@@ -109,13 +111,18 @@ public class DosvSync {
     private ApplicationService service;
     private Properties dosvConfig;
     private final static Map<String, BewerbungsBearbeitungsstatus> APPLICATION_DOSV_STATUS;
+    private final static Map<BewerbungsBearbeitungsstatus, String> DOSV_APPLICATION_STATUS;
 
     static {
         APPLICATION_DOSV_STATUS = new HashMap<>();
         APPLICATION_DOSV_STATUS.put(STATUS_INCOMPLETE, EINGEGANGEN);
         APPLICATION_DOSV_STATUS.put(STATUS_COMPLETE, EINGEGANGEN);
         APPLICATION_DOSV_STATUS.put(STATUS_VALID, GUELTIG);
-        APPLICATION_DOSV_STATUS.put(STATUS_WITHDRAWN, ZURUECKGEZOGEN);
+
+        DOSV_APPLICATION_STATUS = new HashMap<>();
+        DOSV_APPLICATION_STATUS.put(ZULASSUNGSANGEBOT_LIEGT_VOR, STATUS_ADMITTED);
+        DOSV_APPLICATION_STATUS.put(ZUGELASSEN, STATUS_CONFIRMED);
+        DOSV_APPLICATION_STATUS.put(ZURUECKGEZOGEN, STATUS_WITHDRAWN);
     }
 
     public DosvSync(ApplicationService service) {
@@ -154,7 +161,16 @@ public class DosvSync {
     public void synchronize() {
         Date newSyncTime = new Date();
         pushCourses();
-        pushApplicationStatus();
+        boolean applicationsPushed = false;
+        int loopCount = 0;
+        while (!applicationsPushed) {
+            pullApplicationStatus();
+            applicationsPushed = pushApplicationStatus();
+            loopCount++;
+            if (loopCount > 10) {
+                throw new RuntimeException("Sync exceeded maximum number of retries.");
+            }
+        }
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -182,7 +198,7 @@ public class DosvSync {
                 course.isPublished() ? OEFFENTLICH_SICHTBAR : IN_VORBEREITUNG;
 
             // TODO Feld Course.subject
-            String dosvSubjectKey = Integer.toString(course.getId().hashCode());
+            String dosvSubjectKey = course.getId().split(":")[1];
             // TODO Studienangebot nicht übertragen, wenn die Zulassung begonnen hat.
             /** Studienangebot - SAF 101 */
             Studienfach studienfach = new Studienfach();
@@ -243,7 +259,7 @@ public class DosvSync {
         }
         try {
             List<StudienangebotErgebnis> studienangebotErgebnisse =
-             // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+                // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
                 new DosvClient(dosvConfig).anlegenAendernStudienangeboteDurchHS(studienangebote);
             for (StudienangebotErgebnis studienangebotErgebnis : studienangebotErgebnisse) {
                 if (studienangebotErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
@@ -255,6 +271,63 @@ public class DosvSync {
             }
         } catch (StudiengaengeServiceFehler e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void pullApplicationStatus() {
+        Connection db = service.getDb();
+        Date[] updateTime = new Date[1];
+        updateTime[0] = service.getSettings().getDosvApplicationsServerTime();
+        List<Bewerbung> bewerbungen;
+
+        // hole die geänderten Bewerbungen anhand der updateTime von Hochschulstart
+        try {
+            List<String> referenzen =
+                // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+                new DosvClient(dosvConfig)
+                    .anfragenNeueGeaenderteBewerbungenDurchHS(updateTime);
+            bewerbungen =
+                // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+                new DosvClient(dosvConfig)
+                    .uebermittelnNeueGeaenderteBewerbungenAnHS(referenzen);
+        } catch (BewerbungenServiceFehler e) {
+            throw new RuntimeException(e);
+        }
+
+        // write changed Applications to db
+        try {
+            db.setAutoCommit(false);
+            for (Bewerbung bewerbung : bewerbungen) {
+                String newStatus =
+                    DOSV_APPLICATION_STATUS.get(bewerbung.getBearbeitungsstatus());
+                Einfachstudienangebotsbewerbung einfachstudienangebotsbewerbung =
+                    (Einfachstudienangebotsbewerbung) bewerbung;
+                EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
+                    einfachstudienangebotsbewerbung.getEinfachstudienangebotsSchluessel();
+                if (newStatus == null || APPLICATION_DOSV_STATUS.containsKey(newStatus)) {
+                    service.getQueryRunner().update(service.getDb(),
+                        "UPDATE application SET dosv_version = ?, modification_time = CURRENT_TIMESTAMP FROM \"user\" WHERE dosv_bid = ? AND course_id = ? AND \"user\".id = user_id",
+                        einfachstudienangebotsbewerbung.getVersionSeSt(),
+                        einfachstudienangebotsbewerbung.getBewerberId(),
+                        "course:" + einfachstudienangebotsSchluessel.
+                            getStudienfachSchluessel());
+                } else {
+                    service.getQueryRunner().update(service.getDb(),
+                        "UPDATE application SET status = ?, dosv_version = ?, modification_time = CURRENT_TIMESTAMP FROM \"user\" WHERE dosv_bid = ? AND course_id = ? AND \"user\".id = user_id",
+                        newStatus, einfachstudienangebotsbewerbung.getVersionSeSt(),
+                        einfachstudienangebotsbewerbung.getBewerberId(),
+                        "course:" + einfachstudienangebotsSchluessel.
+                            getStudienfachSchluessel());
+                }
+            }
+            // schreibe den neuen Updatezeitpunkt in die DB
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE settings SET dosv_applications_server_time = ?",
+                new Timestamp(updateTime[0].getTime()));
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
         }
     }
 
@@ -273,8 +346,8 @@ public class DosvSync {
             EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
                 new EinfachstudienangebotsSchluessel();
             // TODO Feld Course.subject
-            einfachstudienangebotsSchluessel.setStudienfachSchluessel(
-                Integer.toString(application.getCourse().getId().hashCode()));
+            einfachstudienangebotsSchluessel.setStudienfachSchluessel(application
+                .getCourse().getId().split(":")[1]);
             // TODO Feld Course.degree
             einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
 
