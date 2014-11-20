@@ -73,6 +73,9 @@ public class ApplicationService {
     /** Aktionstyp: Kriterium zur Sortierung von Bewerbern mit Quote verknüpft. */
     public static final String ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED =
         "quota_ranking_criterion_added";
+    /** Aktionstyp: HUB wurde mit dem DoSV synchronisiert */
+    public static final String ACTION_TYPE_DOSV_SYNC_SYNCHRONIZED =
+        "dosv_sync_synchronized";
 
     /** Unterstützte Filter für {@link #getCriteria(Map, User)}. */
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =
