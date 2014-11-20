@@ -7,18 +7,12 @@ package de.huberlin.cms.hub.dosv;
 
 import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.EINGEGANGEN;
 import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.GUELTIG;
-import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.ZUGELASSEN;
-import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.ZULASSUNGSANGEBOT_LIEGT_VOR;
-import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.ZURUECKGEZOGEN;
 import static de.hochschulstart.hochschulschnittstelle.commonv1_0.ErgebnisStatus.ZURUECKGEWIESEN;
 import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.IN_VORBEREITUNG;
 import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.OEFFENTLICH_SICHTBAR;
-import static de.huberlin.cms.hub.Application.STATUS_ADMITTED;
 import static de.huberlin.cms.hub.Application.STATUS_COMPLETE;
-import static de.huberlin.cms.hub.Application.STATUS_CONFIRMED;
 import static de.huberlin.cms.hub.Application.STATUS_INCOMPLETE;
 import static de.huberlin.cms.hub.Application.STATUS_VALID;
-import static de.huberlin.cms.hub.Application.STATUS_WITHDRAWN;
 
 import java.io.IOError;
 import java.sql.Connection;
@@ -263,7 +257,10 @@ public class DosvSync {
         // TODO sollte durch Filterung durch WHERE optimiert werden
         List<Application> applications = service.getApplications();
         for (Application application : applications) {
-            if (dosvSynctime.after(application.getModificationTime())) {
+            BewerbungsBearbeitungsstatus dosvNewStatus =
+                APPLICATION_DOSV_STATUS.get(application.getStatus());
+            if (dosvSynctime.after(application.getModificationTime())
+                    || dosvNewStatus == null) {
                 continue;
             }
             EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
@@ -299,8 +296,7 @@ public class DosvSync {
                 einfachstudienangebotsbewerbung.setVersionSeSt(dosvVersion);
                 bewerbungenGeaendert.add(einfachstudienangebotsbewerbung);
             }
-            einfachstudienangebotsbewerbung
-                .setBearbeitungsstatus(APPLICATION_DOSV_STATUS.get(application.getStatus()));
+            einfachstudienangebotsbewerbung.setBearbeitungsstatus(dosvNewStatus);
         }
 
         try {
