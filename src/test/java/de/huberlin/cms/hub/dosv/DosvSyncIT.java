@@ -50,4 +50,13 @@ public class DosvSyncIT extends HubTest {
             "test@example.org:secr3t", User.ROLE_APPLICANT);
         assertFalse(dosvUser.connectToDosv("BadBid", ban, null));
     }
+
+    @Test
+    public void testSynchronizeCourseModified() {
+        service.getDosvSync().synchronize();
+        course.unpublish(null);
+        service.getDosvSync().synchronize();
+        assertTrue(service.getSettings().getDosvSyncTime()
+            .after(course.getModificationTime()));
+    }
 }

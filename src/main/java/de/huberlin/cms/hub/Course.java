@@ -8,7 +8,9 @@ package de.huberlin.cms.hub;
 import java.io.IOError;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -29,6 +31,7 @@ public class Course extends HubObject {
     private int capacity;
     private String allocationRuleId;
     private boolean published;
+    private Date modificationTime;
 
     Course(Map<String, Object> args) {
         super(args);
@@ -36,6 +39,7 @@ public class Course extends HubObject {
         this.capacity = (Integer) args.get("capacity");
         this.allocationRuleId = (String) args.get("allocation_rule_id");
         this.published = (Boolean) args.get("published");
+        this.modificationTime = new Date(((Timestamp) args.get("modification_time")).getTime());
     }
 
     /**
@@ -129,6 +133,82 @@ public class Course extends HubObject {
     }
 
     /**
+     * Publiziert den Studiengang.
+     */
+    public void publish(User agent) {
+        Date now = new Date();
+        AllocationRule allocationRule = getAllocationRule();
+        if (allocationRule == null || allocationRule.getQuota() == null) {
+            throw new IllegalStateException("course_incomplete");
+        }
+        // NOTE Race Condition: SELECT-UPDATE
+        try {
+            Connection db = service.getDb();
+            db.setAutoCommit(false);
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE course SET published = TRUE, modification_time = ? WHERE id = ?",
+                new Timestamp(now.getTime()), getId());
+            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_PUBLISHED,
+                this.id, HubObject.getId(agent), null);
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+        published = true;
+        modificationTime = now;
+    }
+
+    /**
+     * Zieht die Publikation zurück. Kann nur erfolgen, wenn noch keine Bewerbungen auf
+     * diesen Studiengang vorliegen.
+     */
+    public void unpublish(User agent) {
+        Date now = new Date();
+        // NOTE Bewerbungsabfrage kann noch optimiert werden
+        if (!getApplications().isEmpty()) {
+            throw new IllegalStateException("course_has_applications");
+        }
+        // NOTE Race Condition: SELECT-UPDATE
+        try {
+            Connection db = service.getDb();
+            db.setAutoCommit(false);
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE course SET published = FALSE, modification_time = ? WHERE id = ?",
+                new Timestamp(now.getTime()), getId());
+            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_UNPUBLISHED,
+                this.id, HubObject.getId(agent), null);
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+        published = false;
+        modificationTime = now;
+    }
+
+    /**
+     * Name des Studiengangs.
+     */
+    public String getName() {
+        return this.name;
+    }
+
+    /**
+     * Kapazität des Studiengangs.
+     */
+    public int getCapacity() {
+        return this.capacity;
+    }
+
+    /**
+     * Vergaberegel des Studiengangs.
+     */
+    public AllocationRule getAllocationRule() {
+        return allocationRuleId != null ? service.getAllocationRule(allocationRuleId) : null;
+    }
+
+    /**
      * Liste aller Bewerbungen, die für diesen Studiengang abgegeben wurden.
      */
     public List<Application> getApplications() {
@@ -171,81 +251,16 @@ public class Course extends HubObject {
     }
 
     /**
-     * Publiziert den Studiengang.
-     */
-    public void publish(User agent) {
-        AllocationRule allocationRule = getAllocationRule();
-        if (allocationRule == null || allocationRule.getQuota() == null) {
-            throw new IllegalStateException("course_incomplete");
-        }
-        // NOTE Race Condition: SELECT-UPDATE
-        try {
-            Connection db = service.getDb();
-            db.setAutoCommit(false);
-            service.getQueryRunner().update(service.getDb(),
-                "UPDATE course SET published = TRUE WHERE id = ?", getId());
-            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_PUBLISHED,
-                this.id, HubObject.getId(agent), null);
-            db.commit();
-            db.setAutoCommit(true);
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-        published = true;
-    }
-
-    /**
-     * Zieht die Publikation zurück. Kann nur erfolgen, wenn noch keine Bewerbungen auf
-     * diesen Studiengang vorliegen.
-     */
-    public void unpublish(User agent) {
-        // NOTE Bewerbungsabfrage kann noch optimiert werden
-        if (!getApplications().isEmpty()) {
-            throw new IllegalStateException("course_has_applications");
-        }
-        try {
-            Connection db = service.getDb();
-            // NOTE Race Condition: SELECT-UPDATE
-            db.setAutoCommit(false);
-            service.getQueryRunner().update(service.getDb(),
-                "UPDATE course SET published = FALSE WHERE id = ?", getId());
-            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_UNPUBLISHED,
-                this.id, HubObject.getId(agent), null);
-            db.commit();
-            db.setAutoCommit(true);
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-        published = false;
-    }
-
-    /**
-     * Name des Studiengangs.
-     */
-    public String getName() {
-        return this.name;
-    }
-
-    /**
-     * Kapazität des Studiengangs.
-     */
-    public int getCapacity() {
-        return this.capacity;
-    }
-
-    /**
-     * Vergaberegel des Studiengangs.
-     */
-    public AllocationRule getAllocationRule() {
-        return allocationRuleId != null ? service.getAllocationRule(allocationRuleId) : null;
-    }
-
-    /**
      * Publikationsstatus des Studiengangs.
      */
     public boolean isPublished() {
         return published;
     }
 
-
+    /**
+     * Zeitpunkt der letzten Modifikation des Studiengangs.
+     */
+    public Date getModificationTime() {
+        return new Date(modificationTime.getTime());
+    }
 }
