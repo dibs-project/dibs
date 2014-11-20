@@ -22,9 +22,15 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
  * @author Markus Michler
  */
 public class User extends HubObject {
+    /** Role: applicant. */
+    public static String ROLE_APPLICANT = "applicant";
+    /** Role: administrator. */
+    public static String ROLE_ADMIN = "admin";
+
     private String name;
     private String email;
     private String credential;
+    private String role;
     private String dosvBid;
     private String dosvBan;
 
@@ -33,6 +39,7 @@ public class User extends HubObject {
         this.name = (String) args.get("name");
         this.email = (String) args.get("email");
         this.credential = (String) args.get("credential");
+        this.role = (String) args.get("role");
         this.dosvBid = (String) args.get("dosv_bid");
         this.dosvBan = (String) args.get("dosv_ban");
     }
@@ -163,6 +170,13 @@ public class User extends HubObject {
      */
     public String getCredential() {
         return this.credential;
+    }
+
+    /**
+     * Role.
+     */
+    public String getRole() {
+        return this.role;
     }
 
     /**
