@@ -48,8 +48,7 @@ import de.huberlin.cms.hub.Settings;
 /**
  * DoSV synchronisation class for Courses, Applications and Ranks.
  * <p>
- * <b>Data Mapping between HUB and the DoSV system</b></br>
- * </p>
+ * <strong>Data Mapping between HUB and the DoSV system</strong>
  * <p>
  * Courses:
  * <ul>
@@ -61,7 +60,6 @@ import de.huberlin.cms.hub.Settings;
  * <li><code>integrationseinstellungen.*bescheidVersandart: hochschule</code></li>
  * <li><code>studienfach.nameDE, einfachstudienangebot.nameDE, *.beschreibungDE =
  * course.name</code></li>
- * </p>
  *
  * @author Markus Michler
  */
@@ -194,7 +192,7 @@ public class DosvSync {
         }
         try {
             List<StudienangebotErgebnis> studienangebotErgebnisse =
-             // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+                // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
                 new DosvClient(dosvConfig).anlegenAendernStudienangeboteDurchHS(studienangebote);
             for (StudienangebotErgebnis studienangebotErgebnis : studienangebotErgebnisse) {
                 if (studienangebotErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
