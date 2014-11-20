@@ -28,7 +28,8 @@ public class ApplicationServiceTest extends HubTest {
     @Test
     public void testCreateUser() {
         String email = "moss@example.org";
-        User user = this.service.createUser("Maurice", email, email + ":secr3t");
+        User user = this.service.createUser("Maurice", email, email + ":secr3t",
+            User.ROLE_APPLICANT);
         assertEquals(email, user.getEmail());
         assertTrue(this.service.getUsers().contains(user));
     }
@@ -37,7 +38,8 @@ public class ApplicationServiceTest extends HubTest {
     public void testCreateUserEmptyEmail() {
         this.exception.expect(IllegalArgumentException.class);
         this.exception.expectMessage("email");
-        this.service.createUser("Maurice", "", "moss@example.org:secre3t");
+        this.service.createUser("Maurice", "", "moss@example.org:secre3t",
+            User.ROLE_APPLICANT);
     }
 
     @Test

@@ -37,11 +37,11 @@ public class QuotaTest extends HubTest {
         quota = service.createCourse("Computer Science", 500, null).
             createAllocationRule(null).createQuota("Performance", 100, null);
         user1 = this.service.createUser("Maurice", "maurice@moss.net",
-            "maurice@moss.net:secr3t");
+            "maurice@moss.net:secr3t", User.ROLE_APPLICANT);
         user2 = this.service.createUser("Peter", "peter@pan.com",
-            "peter@pan.com:secr3t");
+            "peter@pan.com:secr3t", User.ROLE_APPLICANT);
         user3 = this.service.createUser("James", "james@hook.net",
-            "james@hook.net:secr3t");
+            "james@hook.net:secr3t", User.ROLE_APPLICANT);
         app1 = course.apply(user1.getId(), null);
         app2 = course.apply(user2.getId(), null);
         app3 = course.apply(user3.getId(), null);

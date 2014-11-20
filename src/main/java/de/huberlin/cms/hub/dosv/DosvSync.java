@@ -64,15 +64,13 @@ import de.huberlin.cms.hub.User;
 /**
  * DoSV synchronisation class for Courses, Applications and Ranks.
  * <p>
- * <b>Data Mapping between HUB and the DoSV system</b></br>
- * </p>
+ * <strong>Data Mapping between HUB and the DoSV system</strong>
  * <p>
  * General:
  * <ul>
  * <li><code>abschluss.schluessel</code> is always <code>"bachelor"</code></li>
  * <li><code>studienfach.schluessel = course.getId().hashCode()</code></li>
  * </ul>
- * </p>
  * <p>
  * Courses:
  * <ul>
@@ -83,7 +81,6 @@ import de.huberlin.cms.hub.User;
  * <li><code>studienfach.nameDE, einfachstudienangebot.nameDE, *.beschreibungDE =
  * course.name</code></li>
  * </ul>
- * </p>
  * <p>
  * Applications:
  * <ul>
@@ -91,8 +88,6 @@ import de.huberlin.cms.hub.User;
  * <li><code>STATUS_COMPLETE -> EINGEGANGEN</code></li>
  * <li><code>STATUS_VALID -> GUELTIG</code></li>
  * </ul>
- * </p>
- *
  *
  * @author Markus Michler
  */
@@ -233,7 +228,7 @@ public class DosvSync {
         }
         try {
             List<StudienangebotErgebnis> studienangebotErgebnisse =
-             // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+                // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
                 new DosvClient(dosvConfig).anlegenAendernStudienangeboteDurchHS(studienangebote);
             for (StudienangebotErgebnis studienangebotErgebnis : studienangebotErgebnisse) {
                 if (studienangebotErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
