@@ -261,6 +261,6 @@ public class Course extends HubObject {
      * Zeitpunkt der letzten Modifikation des Studiengangs.
      */
     public Date getModificationTime() {
-        return modificationTime;
+        return new Date(modificationTime.getTime());
     }
 }
