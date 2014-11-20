@@ -2,17 +2,21 @@
 [#include "page.ftl"/]
 [#escape x as x?html]
 
-[@page]
-    <h1>Anmelden</h1>
-
+[@page "Anmelden"]
     <form method="POST" action="/login/">
         [@form_error/]
-        Email-Adresse: <input name="email" value="${(form.email[0])!}"/> Passwort:
-        <input name="password" type="password" value="${(form.password[0])!}"/>
-        <button>Anmelden</button>
+        <label>
+            <small>Email-Adresse</small>
+            <input name="email" value="${(form.email[0])!}"/>
+        </label>
+        <label>
+            <small>Passwort</small>
+            <input name="password" type="password" value="${(form.password[0])!}"/>
+        </label>
+        <p><button>Anmelden</button></p>
     </form>
 
-    <p><a href="/register/">Registrieren</a></p>
+    <p><a href="/register/">Noch kein Benutzerkonto? Registrieren!</a></p>
 [/@page]
 
 [/#escape]
