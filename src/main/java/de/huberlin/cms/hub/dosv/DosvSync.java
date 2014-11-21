@@ -158,7 +158,7 @@ public class DosvSync {
 
         Date dosvSyncTime = service.getSettings().getDosvSyncTime();
         for (Course course : service.getCourses()) {
-            if (dosvSyncTime.after(course.getModificationTime())) {
+            if (!course.isDosv() || dosvSyncTime.after(course.getModificationTime())) {
                 continue;
             }
             // TODO Studienangebote können nur im Status IN_VORBEREITUNG geändert werden,
@@ -255,7 +255,7 @@ public class DosvSync {
             BewerbungsBearbeitungsstatus dosvNewStatus =
                 APPLICATION_DOSV_STATUS.get(application.getStatus());
             if (dosvSynctime.after(application.getModificationTime())
-                    || dosvNewStatus == null) {
+                    || dosvNewStatus == null || !application.getCourse().isDosv()) {
                 continue;
             }
             EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =

@@ -473,7 +473,7 @@ public class ApplicationService {
      * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
      *     <code>capacity</code> nicht positiv ist
      */
-    public Course createCourse(String name, int capacity, User agent) {
+    public Course createCourse(String name, int capacity, boolean dosv, User agent) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
@@ -484,8 +484,8 @@ public class ApplicationService {
         try {
             this.db.setAutoCommit(false);
             String id = String.format("course:%s", new Random().nextInt());
-            this.queryRunner.insert(this.getDb(), "INSERT INTO course VALUES(?, ?, ?)",
-                new MapHandler(), id, name, capacity);
+            this.queryRunner.insert(this.getDb(), "INSERT INTO course (id, name, capacity, dosv) VALUES (?, ?, ?, ?)",
+                new MapHandler(), id, name, capacity, dosv);
             journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
                 name);
             this.db.commit();
