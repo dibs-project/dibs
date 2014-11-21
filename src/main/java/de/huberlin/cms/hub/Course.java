@@ -31,6 +31,7 @@ public class Course extends HubObject {
     private int capacity;
     private String allocationRuleId;
     private boolean published;
+    private boolean admission;
     private Date modificationTime;
 
     Course(Map<String, Object> args) {
@@ -188,6 +189,32 @@ public class Course extends HubObject {
     }
 
     /**
+     * Starts the admission phase.
+     */
+    public void startAdmission(User agent) {
+        Date now = new Date();
+        if (!isPublished()) {
+            throw new IllegalStateException("course_unpublished");
+        }
+        // NOTE Race Condition: SELECT-UPDATE
+        try {
+            Connection db = service.getDb();
+            db.setAutoCommit(false);
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE course SET admission = TRUE, modification_time = ? WHERE id = ?",
+                new Timestamp(now.getTime()), getId());
+            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_UNPUBLISHED,
+                this.id, HubObject.getId(agent), null);
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+        admission = true;
+        modificationTime = now;
+    }
+
+    /**
      * Name des Studiengangs.
      */
     public String getName() {
@@ -255,6 +282,13 @@ public class Course extends HubObject {
      */
     public boolean isPublished() {
         return published;
+    }
+
+    /**
+     * Denotes whether the Course is in the admission phase.
+     */
+    public boolean isAdmission() {
+        return admission;
     }
 
     /**
