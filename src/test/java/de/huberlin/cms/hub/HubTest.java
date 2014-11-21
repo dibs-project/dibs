@@ -50,6 +50,11 @@ public abstract class HubTest {
     protected ApplicationService service;
 
     /**
+     * Administrator.
+     */
+    protected User admin;
+
+    /**
      * Allgemeiner Benutzer.
      */
     protected User user;
@@ -75,10 +80,11 @@ public abstract class HubTest {
         ApplicationService.setupStorage(this.db, true);
 
         this.service = new ApplicationService(this.db, this.config);
+        this.admin = this.service.getUsers().get(0);
         this.user = this.service.createUser("Jen", "barber@example.org",
-            "barber@example.org:secr3t");
+            "barber@example.org:secr3t", User.ROLE_APPLICANT);
 
-        this.course = this.service.createCourse("Computer Science", 500, null);
+        this.course = this.service.createCourse("Computer Science", 500, false, null);
         this.course.createAllocationRule(null).createQuota("Standard", 100, null).
             addRankingCriterion("qualification", null);
         this.course.publish(null);

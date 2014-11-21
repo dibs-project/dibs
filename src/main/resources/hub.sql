@@ -3,6 +3,7 @@ CREATE TABLE "user" (
     name VARCHAR(256) NOT NULL,
     email VARCHAR(256) UNIQUE NOT NULL,
     credential VARCHAR(256) UNIQUE NOT NULL,
+    role VARCHAR(256) NOT NULL,
     dosv_bid VARCHAR(256) UNIQUE,
     dosv_ban VARCHAR(256)
 );
@@ -38,7 +39,8 @@ CREATE TABLE course (
     capacity INT NOT NULL,
     allocation_rule_id VARCHAR(256) REFERENCES allocation_rule,
     published BOOLEAN NOT NULL DEFAULT FALSE,
-    modification_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    modification_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    dosv BOOLEAN NOT NULL
 );
 
 CREATE TABLE journal_record (

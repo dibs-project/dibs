@@ -70,15 +70,13 @@ import de.huberlin.cms.hub.User;
 /**
  * DoSV synchronisation class for Courses, Applications and Ranks.
  * <p>
- * <b>Data Mapping between HUB and the DoSV system</b></br>
- * </p>
+ * <strong>Data Mapping between HUB and the DoSV system</strong>
  * <p>
  * General:
  * <ul>
  * <li><code>abschluss.schluessel</code> is always <code>"bachelor"</code></li>
  * <li><code>studienfach.schluessel = course.getId().hashCode()</code></li>
  * </ul>
- * </p>
  * <p>
  * Courses:
  * <ul>
@@ -89,7 +87,6 @@ import de.huberlin.cms.hub.User;
  * <li><code>studienfach.nameDE, einfachstudienangebot.nameDE, *.beschreibungDE =
  * course.name</code></li>
  * </ul>
- * </p>
  * <p>
  * Applications:
  * <ul>
@@ -100,10 +97,9 @@ import de.huberlin.cms.hub.User;
  * <li><code>ZUGELASSEN -> STATUS_CONFIRMED</code></li>
  * <li><code>ZURUECKGEZOGEN -> STATUS_WITHDRAWN</code></li>
  * </ul>
+ * Each application status is set either by HUB or via Hochschulstart.
  * To avoid synchronisation conflicts between <code>STATUS_CONFIRMED</code> and
- * <code>STATUS_WITHDRAWN</code>, users can withdraw their application only via Hochschulstart
- * once the admission process has started.
- * </p>
+ * <code>STATUS_WITHDRAWN</code>, users can withdraw their application only via Hochschulstart.
  *
  * @author Markus Michler
  */
@@ -189,7 +185,7 @@ public class DosvSync {
 
         Date dosvSyncTime = service.getSettings().getDosvSyncTime();
         for (Course course : service.getCourses()) {
-            if (dosvSyncTime.after(course.getModificationTime())) {
+            if (!course.isDosv() || dosvSyncTime.after(course.getModificationTime())) {
                 continue;
             }
             // TODO Studienangebote können nur im Status IN_VORBEREITUNG geändert werden,
@@ -294,7 +290,7 @@ public class DosvSync {
             throw new RuntimeException(e);
         }
 
-        // write changed Applications to db
+        // write changed Applications to DB
         try {
             db.setAutoCommit(false);
             for (Bewerbung bewerbung : bewerbungen) {
@@ -306,7 +302,7 @@ public class DosvSync {
                     einfachstudienangebotsbewerbung.getEinfachstudienangebotsSchluessel();
                 if (newStatus == null || APPLICATION_DOSV_STATUS.containsKey(newStatus)) {
                     service.getQueryRunner().update(service.getDb(),
-                        "UPDATE application SET dosv_version = ?, modification_time = CURRENT_TIMESTAMP FROM \"user\" WHERE dosv_bid = ? AND course_id = ? AND \"user\".id = user_id",
+                        "UPDATE application SET dosv_version = ? FROM \"user\" WHERE dosv_bid = ? AND course_id = ? AND \"user\".id = user_id",
                         einfachstudienangebotsbewerbung.getVersionSeSt(),
                         einfachstudienangebotsbewerbung.getBewerberId(),
                         "course:" + einfachstudienangebotsSchluessel.
@@ -340,7 +336,10 @@ public class DosvSync {
         // TODO sollte durch Filterung durch WHERE optimiert werden
         List<Application> applications = service.getApplications();
         for (Application application : applications) {
-            if (dosvSynctime.after(application.getModificationTime())) {
+            BewerbungsBearbeitungsstatus dosvNewStatus =
+                APPLICATION_DOSV_STATUS.get(application.getStatus());
+            if (dosvSynctime.after(application.getModificationTime())
+                    || dosvNewStatus == null || !application.getCourse().isDosv()) {
                 continue;
             }
             EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
@@ -376,8 +375,7 @@ public class DosvSync {
                 einfachstudienangebotsbewerbung.setVersionSeSt(dosvVersion);
                 bewerbungenGeaendert.add(einfachstudienangebotsbewerbung);
             }
-            einfachstudienangebotsbewerbung
-                .setBearbeitungsstatus(APPLICATION_DOSV_STATUS.get(application.getStatus()));
+            einfachstudienangebotsbewerbung.setBearbeitungsstatus(dosvNewStatus);
         }
 
         try {
