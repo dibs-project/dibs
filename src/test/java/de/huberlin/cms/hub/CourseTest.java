@@ -76,6 +76,12 @@ public class CourseTest extends HubTest {
     }
 
     @Test
+    public void testStartAdmission() {
+        course.startAdmission(null);
+        assertTrue(service.getCourse(course.getId()).isAdmission());
+    }
+
+    @Test
     public void testStartAdmissionUnpublished() {
         exception.expect(IllegalStateException.class);
         course.unpublish(null);

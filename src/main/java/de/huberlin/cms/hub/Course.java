@@ -41,6 +41,7 @@ public class Course extends HubObject {
         this.capacity = (Integer) args.get("capacity");
         this.allocationRuleId = (String) args.get("allocation_rule_id");
         this.published = (Boolean) args.get("published");
+        this.admission = (Boolean) args.get("admission");
         this.modificationTime = new Date(((Timestamp) args.get("modification_time")).getTime());
         this.dosv = (Boolean) args.get("dosv");
     }
@@ -208,8 +209,9 @@ public class Course extends HubObject {
             service.getQueryRunner().update(service.getDb(),
                 "UPDATE course SET admission = TRUE, modification_time = ? WHERE id = ?",
                 new Timestamp(now.getTime()), getId());
-            service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_UNPUBLISHED,
-                this.id, HubObject.getId(agent), null);
+            service.getJournal().record(
+                ApplicationService.ACTION_TYPE_COURSE_ADMISSION_STARTED, this.id,
+                HubObject.getId(agent), null);
             db.commit();
             db.setAutoCommit(true);
         } catch (SQLException e) {
