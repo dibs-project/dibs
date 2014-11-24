@@ -212,6 +212,8 @@ public class Course extends HubObject {
         }
         admission = true;
         modificationTime = now;
+        // NOTE future iterations: will be called when a user's application status is set
+        generateRankings();
     }
 
     /**
