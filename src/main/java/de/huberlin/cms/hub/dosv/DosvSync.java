@@ -25,6 +25,11 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.hochschulstart.hochschulschnittstelle.benutzerservicev1_0.BenutzerServiceFehler;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlserviceparamv1_0.StudienpaketErgebnis;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlservicev1_0.BewerberauswahlServiceFehler;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Bewerberplatzbedarf;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Paketbestandteil;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Studienpaket;
 import de.hochschulstart.hochschulschnittstelle.commonv1_0.AutorisierungsFehler;
 import de.hochschulstart.hochschulschnittstelle.commonv1_0.UnbekannterBenutzerFehler;
 import de.hochschulstart.hochschulschnittstelle.studiengaengeserviceparamv1_0.StudienangebotErgebnis;
@@ -119,6 +124,7 @@ public class DosvSync {
 
     private void pushCourses() {
         List<Studienangebot> studienangebote = new ArrayList<>();
+        List<Studienpaket> studienpakete = new ArrayList<>();
 
         Date dosvSyncTime = service.getSettings().getDosvSyncTime();
         for (Course course : service.getCourses()) {
@@ -188,7 +194,31 @@ public class DosvSync {
 
             studienangebote.add(einfachstudienangebot);
 
-            // TODO Studienpaket (SAF 401) nur anlegen/ändern, wenn die Zulassung begonnen hat.
+            if (!course.isAdmission()) {
+                continue;
+            }
+            /** Studienpaket - SAF 401 */
+            EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
+                new EinfachstudienangebotsSchluessel();
+            einfachstudienangebotsSchluessel.setStudienfachSchluessel(dosvSubjectKey);
+            einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
+
+            Bewerberplatzbedarf bewerberplatzbedarf = new Bewerberplatzbedarf();
+            bewerberplatzbedarf.setNenner(1);
+            bewerberplatzbedarf.setZaehler(1);
+
+            Paketbestandteil paketbestandteil = new Paketbestandteil();
+            paketbestandteil
+                .setEinfachstudienangebotsSchluessel(einfachstudienangebotsSchluessel);
+            paketbestandteil.setBewerberplatzbedarf(bewerberplatzbedarf);
+
+            Studienpaket studienpaket = new Studienpaket();
+            studienpaket.setSchluessel(dosvSubjectKey);
+            studienpaket.setKapazitaet(course.getCapacity());
+            studienpaket.getPaketbestandteil().add(paketbestandteil);
+            studienpaket.setNameDe(course.getName());
+
+            studienpakete.add(studienpaket);
         }
         try {
             List<StudienangebotErgebnis> studienangebotErgebnisse =
@@ -202,7 +232,17 @@ public class DosvSync {
                             + " : " + studienangebotErgebnis.getGrundZurueckweisung());
                 }
             }
-        } catch (StudiengaengeServiceFehler e) {
+            List<StudienpaketErgebnis> studienpaketErgebnisse =
+                // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+                new DosvClient(dosvConfig).anlegenAendernStudienpaketeDurchHS(studienpakete);
+            for (StudienpaketErgebnis studienpaketErgebnis : studienpaketErgebnisse) {
+                if (studienpaketErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
+                    throw new RuntimeException(
+                        studienpaketErgebnis.getStudienpaketSchluessel() + " : "
+                            + studienpaketErgebnis.getGrundZurueckweisung());
+                }
+            }
+        } catch (StudiengaengeServiceFehler | BewerberauswahlServiceFehler e) {
             throw new RuntimeException(e);
         }
     }
