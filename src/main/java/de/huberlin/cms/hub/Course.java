@@ -33,6 +33,7 @@ public class Course extends HubObject {
     private boolean published;
     private boolean admission;
     private Date modificationTime;
+    private boolean dosv;
 
     Course(Map<String, Object> args) {
         super(args);
@@ -42,6 +43,7 @@ public class Course extends HubObject {
         this.published = (Boolean) args.get("published");
         this.admission = (Boolean) args.get("admission");
         this.modificationTime = new Date(((Timestamp) args.get("modification_time")).getTime());
+        this.dosv = (Boolean) args.get("dosv");
     }
 
     /**
@@ -85,6 +87,9 @@ public class Course extends HubObject {
     public Application apply(String userId, User agent) {
         if (!service.getCourse(id).isPublished()) {
             throw new IllegalStateException("course_published");
+        }
+        if (dosv == true && service.getUser(userId).getDosvBid() == null) {
+            throw new IllegalStateException("user_not_connected");
         }
         // NOTE Race Condition: SELECT-INSERT
         try {
@@ -300,5 +305,12 @@ public class Course extends HubObject {
      */
     public Date getModificationTime() {
         return new Date(modificationTime.getTime());
+    }
+
+    /**
+     * Determines whether this Course is using the DoSV for the admission process.
+     */
+    public boolean isDosv() {
+        return dosv;
     }
 }

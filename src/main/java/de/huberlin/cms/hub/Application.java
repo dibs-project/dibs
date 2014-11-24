@@ -9,7 +9,9 @@ import static java.util.Collections.nCopies;
 
 import java.io.IOError;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +44,16 @@ public class Application extends HubObject {
     private final String userId;
     private final String courseId;
     private String status;
+    private Date modificationTime;
+    private final int dosvVersion;
 
     Application(Map<String, Object> args) {
         super(args);
         this.userId = (String) args.get("user_id");
         this.courseId = (String) args.get("course_id");
         this.status = (String) args.get("status");
+        this.modificationTime = (Date) args.get("modification_time");
+        this.dosvVersion = (int) args.get("dosv_version");
     }
 
     /**
@@ -102,7 +108,7 @@ public class Application extends HubObject {
             // NOTE: optimierter Query
             String sql = String.format("SELECT * FROM evaluation %s", filterSql);
             List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
-            Object[] params = new Object[filterValues.size()]; 
+            Object[] params = new Object[filterValues.size()];
             for (int i = 0; i < filterValues.size(); i++) {
                 params[i] = filterValues.get(i);
             }
@@ -128,11 +134,12 @@ public class Application extends HubObject {
     }
 
     void setStatus(String status, User agent) {
-        this.status = status;
+        Date now = new Date();
         try {
             service.getDb().setAutoCommit(false);
             service.getQueryRunner().update(service.getDb(),
-                "UPDATE application SET status = ? WHERE id = ?", status, this.id);
+                "UPDATE application SET status = ?, modification_time = ? WHERE id = ?",
+                status, new Timestamp(now.getTime()), this.id);
             service.getJournal().record(ApplicationService.ACTION_TYPE_APPLICATION_STATUS_SET,
                 this.id, HubObject.getId(agent), status);
             service.getDb().commit();
@@ -140,6 +147,8 @@ public class Application extends HubObject {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+        this.status = status;
+        modificationTime = now;
     }
 
     void assignInformation(Information information) {
@@ -183,5 +192,19 @@ public class Application extends HubObject {
      */
     public String getStatus() {
         return status;
+    }
+
+    /**
+     * Zeitpunkt der letzten Modifikation der Bewerbung.
+     */
+    public Date getModificationTime() {
+        return new Date(modificationTime.getTime());
+    }
+
+    /**
+     * Version der Bewerbung im System des DoSV.
+     */
+    public int getDosvVersion() {
+        return dosvVersion;
     }
 }
