@@ -16,12 +16,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.hu_berlin.dosv.DosvClient;
+import de.huberlin.cms.hub.Application;
+import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.HubTest;
 import de.huberlin.cms.hub.User;
 
 public class DosvSyncIT extends HubTest {
     private String bid;
     private String ban;
+    private Course dosvCourse;
 
     @Before
     public void before() throws Exception {
@@ -34,6 +37,10 @@ public class DosvSyncIT extends HubTest {
             && !config.getProperty("dosv_test_ban").isEmpty());
         bid = config.getProperty("dosv_test_bid");
         ban = config.getProperty("dosv_test_ban");
+        dosvCourse = service.createCourse("Computer Science", 500, true, null);
+        dosvCourse.createAllocationRule(null).createQuota("performance", 100, null)
+            .addRankingCriterion("qualification", null);
+        dosvCourse.publish(null);
     }
 
     @Test
@@ -54,9 +61,23 @@ public class DosvSyncIT extends HubTest {
     @Test
     public void testSynchronizeCourseModified() {
         service.getDosvSync().synchronize();
-        course.unpublish(null);
+        dosvCourse.unpublish(null);
         service.getDosvSync().synchronize();
         assertTrue(service.getSettings().getDosvSyncTime()
-            .after(course.getModificationTime()));
+            .after(dosvCourse.getModificationTime()));
+    }
+
+    @Test
+    public void testSynchronizeApplications() {
+        user.connectToDosv(bid, ban, null);
+        Application application = dosvCourse.apply(user.getId(), null);
+        service.getDosvSync().synchronize();
+        assertEquals(-1, application.getDosvVersion());
+        service.getDosvSync().synchronize();
+        assertEquals(0, service.getApplication(application.getId()).getDosvVersion());
+        service.getDosvSync().synchronize();
+        assertEquals(0, service.getApplication(application.getId()).getDosvVersion());
+        assertTrue(service.getSettings().getDosvSyncTime()
+            .after(application.getModificationTime()));
     }
 }

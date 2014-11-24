@@ -34,7 +34,7 @@ public class QuotaTest extends HubTest {
 
     @Before
     public void before() {
-        quota = service.createCourse("Computer Science", 500, null).
+        quota = service.createCourse("Computer Science", 500, false, null).
             createAllocationRule(null).createQuota("Performance", 100, null);
         user1 = this.service.createUser("Maurice", "maurice@moss.net",
             "maurice@moss.net:secr3t", User.ROLE_APPLICANT);
