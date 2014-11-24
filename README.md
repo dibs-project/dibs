@@ -36,6 +36,12 @@ Before synchronizing HUB to the "Dialogorientiertes Serviceverfahren",
 the web services must be configured: Insert values for keys with the `dosv_` 
 prefix.
 
+Browser Support
+---------------
+
+We support the current and the previous version of the popular browsers (i.e. Firefox,
+Chrome, Safari, Internet Explorer)
+
 Created with
 ------------
 
@@ -55,5 +61,6 @@ Created with
  * FreeMarker (2.3) by Attila Szegedi, Daniel Dekany, Jonathan Revusky -
    http://freemarker.org/
  * Jetty (9.2) by Mort Bay Consulting Pty Ltd. - https://www.eclipse.org/jetty/
+ * Open Sans (1.1) by Google - http://opensans.com/
  * JUnit (4.11) by JUnit - http://junit.org/
  * Apache Maven (3.0) by The Apache Software Foundation - https://maven.apache.org/
