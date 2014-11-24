@@ -80,4 +80,16 @@ public class DosvSyncIT extends HubTest {
         assertTrue(service.getSettings().getDosvSyncTime()
             .after(application.getModificationTime()));
     }
+
+    @Test
+    public void testSystem() {
+        user.connectToDosv(bid, ban, null);
+        dosvCourse.apply(user.getId(), null);
+        service.getDosvSync().synchronize();
+        dosvCourse.startAdmission(null);
+        assertTrue(dosvCourse.isAdmission());
+        assertTrue(service.getSettings().getDosvSyncTime()
+            .before(dosvCourse.getModificationTime()));
+        service.getDosvSync().synchronize();
+    }
 }

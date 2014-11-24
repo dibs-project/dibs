@@ -194,14 +194,39 @@ public class DosvSync {
             if (!course.isDosv() || dosvSyncTime.after(course.getModificationTime())) {
                 continue;
             }
+            // TODO Feld Course.subject
+            String dosvSubjectKey = course.getId().split(":")[1];
+            if (course.isAdmission()) {
+                /** Studienpaket - SAF 401 */
+                EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
+                    new EinfachstudienangebotsSchluessel();
+                einfachstudienangebotsSchluessel.setStudienfachSchluessel(dosvSubjectKey);
+                einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
+
+                Bewerberplatzbedarf bewerberplatzbedarf = new Bewerberplatzbedarf();
+                bewerberplatzbedarf.setNenner(1);
+                bewerberplatzbedarf.setZaehler(1);
+
+                Paketbestandteil paketbestandteil = new Paketbestandteil();
+                paketbestandteil
+                    .setEinfachstudienangebotsSchluessel(einfachstudienangebotsSchluessel);
+                paketbestandteil.setBewerberplatzbedarf(bewerberplatzbedarf);
+
+                Studienpaket studienpaket = new Studienpaket();
+                studienpaket.setSchluessel(dosvSubjectKey);
+                studienpaket.setKapazitaet(course.getCapacity());
+                studienpaket.getPaketbestandteil().add(paketbestandteil);
+                studienpaket.setNameDe(course.getName());
+
+                studienpakete.add(studienpaket);
+                continue;
+            }
+
             // TODO Studienangebote können nur im Status IN_VORBEREITUNG geändert werden,
             // deshalb Änderung und Sichtbarmachung auf zwei übertragene Objekte aufteilen.
             StudienangebotsStatus studienangebotsStatus =
                 course.isPublished() ? OEFFENTLICH_SICHTBAR : IN_VORBEREITUNG;
 
-            // TODO Feld Course.subject
-            String dosvSubjectKey = course.getId().split(":")[1];
-            // TODO Studienangebot nicht übertragen, wenn die Zulassung begonnen hat.
             /** Studienangebot - SAF 101 */
             Studienfach studienfach = new Studienfach();
             studienfach.setSchluessel(dosvSubjectKey);
@@ -256,32 +281,6 @@ public class DosvSync {
             einfachstudienangebot.setStatus(studienangebotsStatus);
 
             studienangebote.add(einfachstudienangebot);
-
-            if (!course.isAdmission()) {
-                continue;
-            }
-            /** Studienpaket - SAF 401 */
-            EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
-                new EinfachstudienangebotsSchluessel();
-            einfachstudienangebotsSchluessel.setStudienfachSchluessel(dosvSubjectKey);
-            einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
-
-            Bewerberplatzbedarf bewerberplatzbedarf = new Bewerberplatzbedarf();
-            bewerberplatzbedarf.setNenner(1);
-            bewerberplatzbedarf.setZaehler(1);
-
-            Paketbestandteil paketbestandteil = new Paketbestandteil();
-            paketbestandteil
-                .setEinfachstudienangebotsSchluessel(einfachstudienangebotsSchluessel);
-            paketbestandteil.setBewerberplatzbedarf(bewerberplatzbedarf);
-
-            Studienpaket studienpaket = new Studienpaket();
-            studienpaket.setSchluessel(dosvSubjectKey);
-            studienpaket.setKapazitaet(course.getCapacity());
-            studienpaket.getPaketbestandteil().add(paketbestandteil);
-            studienpaket.setNameDe(course.getName());
-
-            studienpakete.add(studienpaket);
         }
         try {
             List<StudienangebotErgebnis> studienangebotErgebnisse =
