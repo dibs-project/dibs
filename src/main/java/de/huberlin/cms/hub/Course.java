@@ -32,7 +32,7 @@ public class Course extends HubObject {
     private String allocationRuleId;
     private boolean published;
     private Date modificationTime;
-    private boolean dosv;
+    private final boolean dosv;
 
     Course(Map<String, Object> args) {
         super(args);
@@ -76,15 +76,19 @@ public class Course extends HubObject {
     }
 
     /**
-     * Legt eine Bewerbung auf einen publizierten Studiengang an.
+     * Creates an Application to a published Course.
      *
-     * @param userId ID des Bewerbers
-     * @param agent ausführender Benutzer
-     * @return angelegte Bewerbung
+     * @param userId the applicant's ID
+     * @param agent executing user
+     * @return created Application
+     *
+     * @throws HubException.IllegalStateException
+     *  if the course is not published (<code>course_not_published</code>)
+     *  or the user is not connected to the DoSV (<code>user_not_connected</code>)
      */
     public Application apply(String userId, User agent) {
         if (!service.getCourse(id).isPublished()) {
-            throw new IllegalStateException("course_published");
+            throw new IllegalStateException("course_not_published");
         }
         if (dosv == true && service.getUser(userId).getDosvBid() == null) {
             throw new IllegalStateException("user_not_connected");

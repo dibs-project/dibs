@@ -195,14 +195,14 @@ public class Application extends HubObject {
     }
 
     /**
-     * Zeitpunkt der letzten Modifikation der Bewerbung.
+     * Time of the Application's last modification.
      */
     public Date getModificationTime() {
         return modificationTime;
     }
 
     /**
-     * Version der Bewerbung im System des DoSV.
+     * Application version in the DoSV system.
      */
     public int getDosvVersion() {
         return dosvVersion;

@@ -63,16 +63,12 @@ public class DosvSyncIT extends HubTest {
         service.getDosvSync().synchronize();
         dosvCourse.unpublish(null);
         service.getDosvSync().synchronize();
-        assertTrue(service.getSettings().getDosvSyncTime()
-            .after(dosvCourse.getModificationTime()));
     }
 
     @Test
     public void testSynchronizeApplications() {
         user.connectToDosv(bid, ban, null);
-        Application application = dosvCourse.apply(user.getId(), null);
+        dosvCourse.apply(user.getId(), null);
         service.getDosvSync().synchronize();
-        assertTrue(service.getSettings().getDosvSyncTime()
-            .after(application.getModificationTime()));
     }
 }

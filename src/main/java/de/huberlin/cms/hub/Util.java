@@ -5,6 +5,13 @@
 
 package de.huberlin.cms.hub;
 
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 /**
  * Collection of utilities.
  *
@@ -22,5 +29,18 @@ public class Util {
      */
     public static <T extends Comparable<T>> boolean isInRange(T value, T min, T max) {
         return value.compareTo(min) >= 0 && value.compareTo(max) <= 0;
+    }
+
+    public static XMLGregorianCalendar toXMLGregorianCalendar(Date date) {
+        XMLGregorianCalendar xmlCal;
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(date);
+        try {
+            xmlCal = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
+        } catch (DatatypeConfigurationException e) {
+            // unreachable
+            throw new RuntimeException(e);
+        }
+        return xmlCal;
     }
 }
