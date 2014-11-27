@@ -303,9 +303,9 @@ public class ApplicationService {
     }
 
     /**
-     * gibt alle Bewerbungen im System zurück.
+     * Returns all Applications in HUB.
      *
-     * @return Liste aller Bewerbungen
+     * @return List of all Applications
      */
     public List<Application> getApplications() {
         List<Application> applications = new ArrayList<Application>();
@@ -345,13 +345,13 @@ public class ApplicationService {
     }
 
     /**
-    * Registers a new applicant.
-    *
+     * Registers a new applicant.
+     *
      * @param name name which HUB uses to address the user
      * @param email email address
      * @param credential credential
-    * @return new applicant
-    */
+     * @return new applicant
+     */
     public User register(String name, String email, String credential) {
         return this.createUser(name, email, credential, User.ROLE_APPLICANT);
     }
