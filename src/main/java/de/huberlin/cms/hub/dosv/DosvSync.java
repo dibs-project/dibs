@@ -102,7 +102,7 @@ public class DosvSync {
         APPLICATION_STATUS_MAPPING_TO_DOSV.put(STATUS_VALID, GUELTIG);
     }
 
-    public static XMLGregorianCalendar toXMLGregorianCalendar(Date date) {
+    private static XMLGregorianCalendar toXMLGregorianCalendar(Date date) {
         XMLGregorianCalendar xmlCal;
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(date);
@@ -293,15 +293,14 @@ public class DosvSync {
         }
 
         try {
+            // NOTE Instantiation is resource intensive so it happens here and not in the constructor
             DosvClient dosvClient = new DosvClient(dosvConfig);
 
             /* SAF 301 */
-            // NOTE Instantiation is resource intensive so it happens here and not in the constructor
             List<BewerbungErgebnis> bewerbungErgebnisse = (dosvClient
                 .uebermittelnNeueBewerbungenAnSeSt(bewerbungenNeu));
 
             /* SAF 302 */
-            // NOTE Instantiation is resource intensive so it happens here and not in the constructor
             bewerbungErgebnisse.addAll(dosvClient
                 .uebermittelnGeaenderteBewerbungenAnSeSt(bewerbungenGeaendert));
 

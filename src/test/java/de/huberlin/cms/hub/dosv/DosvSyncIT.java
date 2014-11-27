@@ -16,7 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.hu_berlin.dosv.DosvClient;
-import de.huberlin.cms.hub.Application;
 import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.HubTest;
 import de.huberlin.cms.hub.User;

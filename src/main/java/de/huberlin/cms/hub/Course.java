@@ -76,7 +76,7 @@ public class Course extends HubObject {
     }
 
     /**
-     * Creates an Application to a published Course.
+     * Creates an Application for a published Course.
      *
      * @param userId the applicant's ID
      * @param agent executing user
