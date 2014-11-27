@@ -305,7 +305,8 @@ public class DosvSync {
                     einfachstudienangebotsbewerbung.getEinfachstudienangebotsSchluessel();
                 if (newStatus == null || APPLICATION_STATUS_MAPPING_TO_DOSV.containsKey(newStatus)) {
                     service.getQueryRunner().update(service.getDb(),
-                        "UPDATE application SET dosv_version = ? WHERE course_id = ? AND EXISTS (SELECT id FROM \"user\" WHERE id = user_id AND dosv_bid = ?)",
+                        "UPDATE application SET dosv_version = ? "
+                        + "WHERE course_id = ? AND EXISTS (SELECT id FROM \"user\" WHERE id = user_id AND dosv_bid = ?)",
                         einfachstudienangebotsbewerbung.getVersionSeSt(),
                         "course:" + einfachstudienangebotsSchluessel.
                             getStudienfachSchluessel(),
