@@ -104,7 +104,7 @@ import de.huberlin.cms.hub.User;
  */
 public class DosvSync {
     private final static Map<String, BewerbungsBearbeitungsstatus> APPLICATION_STATUS_MAPPING_TO_DOSV;
-    private final static Map<BewerbungsBearbeitungsstatus, String> DOSV_APPLICATION_STATUS;
+    private final static Map<BewerbungsBearbeitungsstatus, String> APPLICATION_STATUS_MAPPING_FROM_DOSV;
     private ApplicationService service;
     private Properties dosvConfig;
 
@@ -114,10 +114,11 @@ public class DosvSync {
         APPLICATION_STATUS_MAPPING_TO_DOSV.put(STATUS_COMPLETE, EINGEGANGEN);
         APPLICATION_STATUS_MAPPING_TO_DOSV.put(STATUS_VALID, GUELTIG);
 
-        DOSV_APPLICATION_STATUS = new HashMap<>();
-        DOSV_APPLICATION_STATUS.put(ZULASSUNGSANGEBOT_LIEGT_VOR, STATUS_ADMITTED);
-        DOSV_APPLICATION_STATUS.put(ZUGELASSEN, STATUS_CONFIRMED);
-        DOSV_APPLICATION_STATUS.put(ZURUECKGEZOGEN, STATUS_WITHDRAWN);
+        APPLICATION_STATUS_MAPPING_FROM_DOSV = new HashMap<>();
+        APPLICATION_STATUS_MAPPING_FROM_DOSV.put(ZULASSUNGSANGEBOT_LIEGT_VOR,
+            STATUS_ADMITTED);
+        APPLICATION_STATUS_MAPPING_FROM_DOSV.put(ZUGELASSEN, STATUS_CONFIRMED);
+        APPLICATION_STATUS_MAPPING_FROM_DOSV.put(ZURUECKGEZOGEN, STATUS_WITHDRAWN);
     }
 
     private static XMLGregorianCalendar toXMLGregorianCalendar(Date date) {
@@ -280,16 +281,14 @@ public class DosvSync {
         updateTime[0] = service.getSettings().getDosvApplicationsServerTime();
         List<Bewerbung> bewerbungen;
 
-        // hole die geänderten Bewerbungen anhand der updateTime von Hochschulstart
+        /* SAF 303 */
+        // NOTE Instantiation is resource intensive so it happens here and not in the constructor
+        DosvClient dosvClient = new DosvClient(dosvConfig);
         try {
             List<String> referenzen =
-                // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
-                new DosvClient(dosvConfig)
-                    .anfragenNeueGeaenderteBewerbungenDurchHS(updateTime);
+                dosvClient.anfragenNeueGeaenderteBewerbungenDurchHS(updateTime);
             bewerbungen =
-                // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
-                new DosvClient(dosvConfig)
-                    .uebermittelnNeueGeaenderteBewerbungenAnHS(referenzen);
+                dosvClient.uebermittelnNeueGeaenderteBewerbungenAnHS(referenzen);
         } catch (BewerbungenServiceFehler e) {
             throw new RuntimeException(e);
         }
@@ -299,7 +298,7 @@ public class DosvSync {
             db.setAutoCommit(false);
             for (Bewerbung bewerbung : bewerbungen) {
                 String newStatus =
-                    DOSV_APPLICATION_STATUS.get(bewerbung.getBearbeitungsstatus());
+                    APPLICATION_STATUS_MAPPING_FROM_DOSV.get(bewerbung.getBearbeitungsstatus());
                 Einfachstudienangebotsbewerbung einfachstudienangebotsbewerbung =
                     (Einfachstudienangebotsbewerbung) bewerbung;
                 EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
@@ -321,7 +320,7 @@ public class DosvSync {
                         einfachstudienangebotsbewerbung.getBewerberId());
                 }
             }
-            // schreibe den neuen Updatezeitpunkt in die DB
+
             service.getQueryRunner().update(service.getDb(),
                 "UPDATE settings SET dosv_applications_server_time = ?",
                 new Timestamp(updateTime[0].getTime()));
