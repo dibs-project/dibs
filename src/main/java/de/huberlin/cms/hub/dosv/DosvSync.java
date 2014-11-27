@@ -69,6 +69,7 @@ public class DosvSync {
     private Properties dosvConfig;
 
     public DosvSync(ApplicationService service) {
+        // TODO validate dosvConfig
         this.service = service;
         dosvConfig = new Properties();
         dosvConfig.putAll(service.getConfig());
