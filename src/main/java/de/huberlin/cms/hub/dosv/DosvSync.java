@@ -358,16 +358,17 @@ public class DosvSync {
                     einfachstudienangebotsbewerbung.getEinfachstudienangebotsSchluessel();
                 if (newStatus == null || APPLICATION_DOSV_STATUS.containsKey(newStatus)) {
                     service.getQueryRunner().update(service.getDb(),
-                        "UPDATE application SET dosv_version = ? FROM \"user\" WHERE dosv_bid = ? AND course_id = ? AND \"user\".id = user_id",
+                        "UPDATE application SET dosv_version = ? WHERE course_id = ? AND EXISTS (SELECT id FROM \"user\" WHERE id = user_id AND dosv_bid = ?)",
                         einfachstudienangebotsbewerbung.getVersionSeSt(),
-                        einfachstudienangebotsbewerbung.getBewerberId(),
-                        einfachstudienangebotsSchluessel.getStudienfachSchluessel());
+                        einfachstudienangebotsSchluessel.getStudienfachSchluessel(),
+                        einfachstudienangebotsbewerbung.getBewerberId());
                 } else {
                     service.getQueryRunner().update(service.getDb(),
-                        "UPDATE application SET status = ?, dosv_version = ?, modification_time = CURRENT_TIMESTAMP FROM \"user\" WHERE dosv_bid = ? AND course_id = ? AND \"user\".id = user_id",
+                        "UPDATE application SET status = ?, dosv_version = ?, modification_time = CURRENT_TIMESTAMP "
+                        + "WHERE course_id = ? AND EXISTS (SELECT id FROM \"user\" WHERE id = user_id AND dosv_bid = ?)",
                         newStatus, einfachstudienangebotsbewerbung.getVersionSeSt(),
-                        einfachstudienangebotsbewerbung.getBewerberId(),
-                        einfachstudienangebotsSchluessel.getStudienfachSchluessel());
+                        einfachstudienangebotsSchluessel.getStudienfachSchluessel(),
+                        einfachstudienangebotsbewerbung.getBewerberId());
                 }
             }
             // schreibe den neuen Updatezeitpunkt in die DB
