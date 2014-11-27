@@ -129,6 +129,15 @@ public class ApplicationServiceTest extends HubTest {
         this.service.getCourse("foo");
     }
 
+    @Test
+    public void testGetCoursesFilter() {
+        // unpublished course
+        Course course = this.service.createCourse("Science of Computer", 500, null);
+        HashMap<String, Object> filter = new HashMap<>();
+        filter.put("published", false);
+        assertEquals(Arrays.asList(course), this.service.getCourses(filter));
+    }
+
     @Test()
     public void testGetQuotaNonExisting() {
         this.exception.expect(ObjectNotFoundException.class);
@@ -137,7 +146,7 @@ public class ApplicationServiceTest extends HubTest {
 
     @Test
     public void testGetCriteriaFilter() {
-        HashMap<String, Object> filter = new HashMap<String, Object>();
+        HashMap<String, Object> filter = new HashMap<>();
         filter.put("required_information_type_id", "qualification");
         assertEquals(Arrays.asList(this.service.getCriteria().get("qualification")),
             this.service.getCriteria(filter, null));
