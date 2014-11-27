@@ -25,6 +25,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -38,10 +39,16 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.hochschulstart.hochschulschnittstelle.benutzerservicev1_0.BenutzerServiceFehler;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlserviceparamv1_0.RanglisteErgebnis;
 import de.hochschulstart.hochschulschnittstelle.bewerberauswahlserviceparamv1_0.StudienpaketErgebnis;
 import de.hochschulstart.hochschulschnittstelle.bewerberauswahlservicev1_0.BewerberauswahlServiceFehler;
 import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Bewerberplatzbedarf;
 import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Paketbestandteil;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Rangliste;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.RanglistenEbene;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.RanglistenStatus;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Ranglisteneintrag;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.RanglisteneintragsStatus;
 import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Studienpaket;
 import de.hochschulstart.hochschulschnittstelle.bewerbungenserviceparamv1_0.BewerbungErgebnis;
 import de.hochschulstart.hochschulschnittstelle.bewerbungenservicev1_0.BewerbungenServiceFehler;
@@ -68,19 +75,22 @@ import de.hu_berlin.dosv.DosvClient;
 import de.huberlin.cms.hub.Application;
 import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Course;
+import de.huberlin.cms.hub.Quota;
+import de.huberlin.cms.hub.Rank;
 import de.huberlin.cms.hub.Settings;
 import de.huberlin.cms.hub.User;
 
 // TODO document error handling
 /**
- * DoSV synchronisation class for Courses, Applications and Ranks.
+ * DoSV synchronisation class for Courses, Applications and Ranks. All resources are synced
+ * as early as possible.
  * <p>
  * <strong>Data Mapping between HUB and the DoSV system</strong>
  * <p>
  * General:
  * <ul>
  * <li><code>abschluss.schluessel</code> is always <code>"bachelor"</code></li>
- * <li><code>studienfach.schluessel = course.getId().hashCode()</code></li>
+ * <li><code>studienfach.schluessel = course.getId()</code></li>
  * </ul>
  * <p>
  * Courses:
@@ -91,6 +101,7 @@ import de.huberlin.cms.hub.User;
  * <li><code>integrationseinstellungen.*bescheidVersandart: hochschule</code></li>
  * <li><code>studienfach.nameDE, einfachstudienangebot.nameDE, *.beschreibungDE =
  * course.name</code></li>
+ * <li><code>studienpaket.schluessel = course.getId()</code></li>
  * </ul>
  * <p>
  * Applications:
@@ -105,6 +116,11 @@ import de.huberlin.cms.hub.User;
  * Each application status is set either by HUB or via Hochschulstart.
  * To avoid synchronisation conflicts between <code>STATUS_CONFIRMED</code> and
  * <code>STATUS_WITHDRAWN</code>, users can withdraw their application only via Hochschulstart.
+ *
+ * Rankings:
+ * <ul>
+ * <li><code>rangliste.schluessel = quota.getId()</code></li>
+ * </ul>
  *
  * @author Markus Michler
  */
@@ -157,7 +173,7 @@ public class DosvSync {
     }
 
     /**
-     * Synchronisiert Studiengänge, Bewerbungen, und Ranglisten mit dem System des DoSV.
+     * Synchronises Courses, Applications and Ranks.
      */
     public void synchronize() {
         Date newSyncTime = new Date();
@@ -172,6 +188,7 @@ public class DosvSync {
                 throw new RuntimeException("Sync exceeded maximum number of retries.");
             }
         }
+        pushRankings();
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -195,12 +212,12 @@ public class DosvSync {
                 continue;
             }
             // TODO Feld Course.subject
-            String dosvSubjectKey = course.getId().split(":")[1];
+            String dosvCourseKey = course.getId();
             if (course.isAdmission()) {
                 /** Studienpaket - SAF 401 */
                 EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
                     new EinfachstudienangebotsSchluessel();
-                einfachstudienangebotsSchluessel.setStudienfachSchluessel(dosvSubjectKey);
+                einfachstudienangebotsSchluessel.setStudienfachSchluessel(dosvCourseKey);
                 einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
 
                 Bewerberplatzbedarf bewerberplatzbedarf = new Bewerberplatzbedarf();
@@ -213,7 +230,7 @@ public class DosvSync {
                 paketbestandteil.setBewerberplatzbedarf(bewerberplatzbedarf);
 
                 Studienpaket studienpaket = new Studienpaket();
-                studienpaket.setSchluessel(dosvSubjectKey);
+                studienpaket.setSchluessel(dosvCourseKey);
                 studienpaket.setKapazitaet(course.getCapacity());
                 studienpaket.getPaketbestandteil().add(paketbestandteil);
                 studienpaket.setNameDe(course.getName());
@@ -229,7 +246,7 @@ public class DosvSync {
 
             /** Studienangebot - SAF 101 */
             Studienfach studienfach = new Studienfach();
-            studienfach.setSchluessel(dosvSubjectKey);
+            studienfach.setSchluessel(dosvCourseKey);
             studienfach.setNameDe(course.getName());
             Abschluss abschluss = new Abschluss();
             abschluss.setSchluessel("bachelor");
@@ -258,7 +275,7 @@ public class DosvSync {
             Duration duration;
             try {
                 xmlCal = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
-                duration = DatatypeFactory.newInstance().newDurationYearMonth(true, 1, 0);
+                duration = DatatypeFactory.newInstance().newDuration(1000);
             } catch (DatatypeConfigurationException e) {
                 // unerreichbar
                 throw new RuntimeException(e);
@@ -344,15 +361,13 @@ public class DosvSync {
                         "UPDATE application SET dosv_version = ? FROM \"user\" WHERE dosv_bid = ? AND course_id = ? AND \"user\".id = user_id",
                         einfachstudienangebotsbewerbung.getVersionSeSt(),
                         einfachstudienangebotsbewerbung.getBewerberId(),
-                        "course:" + einfachstudienangebotsSchluessel.
-                            getStudienfachSchluessel());
+                        einfachstudienangebotsSchluessel.getStudienfachSchluessel());
                 } else {
                     service.getQueryRunner().update(service.getDb(),
                         "UPDATE application SET status = ?, dosv_version = ?, modification_time = CURRENT_TIMESTAMP FROM \"user\" WHERE dosv_bid = ? AND course_id = ? AND \"user\".id = user_id",
                         newStatus, einfachstudienangebotsbewerbung.getVersionSeSt(),
                         einfachstudienangebotsbewerbung.getBewerberId(),
-                        "course:" + einfachstudienangebotsSchluessel.
-                            getStudienfachSchluessel());
+                        einfachstudienangebotsSchluessel.getStudienfachSchluessel());
                 }
             }
             // schreibe den neuen Updatezeitpunkt in die DB
@@ -385,7 +400,7 @@ public class DosvSync {
                 new EinfachstudienangebotsSchluessel();
             // TODO Feld Course.subject
             einfachstudienangebotsSchluessel.setStudienfachSchluessel(application
-                .getCourse().getId().split(":")[1]);
+                .getCourse().getId());
             // TODO Feld Course.degree
             einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
 
@@ -458,4 +473,50 @@ public class DosvSync {
 
         return done;
     }
+
+    private void pushRankings() {
+          for (Course course : service.getCourses()) {
+              if (!course.isDosv()
+                  || service.getSettings().getDosvSyncTime()
+                      .after(course.getModificationTime()) || !course.isAdmission()) {
+                  continue;
+              }
+              Quota quota = course.getAllocationRule().getQuota();
+              List<Rank> ranking = quota.getRanking();
+              Rangliste rangliste = new Rangliste();
+
+              rangliste.setNameDe(quota.getName());
+              rangliste.setSchluessel(quota.getId());
+              rangliste.setStudienpaketSchluessel(course.getId());
+              rangliste.setStatus(RanglistenStatus.BEFUELLT);
+              // Kopfdaten
+              rangliste.setPlaetzeProzentual((double) quota.getPercentage());
+              // TODO List<Integer, Integer> Quota.level
+              rangliste.setEbene(RanglistenEbene.HAUPTQUOTEN);
+              rangliste.setIstVorwegzulasserrangliste(false);
+              rangliste.setIstChancenrangliste(false);
+              rangliste.setAbarbeitungsposition(1);
+
+              for (Rank rank : ranking) {
+                  Ranglisteneintrag ranglisteneintrag = new Ranglisteneintrag();
+                  ranglisteneintrag.setBewerberId(rank.getUser().getDosvBid());
+                  ranglisteneintrag.setRang(rank.getIndex() + 1);
+                  ranglisteneintrag.setStatus(RanglisteneintragsStatus.BELEGT);
+                  rangliste.getEintrag().add(ranglisteneintrag);
+              }
+
+              RanglisteErgebnis ranglisteErgebnis;
+              try {
+                  // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
+                  ranglisteErgebnis =
+                      new DosvClient(dosvConfig).uebermittelnRanglistenAnSeSt(Arrays
+                          .asList(rangliste)).get(0);
+              } catch (BewerberauswahlServiceFehler e) {
+                  throw new RuntimeException(e);
+              }
+              if (ranglisteErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
+                  throw new RuntimeException(ranglisteErgebnis.getGrundZurueckweisung());
+              }
+          }
+      }
 }

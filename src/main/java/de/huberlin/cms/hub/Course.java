@@ -219,7 +219,10 @@ public class Course extends HubObject {
         }
         admission = true;
         modificationTime = now;
-        // NOTE future iterations: will be called when a user's application status is set
+        // NOTE future iterations: generateRankings will be called when a user's application status is set
+        for (Application application : getApplications()) {
+            application.setStatus(Application.STATUS_VALID, null);
+        }
         generateRankings();
     }
 
