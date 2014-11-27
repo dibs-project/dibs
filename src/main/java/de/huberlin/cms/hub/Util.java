@@ -6,7 +6,7 @@
 package de.huberlin.cms.hub;
 
 /**
- * TODO: dokumentieren
+ * Collection of utilities.
  *
  * @author Sven Pfaller
  */
