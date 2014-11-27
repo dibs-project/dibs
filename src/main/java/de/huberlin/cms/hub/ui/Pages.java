@@ -222,6 +222,28 @@ public class Pages implements Closeable {
         return new Viewable("/course.ftl", this.model);
     }
 
+    /* Course.publish */
+
+    @POST
+    @Path("courses/{id}/publish")
+    public Response coursePublish(@PathParam("id") String id) {
+        // TODO: handle course_incomplete error
+        Course course = this.service.getCourse(id);
+        course.publish(this.user);
+        return Response.seeOther(UriBuilder.fromUri("courses/{id}/").build(id)).build();
+    }
+
+    /* Course.unpublish */
+
+    @POST
+    @Path("courses/{id}/unpublish")
+    public Response courseUnpublish(@PathParam("id") String id) {
+        // TODO: handle course_has_applications error
+        Course course = this.service.getCourse(id);
+        course.unpublish(this.user);
+        return Response.seeOther(UriBuilder.fromUri("courses/{id}/").build(id)).build();
+    }
+
     /* Create course */
 
     @GET
