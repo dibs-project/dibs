@@ -107,7 +107,7 @@ public class Ui extends ResourceConfig {
                 }
 
                 new ApplicationService(db, config).getDosvSync().synchronize();
-                System.err.println("DoSV Synchronized");
+                logger.info("DoSV synchronized");
 
                 try {
                     db.close();
