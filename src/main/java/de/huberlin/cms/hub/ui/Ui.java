@@ -90,11 +90,10 @@ public class Ui extends ResourceConfig {
             throw new IOError(e);
         }
 
-        // set up timer task for DoSV synchronisation
-        // TODO put sync interval in config
-        // TODO code duplication
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
+        /* Set up timer task for DoSV synchronisation */
+        Long interval =
+            Long.parseLong((String) this.getProperty("dosv_sync_interval")) * 1000 * 60;
+        new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 Connection db;
@@ -106,17 +105,17 @@ public class Ui extends ResourceConfig {
                 } catch (SQLException e) {
                     throw new IOError(e);
                 }
-                ApplicationService service =
-                    new ApplicationService(db, config);
-                service.getDosvSync().synchronize();
+
+                new ApplicationService(db, config).getDosvSync().synchronize();
                 System.err.println("DoSV Synchronized");
+
                 try {
                     db.close();
                 } catch (SQLException e) {
                     throw new IOError(e);
                 }
             }
-        }, 3000, 10000);
+        }, interval, interval);
     }
 
     public static void main(String[] args) throws Exception {
