@@ -132,7 +132,8 @@ public class ApplicationServiceTest extends HubTest {
     @Test
     public void testGetCoursesFilter() {
         // unpublished course
-        Course course = this.service.createCourse("Science of Computer", 500, null);
+        Course course =
+            this.service.createCourse("Science of Computer", 500, false, null);
         HashMap<String, Object> filter = new HashMap<>();
         filter.put("published", false);
         assertEquals(Arrays.asList(course), this.service.getCourses(filter));
