@@ -238,8 +238,9 @@ public class Pages implements Closeable {
                 new HashSet<String>(Arrays.asList("name", "capacity")));
 
             int capacity = Integer.parseInt(form.getFirst("capacity"));
+            // NOTE there is currently no local admission process, all Courses are DoSV
             Course course =
-                this.service.createCourse(form.getFirst("name"), capacity, this.user);
+                this.service.createCourse(form.getFirst("name"), capacity, true, user);
             // NOTE the first prototype does not feature a frontend for AllocationRule and
             // Quota creation.
             course.createAllocationRule(this.user)
