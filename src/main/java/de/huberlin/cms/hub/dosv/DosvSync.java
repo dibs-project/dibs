@@ -323,7 +323,7 @@ public class DosvSync {
             }
 
             service.getQueryRunner().update(service.getDb(),
-                "UPDATE settings SET dosv_applications_server_time = ?",
+                "UPDATE settings SET dosv_remote_applications_pull_time = ?",
                 new Timestamp(updateTime[0].getTime()));
             db.commit();
             db.setAutoCommit(true);
