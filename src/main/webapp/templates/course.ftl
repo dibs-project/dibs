@@ -18,6 +18,11 @@
             <ul>
                 [#if user.role == "applicant"]
                     [#-- TODO: apply --]
+                    <li>
+                        <form method="POST" action="/users/${user.id}/connect-to-dosv/">
+                            <button>Bewerben</button>
+                        </form>
+                    </li>
 
                 [#elseif user.role == "admin"]
                     <li>

@@ -205,6 +205,39 @@ public class Pages implements Closeable {
         return new Viewable("/register.ftl", this.model);
     }
 
+    /* User.connectToDosv */
+
+    // TODO: test!
+
+    @GET
+    @Path("users/{id}/connect-to-dosv")
+    public Viewable userConnectToDosv() {
+        return this.userConnectToDosv(null, null);
+    }
+
+    @POST
+    @Path("users/{id}/connect-to-dosv")
+    public Response userConnectToDosv(MultivaluedMap<String, String> form) {
+        try {
+            // TODO: can we use minus (i.e. dosv-bid) in maps in templates?
+            Util.checkContainsRequired(form,
+                new HashSet<>(Arrays.asList("dosv_bid", "dosv_ban")));
+            this.user.connectToDosv(form.getFirst("dosv_bid"), form.getFirst("dosv_ban"),
+                this.user);
+            // TODO: post to resource Course.apply
+            return Response.seeOther(UriBuilder.fromUri("/").build()).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(400).entity(this.userConnectToDosv(form, e)).build();
+        }
+    }
+
+    private Viewable userConnectToDosv(MultivaluedMap<String, String> form,
+            IllegalArgumentException formError) {
+        this.model.put("form", form);
+        this.model.put("formError", formError);
+        return new Viewable("/user-connect-to-dosv.ftl", this.model);
+    }
+
     /* Courses */
 
     @GET
