@@ -230,7 +230,7 @@ public class Pages implements Closeable {
         // TODO: handle course_incomplete error
         Course course = this.service.getCourse(id);
         course.publish(this.user);
-        return Response.seeOther(UriBuilder.fromUri("courses/{id}/").build(id)).build();
+        return Response.seeOther(UriBuilder.fromUri("/courses/{id}/").build(id)).build();
     }
 
     /* Course.unpublish */
@@ -241,7 +241,7 @@ public class Pages implements Closeable {
         // TODO: handle course_has_applications error
         Course course = this.service.getCourse(id);
         course.unpublish(this.user);
-        return Response.seeOther(UriBuilder.fromUri("courses/{id}/").build(id)).build();
+        return Response.seeOther(UriBuilder.fromUri("/courses/{id}/").build(id)).build();
     }
 
     /* Create course */
@@ -260,9 +260,8 @@ public class Pages implements Closeable {
                 new HashSet<String>(Arrays.asList("name", "capacity")));
 
             int capacity = Integer.parseInt(form.getFirst("capacity"));
-            // NOTE there is currently no local admission process, all Courses are DoSV
-            Course course =
-                this.service.createCourse(form.getFirst("name"), capacity, true, user);
+            Course course = this.service.createCourse(form.getFirst("name"), capacity,
+                form.containsKey("dosv"), user);
             // NOTE the first prototype does not feature a frontend for AllocationRule and
             // Quota creation.
             course.createAllocationRule(this.user)
