@@ -146,9 +146,18 @@ input {
     font-family: inherit;
 }
 
-label > small {
+label small {
     display: block;
     font-size: 1rem;
+}
+
+input[type="checkbox"] {
+    display: inline-block;
+    width: auto;
+}
+
+input[type="checkbox"] + small {
+    display: inline;
 }
 
 /* ==== Page ==== */
