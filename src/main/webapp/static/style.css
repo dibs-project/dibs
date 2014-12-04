@@ -83,6 +83,11 @@ a.button {
     cursor: pointer;
 }
 
+.object-meta {
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
 /* ==== Section ==== */
 
 section.with-aside {
