@@ -38,8 +38,10 @@ import javax.ws.rs.core.UriBuilder;
 import org.glassfish.jersey.server.CloseableService;
 import org.glassfish.jersey.server.mvc.Viewable;
 
+import de.huberlin.cms.hub.Application;
 import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Course;
+import de.huberlin.cms.hub.HubException.IllegalStateException;
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 import de.huberlin.cms.hub.Session;
 import de.huberlin.cms.hub.User;
@@ -114,6 +116,8 @@ public class Pages implements Closeable {
         if (this.user == null) {
             return Response.seeOther(UriBuilder.fromUri("/login/").build()).build();
         }
+
+        this.model.put("applications", user.getApplications());
         return Response.ok().entity(new Viewable("/index.ftl", this.model)).build();
     }
 
@@ -205,6 +209,18 @@ public class Pages implements Closeable {
         return new Viewable("/register.ftl", this.model);
     }
 
+    /* Application */
+
+    @GET
+    @Path("applications/{id}")
+    public Viewable application(@PathParam("id") String id) {
+        Application application = this.service.getApplication(id);
+        this.model.put("application", application);
+        this.model.put("applicant", application.getUser());
+        this.model.put("course", application.getCourse());
+        return new Viewable("/application.ftl", this.model);
+    }
+
     /* Courses */
 
     @GET
@@ -218,8 +234,28 @@ public class Pages implements Closeable {
     @GET
     @Path("courses/{id}")
     public Viewable course(@PathParam("id") String id) {
-        this.model.put("course", this.service.getCourse(id));
+        Course course = this.service.getCourse(id);
+        this.model.put("course", course);
+        this.model.put("applications", course.getApplications());
         return new Viewable("/course.ftl", this.model);
+    }
+
+    /* Course.apply */
+
+    @POST
+    @Path("courses/{id}/apply")
+    public Response apply(@PathParam("id") String id) {
+        Course course = this.service.getCourse(id);
+        URI url = null;
+        try {
+            Application application = course.apply(this.user.getId(), this.user);
+            url = UriBuilder.fromUri("/applications/{id}/").build(application.getId());
+        } catch (IllegalStateException e) {
+            // TODO: user_not_connected: redirect to User.connectToDosv
+            // course_not_published is handled by 404 after redirect
+            url = UriBuilder.fromUri("/courses/{id}/").build(id);
+        }
+        return Response.seeOther(url).build();
     }
 
     /* Course.publish */
