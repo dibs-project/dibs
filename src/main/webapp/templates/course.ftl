@@ -12,6 +12,13 @@
             [/#if]
 
             <p>Kapazität: ${course.capacity}</p>
+
+            [#if course.dosv]
+                <p>
+                    Zulassung über
+                    <a href="http://hochschulstart.de/" target="_blank">hochschulstart.de</a>.
+                </p>
+            [/#if]
         </div>
 
         <aside>
