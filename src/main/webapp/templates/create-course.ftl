@@ -13,6 +13,13 @@
             <small>Kapazität</small>
             <input name="capacity" value="${(form.capacity[0])!}"/>
         </label>
+        <label>
+            <input type="checkbox" name="dosv" [#if (form.dosv[0])??]checked="checked"[/#if]/>
+            <small>
+                Zulassung über
+                <a href="http://hochschulstart.de/" target="_blank">hochschulstart.de</a>
+            </small>
+        </label>
         <p><button>Studiengang anlegen</button></p>
     </form>
 [/@page]
