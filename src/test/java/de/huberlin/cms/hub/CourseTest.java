@@ -34,7 +34,7 @@ public class CourseTest extends HubTest {
     public void testApply() {
         Application application = course.apply(user.getId(), null);
         Evaluation evaluation = application.getEvaluationByCriterionId("qualification");
-        assertTrue(user.getApplications(null).contains(application));
+        assertTrue(user.getApplications().contains(application));
         assertEquals(Evaluation.STATUS_INFORMATION_MISSING, evaluation.getStatus());
         assertNull(evaluation.getInformation());
         assertNull(evaluation.getValue());
