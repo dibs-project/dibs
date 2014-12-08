@@ -5,9 +5,14 @@
 
 package de.huberlin.cms.hub.dosv;
 
+import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.EINGEGANGEN;
+import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.GUELTIG;
 import static de.hochschulstart.hochschulschnittstelle.commonv1_0.ErgebnisStatus.ZURUECKGEWIESEN;
 import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.IN_VORBEREITUNG;
 import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.OEFFENTLICH_SICHTBAR;
+import static de.huberlin.cms.hub.Application.STATUS_COMPLETE;
+import static de.huberlin.cms.hub.Application.STATUS_INCOMPLETE;
+import static de.huberlin.cms.hub.Application.STATUS_VALID;
 
 import java.io.IOError;
 import java.sql.Connection;
@@ -16,15 +21,22 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.hochschulstart.hochschulschnittstelle.benutzerservicev1_0.BenutzerServiceFehler;
+import de.hochschulstart.hochschulschnittstelle.bewerbungenserviceparamv1_0.BewerbungErgebnis;
+import de.hochschulstart.hochschulschnittstelle.bewerbungenservicev1_0.BewerbungenServiceFehler;
+import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.Bewerbung;
+import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus;
+import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.Einfachstudienangebotsbewerbung;
+import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.EinfachstudienangebotsbewerbungsSchluessel;
 import de.hochschulstart.hochschulschnittstelle.commonv1_0.AutorisierungsFehler;
 import de.hochschulstart.hochschulschnittstelle.commonv1_0.UnbekannterBenutzerFehler;
 import de.hochschulstart.hochschulschnittstelle.studiengaengeserviceparamv1_0.StudienangebotErgebnis;
@@ -41,32 +53,67 @@ import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studienangebot
 import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studienfach;
 import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studiengang;
 import de.hu_berlin.dosv.DosvClient;
+import de.huberlin.cms.hub.Application;
 import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.Settings;
+import de.huberlin.cms.hub.User;
 
+// TODO document error handling
 /**
  * DoSV synchronisation class for Courses, Applications and Ranks.
  * <p>
  * <strong>Data Mapping between HUB and the DoSV system</strong>
  * <p>
- * Courses:
+ * General:
  * <ul>
- * <li><code>published -> oeffentlich_sichtbar</code></li>
- * <li><code>unpublished -> in_vorbereitung</code></li>
  * <li><code>abschluss.schluessel</code> is always <code>"bachelor"</code></li>
  * <li><code>studienfach.schluessel = course.getId().hashCode()</code></li>
+ * </ul>
+ * <p>
+ * Courses:
+ * <ul>
+ * <li><code>published == true -> OEFFENTLICH_SICHTBAR</code></li>
+ * <li><code>published == false -> IN_VORBEREITUNG</code></li>
  * <li><code>integrationseinstellungen.bewerbungsort: hochschule</code></li>
  * <li><code>integrationseinstellungen.*bescheidVersandart: hochschule</code></li>
  * <li><code>studienfach.nameDE, einfachstudienangebot.nameDE, *.beschreibungDE =
  * course.name</code></li>
+ * </ul>
+ * <p>
+ * Applications:
+ * <ul>
+ * <li><code>STATUS_INCOMPLETE -> EINGEGANGEN</code></li>
+ * <li><code>STATUS_COMPLETE -> EINGEGANGEN</code></li>
+ * <li><code>STATUS_VALID -> GUELTIG</code></li>
+ * </ul>
  *
  * @author Markus Michler
  */
 public class DosvSync {
-
+    private final static Map<String, BewerbungsBearbeitungsstatus> APPLICATION_STATUS_MAPPING_TO_DOSV;
     private ApplicationService service;
     private Properties dosvConfig;
+
+    static {
+        APPLICATION_STATUS_MAPPING_TO_DOSV = new HashMap<>();
+        APPLICATION_STATUS_MAPPING_TO_DOSV.put(STATUS_INCOMPLETE, EINGEGANGEN);
+        APPLICATION_STATUS_MAPPING_TO_DOSV.put(STATUS_COMPLETE, EINGEGANGEN);
+        APPLICATION_STATUS_MAPPING_TO_DOSV.put(STATUS_VALID, GUELTIG);
+    }
+
+    private static XMLGregorianCalendar toXMLGregorianCalendar(Date date) {
+        XMLGregorianCalendar xmlCal;
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(date);
+        try {
+            xmlCal = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
+        } catch (DatatypeConfigurationException e) {
+            // unreachable
+            throw new RuntimeException(e);
+        }
+        return xmlCal;
+    }
 
     public DosvSync(ApplicationService service) {
         // TODO validate dosvConfig
@@ -105,6 +152,7 @@ public class DosvSync {
     public void synchronize() {
         Date newSyncTime = new Date();
         pushCourses();
+        pushApplications();
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -123,7 +171,7 @@ public class DosvSync {
 
         Date dosvSyncTime = service.getSettings().getDosvSyncTime();
         for (Course course : service.getCourses()) {
-            if (dosvSyncTime.after(course.getModificationTime())) {
+            if (!course.isDosv() || dosvSyncTime.after(course.getModificationTime())) {
                 continue;
             }
             // TODO Studienangebote können nur im Status IN_VORBEREITUNG geändert werden,
@@ -159,21 +207,13 @@ public class DosvSync {
 
             Koordinierungsangebotsdaten koordinierungsangebotsdaten =
                 new Koordinierungsangebotsdaten();
-            GregorianCalendar cal = new GregorianCalendar();
-            cal.setTime(new Date()); // TODO Beginn Bewerbungsfrist in Course
-            XMLGregorianCalendar xmlCal;
-            Duration duration;
-            try {
-                xmlCal = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
-                duration = DatatypeFactory.newInstance().newDurationYearMonth(true, 1, 0);
-            } catch (DatatypeConfigurationException e) {
-                // unerreichbar
-                throw new RuntimeException(e);
-            }
+            // TODO application period in Course
+            Date startApplicationTime = new Date();
+            Date endApplicationTime = new Date(startApplicationTime.getTime() + 1000);
             koordinierungsangebotsdaten
-                .setAnfangBewerbungsfrist((XMLGregorianCalendar) xmlCal.clone());
-            xmlCal.add(duration); // TODO Ende Bewerbungsfrist in Course
-            koordinierungsangebotsdaten.setEndeBewerbungsfrist(xmlCal);
+                .setAnfangBewerbungsfrist(toXMLGregorianCalendar(startApplicationTime));
+            koordinierungsangebotsdaten
+                .setEndeBewerbungsfrist(toXMLGregorianCalendar(endApplicationTime));
             koordinierungsangebotsdaten
                 .setUrlHSBewerbungsportal("http://example.org/"); // TODO Konfigurierbar
 
@@ -206,5 +246,91 @@ public class DosvSync {
         } catch (StudiengaengeServiceFehler e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private boolean pushApplications() {
+        boolean done = true;
+        List<Bewerbung> bewerbungenNeu = new ArrayList<>();
+        List<Bewerbung> bewerbungenGeaendert = new ArrayList<>();
+        Date dosvSynctime = service.getSettings().getDosvSyncTime();
+
+        // TODO should be optimized by WHERE filter
+        List<Application> applications = service.getApplications();
+        for (Application application : applications) {
+            BewerbungsBearbeitungsstatus dosvNewStatus =
+                APPLICATION_STATUS_MAPPING_TO_DOSV.get(application.getStatus());
+            Course course = application.getCourse();
+            if (dosvSynctime.after(application.getModificationTime())
+                    || dosvNewStatus == null || !course.isDosv()) {
+                continue;
+            }
+            EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
+                new EinfachstudienangebotsSchluessel();
+            // TODO Field Course.subject
+            einfachstudienangebotsSchluessel.setStudienfachSchluessel(
+                Integer.toString(course.getId().hashCode()));
+            // TODO Field Course.degree
+            einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
+
+            User user = application.getUser();
+            Einfachstudienangebotsbewerbung einfachstudienangebotsbewerbung =
+                new Einfachstudienangebotsbewerbung();
+            einfachstudienangebotsbewerbung.setBewerberId(user.getDosvBid());
+            einfachstudienangebotsbewerbung.setBewerberBAN(user.getDosvBan());
+            einfachstudienangebotsbewerbung.setBewerberEmailAdresse(user.getEmail());
+            einfachstudienangebotsbewerbung
+                .setEingangsZeitpunkt(toXMLGregorianCalendar(new Date()));
+            einfachstudienangebotsbewerbung
+                .setEinfachstudienangebotsSchluessel(einfachstudienangebotsSchluessel);
+
+            int dosvVersion = application.getDosvVersion();
+            if (dosvVersion == -1) {
+                bewerbungenNeu.add(einfachstudienangebotsbewerbung);
+            } else {
+                einfachstudienangebotsbewerbung.setVersionSeSt(dosvVersion);
+                bewerbungenGeaendert.add(einfachstudienangebotsbewerbung);
+            }
+            einfachstudienangebotsbewerbung.setBearbeitungsstatus(dosvNewStatus);
+        }
+
+        try {
+            // NOTE Instantiation is resource intensive so it happens here and not in the constructor
+            DosvClient dosvClient = new DosvClient(dosvConfig);
+
+            /* SAF 301 */
+            List<BewerbungErgebnis> bewerbungErgebnisse = (dosvClient
+                .uebermittelnNeueBewerbungenAnSeSt(bewerbungenNeu));
+
+            /* SAF 302 */
+            bewerbungErgebnisse.addAll(dosvClient
+                .uebermittelnGeaenderteBewerbungenAnSeSt(bewerbungenGeaendert));
+
+           for (BewerbungErgebnis bewerbungErgebnis : bewerbungErgebnisse) {
+               if (bewerbungErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
+                   /* "Account zur Löschung vorgesehen" */
+                   if (bewerbungErgebnis.getGrundZurueckweisung().contains("30235")) {
+                       // TODO error handling, user notification
+                   }
+                   /* "Versionskonflikt" */
+                   if (bewerbungErgebnis.getGrundZurueckweisung().contains("30233")) {
+                       done = false;
+                   } else {
+                       // unreachable
+                       EinfachstudienangebotsbewerbungsSchluessel bewerbungsSchluessel
+                           = (EinfachstudienangebotsbewerbungsSchluessel)
+                           bewerbungErgebnis.getBewerbungsSchluessel();
+                        throw new RuntimeException(String.format("%, %: %",
+                            bewerbungsSchluessel.getBewerberId(),
+                            bewerbungsSchluessel.getFachkennzeichenSchluessel(),
+                            bewerbungErgebnis.getGrundZurueckweisung()));
+                   }
+               }
+           }
+        } catch (BewerbungenServiceFehler e) {
+            // unreachable
+            throw new RuntimeException(e);
+        }
+
+        return done;
     }
 }

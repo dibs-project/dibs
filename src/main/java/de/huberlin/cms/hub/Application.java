@@ -9,7 +9,9 @@ import static java.util.Collections.nCopies;
 
 import java.io.IOError;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,19 +37,23 @@ public class Application extends HubObject {
     public static final String STATUS_ADMITTED = "admitted";
     public static final String STATUS_CONFIRMED = "confirmed";
 
-    /** Unterstützte Filter für {@link #getEvaluations(Map, User)}. */
+    /** Supported filters for {@link #getEvaluations(Map, User)}. */
     public static final Set<String> GET_EVALUATIONS_FILTER_KEYS =
         ApplicationService.GET_CRITERIA_FILTER_KEYS;
 
     private final String userId;
     private final String courseId;
     private String status;
+    private Date modificationTime;
+    private final int dosvVersion;
 
     Application(Map<String, Object> args) {
         super(args);
         this.userId = (String) args.get("user_id");
         this.courseId = (String) args.get("course_id");
         this.status = (String) args.get("status");
+        this.modificationTime = (Date) args.get("modification_time");
+        this.dosvVersion = (int) args.get("dosv_version");
     }
 
     /**
@@ -73,53 +79,51 @@ public class Application extends HubObject {
     }
 
     /**
-     * Gibt eine Liste aller Bewertungen, die zu dieser Bewerbung gehören, zurück.
+     * Returns a list of all evaluations belonging to this application.
      *
-     * @param filter Filter
-     * @param agent ausführender Benutzer
-     * @return Liste aller Bewertungen, die zu dieser Bewerbung gehören
+     * @param filter filter (errors: <code>filter_improper_keys</code>)
+     * @param agent active user
+     * @return list of all evaluations belonging to this application
      */
     public List<Evaluation> getEvaluations(Map<String, Object> filter, User agent) {
         if (!GET_EVALUATIONS_FILTER_KEYS.containsAll(filter.keySet())) {
-            throw new IllegalArgumentException("illegal filter: improper keys");
+            throw new IllegalArgumentException("filter_improper_keys");
         }
 
-        // Filter zusammensetzen
-        String filterSql = "WHERE application_id = ?";
-        ArrayList<Object> filterValues = new ArrayList<Object>();
+        ArrayList<String> filterConditions = new ArrayList<>();
+        ArrayList<Object> filterValues = new ArrayList<>();
+        filterConditions.add("application_id = ?");
         filterValues.add(this.id);
         if (filter.containsKey("required_information_type_id")) {
             List<Criterion> criteria = this.service.getCriteria(filter, agent);
-            filterSql += String.format(" AND criterion_id IN (%s)",
-                StringUtils.join(nCopies(criteria.size(), "?"), ", "));
+            filterConditions.add(String.format("criterion_id IN (%s)",
+                StringUtils.join(nCopies(criteria.size(), "?"), ", ")));
             for (Criterion criterion : criteria) {
                 filterValues.add(criterion.getId());
             }
         }
+        String filterSql = " WHERE " + StringUtils.join(filterConditions, " AND ");
 
         try {
-            ArrayList<Evaluation> evaluations = new ArrayList<Evaluation>();
-            // NOTE: optimierter Query
-            String sql = String.format("SELECT * FROM evaluation %s", filterSql);
-            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
-            Object[] params = new Object[filterValues.size()]; 
-            for (int i = 0; i < filterValues.size(); i++) {
-                params[i] = filterValues.get(i);
-            }
-            queryResults = service.getQueryRunner().query(service.getDb(), sql,
-                new MapListHandler(), params);
-            for (Map<String, Object> map : queryResults) {
-                map.put("service", this.getService());
-                evaluations.add(new Evaluation(map));
+            // NOTE: optimized query
+            String sql = "SELECT * FROM evaluation" + filterSql;
+            List<Map<String, Object>> results = service.getQueryRunner().query(
+                this.service.getDb(), sql, new MapListHandler(), filterValues.toArray());
+
+            ArrayList<Evaluation> evaluations = new ArrayList<>();
+            for (Map<String, Object> args : results) {
+                args.put("service", this.service);
+                evaluations.add(new Evaluation(args));
             }
             return evaluations;
+
         } catch (SQLException e) {
             throw new IOError(e);
         }
     }
 
     /**
-     * Gibt eine Liste aller Bewertungen, die zu dieser Bewerbung gehören, zurück.
+     * Returns a list of all evaluations belonging to this application.
      *
      * @see #getEvaluations(Map, User)
      */
@@ -128,11 +132,12 @@ public class Application extends HubObject {
     }
 
     void setStatus(String status, User agent) {
-        this.status = status;
+        Date now = new Date();
         try {
             service.getDb().setAutoCommit(false);
             service.getQueryRunner().update(service.getDb(),
-                "UPDATE application SET status = ? WHERE id = ?", status, this.id);
+                "UPDATE application SET status = ?, modification_time = ? WHERE id = ?",
+                status, new Timestamp(now.getTime()), this.id);
             service.getJournal().record(ApplicationService.ACTION_TYPE_APPLICATION_STATUS_SET,
                 this.id, HubObject.getId(agent), status);
             service.getDb().commit();
@@ -140,6 +145,8 @@ public class Application extends HubObject {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+        this.status = status;
+        modificationTime = now;
     }
 
     void assignInformation(Information information) {
@@ -183,5 +190,19 @@ public class Application extends HubObject {
      */
     public String getStatus() {
         return status;
+    }
+
+    /**
+     * Time of the Application's last modification.
+     */
+    public Date getModificationTime() {
+        return modificationTime;
+    }
+
+    /**
+     * Application version in the DoSV system.
+     */
+    public int getDosvVersion() {
+        return dosvVersion;
     }
 }

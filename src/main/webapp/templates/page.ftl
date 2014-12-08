@@ -44,4 +44,15 @@
     [/#if]
 [/#macro]
 
+[#macro application_status status]
+    ${{
+        "incomplete": "Unvollständig",
+        "complete": "Vollständig (Warte auf Bearbeitung…)",
+        "valid": "Gültig (Warte auf Zulassung…)",
+        "withdrawn": "Zurückgezogen",
+        "admitted": "Zugelassen",
+        "confirmed": "Zugelassen"
+    }[status]}[#t/]
+[/#macro]
+
 [/#escape]

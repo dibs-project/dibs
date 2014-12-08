@@ -32,6 +32,7 @@ public class Course extends HubObject {
     private String allocationRuleId;
     private boolean published;
     private Date modificationTime;
+    private final boolean dosv;
 
     Course(Map<String, Object> args) {
         super(args);
@@ -40,6 +41,7 @@ public class Course extends HubObject {
         this.allocationRuleId = (String) args.get("allocation_rule_id");
         this.published = (Boolean) args.get("published");
         this.modificationTime = new Date(((Timestamp) args.get("modification_time")).getTime());
+        this.dosv = (Boolean) args.get("dosv");
     }
 
     /**
@@ -74,15 +76,22 @@ public class Course extends HubObject {
     }
 
     /**
-     * Legt eine Bewerbung auf einen publizierten Studiengang an.
+     * Creates an Application for a published Course.
      *
-     * @param userId ID des Bewerbers
-     * @param agent ausführender Benutzer
-     * @return angelegte Bewerbung
+     * @param userId the applicant's ID
+     * @param agent executing user
+     * @return created Application
+     *
+     * @throws HubException.IllegalStateException
+     *  if the course is not published (<code>course_not_published</code>)
+     *  or the user is not connected to the DoSV (<code>user_not_connected</code>)
      */
     public Application apply(String userId, User agent) {
         if (!service.getCourse(id).isPublished()) {
-            throw new IllegalStateException("course_published");
+            throw new IllegalStateException("course_not_published");
+        }
+        if (dosv == true && service.getUser(userId).getDosvBid() == null) {
+            throw new IllegalStateException("user_not_connected");
         }
         // NOTE Race Condition: SELECT-INSERT
         try {
@@ -262,5 +271,12 @@ public class Course extends HubObject {
      */
     public Date getModificationTime() {
         return new Date(modificationTime.getTime());
+    }
+
+    /**
+     * Determines whether this Course is using the DoSV for the admission process.
+     */
+    public boolean isDosv() {
+        return dosv;
     }
 }

@@ -63,7 +63,7 @@ public class User extends HubObject {
         Information information = type.create(args, this, agent);
 
         // Pseudo-Ereignis auslösen
-        for (Application application : this.getApplications(null)) {
+        for (Application application : this.getApplications()) {
             application.userInformationCreated(this, information);
         }
 
@@ -95,12 +95,11 @@ public class User extends HubObject {
     }
 
     /**
-     * Gibt alle Bewerbungen des Benutzers zurück.
+     * Returns a list of the user's applications.
      *
-     * @param agent ausführender Benutzer
-     * @return Liste aller Bewerbungen des Benutzers
+     * @return list of the user's applications
      */
-    public List<Application> getApplications(User agent) {
+    public List<Application> getApplications() {
         try {
             List<Application> applications = new ArrayList<Application>();
             List<Map<String, Object>> queryResults = service.getQueryRunner().query(
