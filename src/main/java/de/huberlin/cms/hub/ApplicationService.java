@@ -84,6 +84,9 @@ public class ApplicationService {
     /** Supported filters for {@link #getCriteria(Map, User)}. */
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =
         new HashSet<>(Arrays.asList("required_information_type_id"));
+    /** Supported filters for {@link Quota#getApplications(Map)}. */
+    public static final Set<String> GET_APPLICATIONS_FILTER_KEYS =
+        new HashSet<>(Arrays.asList("status"));
 
     private static final long MONTH_DURATION = 30 * 24 * 60 * 60 * 1000L;
 

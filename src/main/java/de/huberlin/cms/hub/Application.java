@@ -131,7 +131,8 @@ public class Application extends HubObject {
         return this.getEvaluations(new HashMap<String, Object>(), agent);
     }
 
-    void setStatus(String status, User agent) {
+    // TODO replace doCommit with transaction
+    void setStatus(String status, boolean doCommit, User agent) {
         Date now = new Date();
         try {
             service.getDb().setAutoCommit(false);
@@ -140,8 +141,10 @@ public class Application extends HubObject {
                 status, new Timestamp(now.getTime()), this.id);
             service.getJournal().record(ApplicationService.ACTION_TYPE_APPLICATION_STATUS_SET,
                 this.id, HubObject.getId(agent), status);
-            service.getDb().commit();
-            service.getDb().setAutoCommit(true);
+            if (doCommit) {
+                service.getDb().commit();
+                service.getDb().setAutoCommit(true);
+            }
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -156,6 +159,9 @@ public class Application extends HubObject {
         for (Evaluation evaluation : this.getEvaluations(filter, null)) {
             evaluation.assignInformation(information);
         }
+
+        // TODO will be replaced by update method/ (pseudo) event
+        setStatus(STATUS_VALID, false, null);
     }
 
     void userInformationCreated(User user, Information information) {

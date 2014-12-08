@@ -9,7 +9,6 @@ import java.io.IOError;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +53,7 @@ public class User extends HubObject {
      * @param agent ausführender Benutzer
      * @return angelegte Information
      */
-    public Information createInformation(String typeId, HashMap<String, Object> args,
+    public Information createInformation(String typeId, Map<String, Object> args,
             User agent) {
         Information.Type type = this.service.getInformationTypes().get(typeId);
         if (type == null) {

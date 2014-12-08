@@ -18,9 +18,9 @@ import java.util.Random;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
-
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.lang3.StringUtils;
 
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 
@@ -83,7 +83,9 @@ public class Quota extends HubObject {
      * @return Rangliste
      */
     public List<Rank> generateRanking() {
-        List<Application> applications = this.getApplications();
+        Map<String, Object> filterArgs = new HashMap<>();
+        filterArgs.put("status", Application.STATUS_VALID);
+        List<Application> applications = this.getApplications(filterArgs);
         final Map<Application,List<Evaluation>> evaluations = this.getEvaluations();
         final HashMap<Application,Integer> lotnumbers = new HashMap<>();
         for (Application application : applications) {
@@ -161,29 +163,59 @@ public class Quota extends HubObject {
     }
 
     /**
-     * Gibt alle Bewerbungen für die Quote des Studiengangs zurück.
+     * Returns all Applications that are included in this Quota.
      *
-     * @return Liste mit Bewerbungen
+     * @return List of Applications belonging to this Quota
+     * @see #getApplications(Map)
      */
     public List<Application> getApplications() {
-        ArrayList<Application> applications = new ArrayList<Application>();
+        return getApplications(new HashMap<String, Object>());
+    }
+
+    /**
+     * Returns all Applications that are included in this Quota. May be further filtered.
+     *
+     * @param filter filter Map (code: <code>filter_unknown_keys</code>)
+     * @return List of filtered Applications belonging to this Quota
+     */
+    public List<Application> getApplications(Map<String, Object> filter) {
+        if (!ApplicationService.GET_APPLICATIONS_FILTER_KEYS.containsAll(filter.keySet())) {
+            throw new IllegalArgumentException("filter_unknown_keys");
+        }
+
+        ArrayList<String> filterConditions = new ArrayList<>();
+        ArrayList<Object> filterValues = new ArrayList<>();
+        filterConditions.add("allocation_rule.quota_id = ?");
+        filterValues.add(id);
+
+        String status = (String) filter.get("status");
+        if (status != null) {
+            filterConditions.add("status = ?");
+            filterValues.add(status);
+        }
+
+        String filterSql = " WHERE " + StringUtils.join(filterConditions, " AND ");
+
         try {
             String sql = "SELECT application.* FROM application "
                     + "LEFT JOIN course ON application.course_id = course.id "
                     + "LEFT JOIN allocation_rule ON course.allocation_rule_id = allocation_rule.id "
-                    + "WHERE allocation_rule.quota_id = ?";
-            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
-            queryResults = service.getQueryRunner().query(service.getDb(), sql,
-                new MapListHandler(), this.id);
-            for (Map<String, Object> args : queryResults) {
-                args.put("service", this.service);
+                    + filterSql;
+            List<Map<String, Object>> results = service.getQueryRunner().query(
+                service.getDb(), sql, new MapListHandler(), filterValues.toArray());
+
+            List<Application> applications = new ArrayList<>();
+            for (Map<String, Object> args : results) {
+                args.put("service", service);
                 applications.add(new Application(args));
             }
             return applications;
+
         } catch (SQLException e) {
             throw new IOError(e);
         }
     }
+
 
     /**
      * Ruft die Rangliste für die Quote ab.
