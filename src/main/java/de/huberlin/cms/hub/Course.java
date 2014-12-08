@@ -216,6 +216,17 @@ public class Course extends HubObject {
             service.getJournal().record(
                 ApplicationService.ACTION_TYPE_COURSE_ADMISSION_STARTED, this.id,
                 HubObject.getId(agent), null);
+
+            // NOTE future iterations: will be called when a user's application status is set
+            generateRankings();
+
+            // first local admission step
+            if (!dosv) {
+                for (Rank rank : getAllocationRule().getQuota().getRanking()) {
+                    rank.getApplication().setStatus(Application.STATUS_ADMITTED, false, null);
+                }
+            }
+
             db.commit();
             db.setAutoCommit(true);
         } catch (SQLException e) {
@@ -223,8 +234,6 @@ public class Course extends HubObject {
         }
         admission = true;
         modificationTime = now;
-        // NOTE future iterations: will be called when a user's application status is set
-        generateRankings();
     }
 
     /**
