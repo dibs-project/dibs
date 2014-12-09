@@ -57,6 +57,19 @@ public class Application extends HubObject {
     }
 
     /**
+     * TODO
+     */
+    public void accept() {
+        if (!getStatus().equals(STATUS_ADMITTED)) {
+            throw new IllegalStateException("application_not_admitted");
+        }
+        if (getCourse().isDosv()) {
+            throw new IllegalStateException("application_is_dosv");
+        }
+        setStatus(STATUS_CONFIRMED, true, null);
+    }
+
+    /**
      * Gibt die Bewertung zurück, die sich auf das angegebene Kriterium bezieht.
      *
      * @param criterionId ID des Kriteriums
@@ -130,7 +143,6 @@ public class Application extends HubObject {
     public List<Evaluation> getEvaluations(User agent) {
         return this.getEvaluations(new HashMap<String, Object>(), agent);
     }
-
 
     // TODO replace doCommit with transaction
     void setStatus(String status, boolean doCommit, User agent) {

@@ -221,6 +221,21 @@ public class Pages implements Closeable {
         return new Viewable("/application.ftl", this.model);
     }
 
+    @POST
+    @Path("applications/{id}/accept")
+    public Response accept(@PathParam("id") String id) {
+        URI url = null;
+        Application application = null;
+        try {
+            application = service.getApplication(id);
+            application.accept();
+        } catch (IllegalStateException e) {
+            // TODO
+        }
+        url = UriBuilder.fromUri("/applications/{id}/").build(application.getId());
+        return Response.seeOther(url).build();
+    }
+
     /* Courses */
 
     @GET

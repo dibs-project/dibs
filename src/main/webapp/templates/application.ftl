@@ -14,6 +14,15 @@
         </dl>
 
         <p>Status: [@application_status application.status/].</p>
+        <aside>
+            [#if user.role == "applicant"]
+                [#if application.status == "admitted"]
+                    <form method="POST" action="applications/${application.id}/accept">
+                        <button>Annehmen</button>
+                    </form>
+                [/#if]
+            [/#if]
+        </aside>
     </section>
 [/@page]
 
