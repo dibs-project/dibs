@@ -7,7 +7,7 @@
         <section>
             <ul>
                 [#list service.getCourses({"published": true}) as course]
-                    <li><a href="/courses/${course.id}/">${course.name}</a>
+                    <li><a href="/courses/${course.id}/">${course.name}</a></li>
                 [/#list]
             </ul>
         </section>

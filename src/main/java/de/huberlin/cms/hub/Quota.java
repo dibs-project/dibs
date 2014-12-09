@@ -168,9 +168,8 @@ public class Quota extends HubObject {
     public List<Application> getApplications() {
         ArrayList<Application> applications = new ArrayList<Application>();
         try {
-            String sql = "SELECT app.id, app.user_id, app.course_id, app.status "
-                    + "FROM application AS app "
-                    + "LEFT JOIN course ON app.course_id = course.id "
+            String sql = "SELECT application.* FROM application "
+                    + "LEFT JOIN course ON application.course_id = course.id "
                     + "LEFT JOIN allocation_rule ON course.allocation_rule_id = allocation_rule.id "
                     + "WHERE allocation_rule.quota_id = ?";
             List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();

@@ -12,14 +12,20 @@
             [/#if]
 
             <p>Kapazität: ${course.capacity}</p>
+
+            [#if course.dosv]
+                <p>
+                    Zulassung über
+                    <a href="http://hochschulstart.de/" target="_blank">hochschulstart.de</a>.
+                </p>
+            [/#if]
         </div>
 
         <aside>
             <ul>
                 [#if user.role == "applicant"]
-                    [#-- TODO: apply --]
                     <li>
-                        <form method="POST" action="/users/${user.id}/connect-to-dosv/">
+                        <form method="POST" action="/courses/${course.id}/apply/">
                             <button>Bewerben</button>
                         </form>
                     </li>
@@ -40,6 +46,24 @@
             </ul>
         </aside>
     </section>
+
+    [#if user.role == "admin"]
+        <section>
+            <h2>Bewerbungen</h2>
+            [#if applications?size > 0]
+                <ul>
+                    [#list applications as application]
+                        <li>
+                            [#-- TODO: optimize --]
+                            <a href="/applications/${application.id}/">${application.user.name}</a>
+                        </li>
+                    [/#list]
+                </ul>
+            [#else]
+                <p>Noch keine Bewerbung.</p>
+            [/#if]
+        </section>
+    [/#if]
 [/@page]
 
 [/#escape]

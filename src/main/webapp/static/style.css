@@ -35,7 +35,7 @@ html {
     font-family: "Open Sans", sans-serif;
 }
 
-h1, h2, h3, p, ul, label {
+h1, h2, h3, p, ul, dl, label {
     display: block;
     margin: 1.5rem 0;
     padding: 0;
@@ -62,6 +62,18 @@ ul {
     list-style: square;
 }
 
+dt {
+    float: left;
+}
+
+dt::after {
+    content: ":\a0"; /* NO-BREAK SPACE */
+}
+
+dd {
+    margin: 0;
+}
+
 a {
     border-bottom: 1px dotted #333;
     color: inherit;
@@ -86,6 +98,10 @@ a.button {
 .object-meta {
     font-size: 0.9rem;
     font-style: italic;
+}
+
+.object-primary {
+    font-weight: bold;
 }
 
 /* ==== Section ==== */
@@ -146,9 +162,18 @@ input {
     font-family: inherit;
 }
 
-label > small {
+label small {
     display: block;
     font-size: 1rem;
+}
+
+input[type="checkbox"] {
+    display: inline-block;
+    width: auto;
+}
+
+input[type="checkbox"] + small {
+    display: inline;
 }
 
 /* ==== Page ==== */
@@ -201,4 +226,10 @@ header > nav button {
 header > nav li:first-child a,
 header > nav li:first-child button {
     border-left: none;
+}
+
+/* ==== Dash ==== */
+
+.dash-apply {
+    font-weight: bold;
 }

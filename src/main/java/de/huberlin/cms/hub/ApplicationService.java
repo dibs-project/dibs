@@ -100,7 +100,6 @@ public class ApplicationService {
         try {
 
             db.setAutoCommit(false);
-            PreparedStatement statement;
 
             if (overwrite) {
                 // TODO: Tabellen automatisch aus hub.sql lesen
@@ -108,9 +107,8 @@ public class ApplicationService {
                     "allocation_rule", "course", "journal_record", "qualification",
                     "application", "evaluation", "rank", "session"};
                 for (String table : tables) {
-                    statement = db.prepareStatement(
-                        String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
-                    statement.executeUpdate();
+                    new QueryRunner().update(
+                        db, String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
                 }
             }
 
@@ -125,7 +123,7 @@ public class ApplicationService {
             String sql = str.toString();
 
             try {
-                statement = db.prepareStatement(sql);
+                PreparedStatement statement = db.prepareStatement(sql);
                 statement.execute();
             } catch (SQLException e) {
                 // Syntax Error or Access Rule Violation
@@ -309,6 +307,27 @@ public class ApplicationService {
     }
 
     /**
+     * Returns all Applications in HUB.
+     *
+     * @return List of all Applications
+     */
+    public List<Application> getApplications() {
+        List<Application> applications = new ArrayList<Application>();
+        List<Map<String, Object>> queryResults;
+        try {
+            queryResults = this.queryRunner.query(this.db,
+                "SELECT * FROM application", new MapListHandler());
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+        for (Map<String, Object> args : queryResults) {
+            args.put("service", this);
+            applications.add(new Application(args));
+        }
+        return applications;
+    }
+
+    /**
      * Gibt die Bewertung mit der spezifizierten ID zurück.
      *
      * @param id ID der Bewertung
@@ -330,13 +349,13 @@ public class ApplicationService {
     }
 
     /**
-    * Registers a new applicant.
-    *
+     * Registers a new applicant.
+     *
      * @param name name which HUB uses to address the user
      * @param email email address
      * @param credential credential
-    * @return new applicant
-    */
+     * @return new applicant
+     */
     public User register(String name, String email, String credential) {
         return this.createUser(name, email, credential, User.ROLE_APPLICANT);
     }
@@ -458,7 +477,7 @@ public class ApplicationService {
      * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
      *     <code>capacity</code> nicht positiv ist
      */
-    public Course createCourse(String name, int capacity, User agent) {
+    public Course createCourse(String name, int capacity, boolean dosv, User agent) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
@@ -469,8 +488,8 @@ public class ApplicationService {
         try {
             this.db.setAutoCommit(false);
             String id = String.format("course:%s", new Random().nextInt());
-            this.queryRunner.insert(this.getDb(), "INSERT INTO course VALUES(?, ?, ?)",
-                new MapHandler(), id, name, capacity);
+            this.queryRunner.insert(this.getDb(), "INSERT INTO course (id, name, capacity, dosv) VALUES (?, ?, ?, ?)",
+                new MapHandler(), id, name, capacity, dosv);
             journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
                 name);
             this.db.commit();
