@@ -8,6 +8,7 @@
             [#if user.role == "admin"]
                 <p class="object-meta">
                     ${course.published?string("Veröffentlicht", "Nicht öffentlich")}.
+                    ${course.admission?string("Zulassung läuft.", "")}
                 </p>
             [/#if]
 
@@ -31,17 +32,26 @@
                     </li>
 
                 [#elseif user.role == "admin"]
-                    <li>
-                        [#if course.published]
+                    [#if course.published]
+                        <li>
                             <form method="POST" action="/courses/${course.id}/unpublish/">
                                 <button>Veröffentl. zurückziehen</button>
                             </form>
-                        [#else]
+                        </li>
+                        [#if !course.admission]
+                            <li>
+                                <form method="POST" action="/courses/${course.id}/start-admission/">
+                                    <button>Zulassung starten</button>
+                                </form>
+                            </li>
+                        [/#if]
+                    [#else]
+                        <li>
                             <form method="POST" action="/courses/${course.id}/publish/">
                                 <button>Veröffentlichen</button>
                             </form>
-                        [/#if]
-                    </li>
+                        </li>
+                    [/#if]
                 [/#if]
             </ul>
         </aside>
