@@ -221,6 +221,8 @@ public class Pages implements Closeable {
         return new Viewable("/application.ftl", this.model);
     }
 
+    /* Application.accept */
+
     @POST
     @Path("applications/{id}/accept")
     public Response accept(@PathParam("id") String id) {
@@ -267,6 +269,7 @@ public class Pages implements Closeable {
             url = UriBuilder.fromUri("/applications/{id}/").build(application.getId());
         } catch (IllegalStateException e) {
             // TODO: user_not_connected: redirect to User.connectToDosv
+            // TODO handle "course_admission_started"
             // course_not_published is handled by 404 after redirect
             url = UriBuilder.fromUri("/courses/{id}/").build(id);
         }

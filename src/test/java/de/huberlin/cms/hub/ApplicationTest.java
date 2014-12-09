@@ -11,6 +11,8 @@ import org.apache.commons.collections4.Predicate;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.huberlin.cms.hub.HubException.IllegalStateException;
+
 public class ApplicationTest extends HubTest {
     private Application application;
 
@@ -18,6 +20,20 @@ public class ApplicationTest extends HubTest {
     public void before() throws Exception {
         course.publish(null);
         application = course.apply(user.getId(), user);
+    }
+
+    @Test
+    public void testAccept() {
+        course.startAdmission(null);
+        application = service.getApplication(application.getId());
+        application.accept();
+        assertEquals(Application.STATUS_CONFIRMED, application.getStatus());
+    }
+
+    @Test
+    public void testAcceptNoAdmission() {
+        exception.expect(IllegalStateException.class);
+        service.getApplication(application.getId()).accept();
     }
 
     @Test

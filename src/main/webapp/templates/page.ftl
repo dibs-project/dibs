@@ -51,7 +51,7 @@
         "valid": "Gültig (Warte auf Zulassung…)",
         "withdrawn": "Zurückgezogen",
         "admitted": "Zugelassen",
-        "confirmed": "Zugelassen"
+        "confirmed": "Zulassung angenommen"
     }[status]}[#t/]
 [/#macro]
 
