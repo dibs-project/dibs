@@ -169,8 +169,10 @@ public class Course extends HubObject {
     }
 
     /**
-     * Zieht die Publikation zurück. Kann nur erfolgen, wenn noch keine Bewerbungen auf
-     * diesen Studiengang vorliegen.
+     * Unpublishes the course.
+     *
+     * @throws HubException.IllegalStateException if an {@link Application} for this
+     *     course exists (<code>course_has_applications</code>)
      */
     public void unpublish(User agent) {
         Date now = new Date();
