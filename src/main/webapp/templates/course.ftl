@@ -48,6 +48,19 @@
     </section>
 
     [#if user.role == "admin"]
+        [#if ranks?size > 0]
+            <section>
+                <h2>Rangliste</h2>
+                <ol>
+                    [#list ranks as rank]
+                        [#-- TODO: optimize --]
+                        [#-- TODO: rank.application.id --]
+                        <li><a href="/applications/${rank.id}/">${rank.user.name}</a></li>
+                    [/#list]
+                </ol>
+            </section>
+        [/#if]
+
         <section>
             <h2>Bewerbungen</h2>
             [#if applications?size > 0]

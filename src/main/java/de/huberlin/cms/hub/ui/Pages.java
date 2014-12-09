@@ -237,6 +237,8 @@ public class Pages implements Closeable {
         Course course = this.service.getCourse(id);
         this.model.put("course", course);
         this.model.put("applications", course.getApplications());
+        // TODO: course.getAllocationRule().getQuota().getRanking();
+        this.model.put("ranks", course.getApplications());
         return new Viewable("/course.ftl", this.model);
     }
 
