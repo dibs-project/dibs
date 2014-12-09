@@ -228,6 +228,10 @@ header > nav li:first-child button {
     border-left: none;
 }
 
+.notification {
+    font-style: italic;
+}
+
 /* ==== Dash ==== */
 
 .dash-apply {
