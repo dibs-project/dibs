@@ -248,7 +248,7 @@ public class DosvSync {
             studienfach.setNameDe(course.getName());
             Abschluss abschluss = new Abschluss();
             abschluss.setSchluessel("bachelor");
-            abschluss.setNameDe("Bachelor"); // TODO Feld Course.degree
+            abschluss.setNameDe("Bachelor"); // TODO Field Course.degree
 
             Studiengang studiengang = new Studiengang();
             studiengang.setNameDe(course.getName());
@@ -275,11 +275,11 @@ public class DosvSync {
             koordinierungsangebotsdaten
                 .setEndeBewerbungsfrist(toXMLGregorianCalendar(endApplicationTime));
             koordinierungsangebotsdaten
-                .setUrlHSBewerbungsportal("http://example.org/"); // TODO Konfigurierbar
+                .setUrlHSBewerbungsportal("http://example.org/"); // TODO configure
 
             Einfachstudienangebot einfachstudienangebot = new Einfachstudienangebot();
             einfachstudienangebot.setNameDe(course.getName());
-            // TODO Feld Course.description
+            // TODO Field Course.description
             einfachstudienangebot.setBeschreibungDe(course.getName());
             einfachstudienangebot.setStudiengang(studiengang);
             einfachstudienangebot.setIntegrationseinstellungen(integrationseinstellungen);
@@ -290,9 +290,11 @@ public class DosvSync {
             studienangebote.add(einfachstudienangebot);
         }
         try {
+            // NOTE Instantiation is resource intensive so it happens here and not in the constructor
+            DosvClient dosvClient = new DosvClient(dosvConfig);
+
             List<StudienangebotErgebnis> studienangebotErgebnisse =
-                // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
-                new DosvClient(dosvConfig).anlegenAendernStudienangeboteDurchHS(studienangebote);
+                dosvClient.anlegenAendernStudienangeboteDurchHS(studienangebote);
             for (StudienangebotErgebnis studienangebotErgebnis : studienangebotErgebnisse) {
                 if (studienangebotErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
                     throw new RuntimeException(
@@ -302,8 +304,7 @@ public class DosvSync {
                 }
             }
             List<StudienpaketErgebnis> studienpaketErgebnisse =
-                // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
-                new DosvClient(dosvConfig).anlegenAendernStudienpaketeDurchHS(studienpakete);
+                dosvClient.anlegenAendernStudienpaketeDurchHS(studienpakete);
             for (StudienpaketErgebnis studienpaketErgebnis : studienpaketErgebnisse) {
                 if (studienpaketErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
                     throw new RuntimeException(
