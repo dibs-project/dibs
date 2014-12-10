@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.CookieParam;
@@ -26,6 +27,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
@@ -43,6 +45,8 @@ import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+import de.huberlin.cms.hub.Information;
+import de.huberlin.cms.hub.Qualification;
 import de.huberlin.cms.hub.Session;
 import de.huberlin.cms.hub.User;
 
@@ -209,6 +213,50 @@ public class Pages implements Closeable {
         return new Viewable("/register.ftl", this.model);
     }
 
+    /* User.createInformation */
+
+    @GET
+    @Path("users/{id}/create-information")
+    public Viewable createInformation(@PathParam("id") String userId, @QueryParam("type") String typeId) {
+        return this.createInformation(userId, typeId, null, null);
+    }
+
+    private Viewable createInformation(String userId, String typeId, MultivaluedMap<String, String> form,
+        IllegalArgumentException formError) {
+        this.model.put("form", form);
+        this.model.put("formError", formError);
+        this.model.put("type", typeId);
+        return new Viewable("/user-create-information-" + typeId + ".ftl", this.model);
+    }
+
+    @POST
+    @Path("users/{id}/create-information")
+    public Response createInformation(@PathParam("id") String userId, @QueryParam("type") String typeId, MultivaluedMap<String, String> form) {
+
+        checkContainsRequired(form, new HashSet<String>(Arrays.asList("grade")));
+
+        Map<String, Object> args = new HashMap<>();
+        args.put("grade", new Double(form.getFirst("grade")));
+
+        String informationId = user.createInformation(typeId, args, user).getId();
+
+        URI url = UriBuilder.fromUri("users/{id}/information/{information-id}/").build(userId, informationId);
+
+        return Response.seeOther(url).build();
+    }
+
+    /* Information */
+
+    @GET
+    @Path("users/{user-id}/information/{information-id}/")
+    public Viewable information(@PathParam("user-id") String userId, @PathParam("information-id") String informationId) {
+        Information information = service.getInformation(informationId);
+
+        this.model.put("information", information);
+
+        return new Viewable("/information-qualification.ftl", this.model);
+    }
+
     /* Application */
 
     @GET
@@ -218,6 +266,7 @@ public class Pages implements Closeable {
         this.model.put("application", application);
         this.model.put("applicant", application.getUser());
         this.model.put("course", application.getCourse());
+        this.model.put("informationSet", application.getUser().getInformationSet(user));
         return new Viewable("/application.ftl", this.model);
     }
 
