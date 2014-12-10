@@ -27,7 +27,8 @@ Structure:
   |----------------------| |----------------| |---------------------| |-----------|
   | createAllocationRule | | createQuota    | | addRankingCriterion | |evaluate   |
   | apply                | '----------------' | generateRanking     | '-----------'
-  | generateRankings     |                    '---------------------'
+  | startAdmission       |                    '---------------------'
+  | generateRankings     |
   | publish              |
   | unpublish            |
   '----------------------'
@@ -51,8 +52,7 @@ Process:
    . ApplicationService.register          |                                 |
    . User.createInformation               |                                 |
    . Course.apply                         |                                 |
-   .                                      |                                 | Course.generateRankings
-
+   .                                      | Course.startAdmission           | Course.generateRankings
 ```
 
 Backend

@@ -31,6 +31,7 @@ public class Course extends HubObject {
     private int capacity;
     private String allocationRuleId;
     private boolean published;
+    private boolean admission;
     private Date modificationTime;
     private final boolean dosv;
 
@@ -40,6 +41,7 @@ public class Course extends HubObject {
         this.capacity = (Integer) args.get("capacity");
         this.allocationRuleId = (String) args.get("allocation_rule_id");
         this.published = (Boolean) args.get("published");
+        this.admission = (Boolean) args.get("admission");
         this.modificationTime = new Date(((Timestamp) args.get("modification_time")).getTime());
         this.dosv = (Boolean) args.get("dosv");
     }
@@ -197,6 +199,35 @@ public class Course extends HubObject {
     }
 
     /**
+     * Starts the admission phase.
+     */
+    public void startAdmission(User agent) {
+        Date now = new Date();
+        if (!isPublished()) {
+            throw new IllegalStateException("course_unpublished");
+        }
+        // NOTE Race Condition: SELECT-UPDATE
+        try {
+            Connection db = service.getDb();
+            db.setAutoCommit(false);
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE course SET admission = TRUE, modification_time = ? WHERE id = ?",
+                new Timestamp(now.getTime()), getId());
+            service.getJournal().record(
+                ApplicationService.ACTION_TYPE_COURSE_ADMISSION_STARTED, this.id,
+                HubObject.getId(agent), null);
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+        admission = true;
+        modificationTime = now;
+        // NOTE future iterations: will be called when a user's application status is set
+        generateRankings();
+    }
+
+    /**
      * Name des Studiengangs.
      */
     public String getName() {
@@ -264,6 +295,13 @@ public class Course extends HubObject {
      */
     public boolean isPublished() {
         return published;
+    }
+
+    /**
+     * Denotes whether the Course is in the admission phase.
+     */
+    public boolean isAdmission() {
+        return admission;
     }
 
     /**

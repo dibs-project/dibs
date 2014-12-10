@@ -39,6 +39,7 @@ CREATE TABLE course (
     capacity INT NOT NULL,
     allocation_rule_id VARCHAR(256) REFERENCES allocation_rule,
     published BOOLEAN NOT NULL DEFAULT FALSE,
+    admission BOOLEAN NOT NULL DEFAULT FALSE,
     modification_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     dosv BOOLEAN NOT NULL
 );
