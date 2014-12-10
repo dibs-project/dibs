@@ -212,7 +212,7 @@ public class DosvSync {
             // TODO Feld Course.subject
             String dosvSubjectKey = course.getId().split(":")[1];
             if (course.isAdmission()) {
-                /** Studienpaket - SAF 401 */
+                /* Studienpaket - SAF 401 */
                 EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
                     new EinfachstudienangebotsSchluessel();
                 einfachstudienangebotsSchluessel.setStudienfachSchluessel(dosvSubjectKey);
@@ -242,7 +242,7 @@ public class DosvSync {
             StudienangebotsStatus studienangebotsStatus =
                 course.isPublished() ? OEFFENTLICH_SICHTBAR : IN_VORBEREITUNG;
 
-            /** Studienangebot - SAF 101 */
+            /* Studienangebot - SAF 101 */
             Studienfach studienfach = new Studienfach();
             studienfach.setSchluessel(dosvSubjectKey);
             studienfach.setNameDe(course.getName());
