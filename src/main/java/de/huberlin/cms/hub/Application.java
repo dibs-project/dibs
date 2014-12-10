@@ -37,7 +37,7 @@ public class Application extends HubObject {
     public static final String STATUS_ADMITTED = "admitted";
     public static final String STATUS_CONFIRMED = "confirmed";
 
-    /** Unterstützte Filter für {@link #getEvaluations(Map, User)}. */
+    /** Supported filters for {@link #getEvaluations(Map, User)}. */
     public static final Set<String> GET_EVALUATIONS_FILTER_KEYS =
         ApplicationService.GET_CRITERIA_FILTER_KEYS;
 
@@ -79,53 +79,51 @@ public class Application extends HubObject {
     }
 
     /**
-     * Gibt eine Liste aller Bewertungen, die zu dieser Bewerbung gehören, zurück.
+     * Returns a list of all evaluations belonging to this application.
      *
-     * @param filter Filter
-     * @param agent ausführender Benutzer
-     * @return Liste aller Bewertungen, die zu dieser Bewerbung gehören
+     * @param filter filter (errors: <code>filter_improper_keys</code>)
+     * @param agent active user
+     * @return list of all evaluations belonging to this application
      */
     public List<Evaluation> getEvaluations(Map<String, Object> filter, User agent) {
         if (!GET_EVALUATIONS_FILTER_KEYS.containsAll(filter.keySet())) {
-            throw new IllegalArgumentException("illegal filter: improper keys");
+            throw new IllegalArgumentException("filter_improper_keys");
         }
 
-        // Filter zusammensetzen
-        String filterSql = "WHERE application_id = ?";
-        ArrayList<Object> filterValues = new ArrayList<Object>();
+        ArrayList<String> filterConditions = new ArrayList<>();
+        ArrayList<Object> filterValues = new ArrayList<>();
+        filterConditions.add("application_id = ?");
         filterValues.add(this.id);
         if (filter.containsKey("required_information_type_id")) {
             List<Criterion> criteria = this.service.getCriteria(filter, agent);
-            filterSql += String.format(" AND criterion_id IN (%s)",
-                StringUtils.join(nCopies(criteria.size(), "?"), ", "));
+            filterConditions.add(String.format("criterion_id IN (%s)",
+                StringUtils.join(nCopies(criteria.size(), "?"), ", ")));
             for (Criterion criterion : criteria) {
                 filterValues.add(criterion.getId());
             }
         }
+        String filterSql = " WHERE " + StringUtils.join(filterConditions, " AND ");
 
         try {
-            ArrayList<Evaluation> evaluations = new ArrayList<Evaluation>();
-            // NOTE: optimierter Query
-            String sql = String.format("SELECT * FROM evaluation %s", filterSql);
-            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
-            Object[] params = new Object[filterValues.size()];
-            for (int i = 0; i < filterValues.size(); i++) {
-                params[i] = filterValues.get(i);
-            }
-            queryResults = service.getQueryRunner().query(service.getDb(), sql,
-                new MapListHandler(), params);
-            for (Map<String, Object> map : queryResults) {
-                map.put("service", this.getService());
-                evaluations.add(new Evaluation(map));
+            // NOTE: optimized query
+            String sql = "SELECT * FROM evaluation" + filterSql;
+            List<Map<String, Object>> results = service.getQueryRunner().query(
+                this.service.getDb(), sql, new MapListHandler(), filterValues.toArray());
+
+            ArrayList<Evaluation> evaluations = new ArrayList<>();
+            for (Map<String, Object> args : results) {
+                args.put("service", this.service);
+                evaluations.add(new Evaluation(args));
             }
             return evaluations;
+
         } catch (SQLException e) {
             throw new IOError(e);
         }
     }
 
     /**
-     * Gibt eine Liste aller Bewertungen, die zu dieser Bewerbung gehören, zurück.
+     * Returns a list of all evaluations belonging to this application.
      *
      * @see #getEvaluations(Map, User)
      */
@@ -133,7 +131,9 @@ public class Application extends HubObject {
         return this.getEvaluations(new HashMap<String, Object>(), agent);
     }
 
-    void setStatus(String status, User agent) {
+
+    // TODO replace doCommit with transaction
+    void setStatus(String status, boolean doCommit, User agent) {
         Date now = new Date();
         try {
             service.getDb().setAutoCommit(false);
@@ -142,8 +142,10 @@ public class Application extends HubObject {
                 status, new Timestamp(now.getTime()), this.id);
             service.getJournal().record(ApplicationService.ACTION_TYPE_APPLICATION_STATUS_SET,
                 this.id, HubObject.getId(agent), status);
-            service.getDb().commit();
-            service.getDb().setAutoCommit(true);
+            if (doCommit) {
+                service.getDb().commit();
+                service.getDb().setAutoCommit(true);
+            }
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -195,14 +197,14 @@ public class Application extends HubObject {
     }
 
     /**
-     * Zeitpunkt der letzten Modifikation der Bewerbung.
+     * Time of the Application's last modification.
      */
     public Date getModificationTime() {
         return new Date(modificationTime.getTime());
     }
 
     /**
-     * Version der Bewerbung im System des DoSV.
+     * Application version in the DoSV system.
      */
     public int getDosvVersion() {
         return dosvVersion;

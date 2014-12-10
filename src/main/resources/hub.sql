@@ -13,7 +13,7 @@ CREATE TABLE settings (
     semester VARCHAR(6),
     storage_version VARCHAR(256),
     dosv_sync_time TIMESTAMP NOT NULL,
-    dosv_applications_server_time TIMESTAMP
+    dosv_remote_applications_pull_time TIMESTAMP
 );
 
 CREATE TABLE quota (

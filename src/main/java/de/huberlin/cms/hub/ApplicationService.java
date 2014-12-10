@@ -30,6 +30,7 @@ import org.apache.commons.collections4.Predicate;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.lang3.StringUtils;
 
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
@@ -65,7 +66,7 @@ public class ApplicationService {
     public static final String ACTION_TYPE_COURSE_UNPUBLISHED = "course_unpublished";
     /** Aktionstyp: Bewerbung für den Studiengang angelegt. */
     public static final String ACTION_TYPE_COURSE_APPLIED = "course_applied";
-    /** Aktionstyp: Bewerbung für den Studiengang angelegt. */
+    /** Action type: The admission of applicants for a course has started. */
     public static final String ACTION_TYPE_COURSE_ADMISSION_STARTED = "course_admission_started";
     /** Aktionstyp: Bewerbungstatus bearbeitet. */
     public static final String ACTION_TYPE_APPLICATION_STATUS_SET = "application_status_set";
@@ -79,9 +80,12 @@ public class ApplicationService {
     public static final String ACTION_TYPE_DOSV_SYNC_SYNCHRONIZED =
         "dosv_sync_synchronized";
 
-    /** Unterstützte Filter für {@link #getCriteria(Map, User)}. */
+    /** Supported filters for {@link #getCourses(Map)}. */
+    public static final Set<String> GET_COURSES_FILTER_KEYS =
+        new HashSet<>(Arrays.asList("published"));
+    /** Supported filters for {@link #getCriteria(Map, User)}. */
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =
-        new HashSet<String>(Arrays.asList("required_information_type_id"));
+        new HashSet<>(Arrays.asList("required_information_type_id"));
 
     private static final long MONTH_DURATION = 30 * 24 * 60 * 60 * 1000L;
 
@@ -305,9 +309,9 @@ public class ApplicationService {
     }
 
     /**
-     * gibt alle Bewerbungen im System zurück.
+     * Returns all Applications in HUB.
      *
-     * @return Liste aller Bewerbungen
+     * @return List of all Applications
      */
     public List<Application> getApplications() {
         List<Application> applications = new ArrayList<Application>();
@@ -347,13 +351,13 @@ public class ApplicationService {
     }
 
     /**
-    * Registers a new applicant.
-    *
+     * Registers a new applicant.
+     *
      * @param name name which HUB uses to address the user
      * @param email email address
      * @param credential credential
-    * @return new applicant
-    */
+     * @return new applicant
+     */
     public User register(String name, String email, String credential) {
         return this.createUser(name, email, credential, User.ROLE_APPLICANT);
     }
@@ -521,23 +525,51 @@ public class ApplicationService {
     }
 
     /**
-     * Gibt eine Liste aller Studiengänge zurück.
+     * Returns a list of all courses.
      *
-     * @return Liste aller Studiengänge
+     * @param filter filter (errors: <code>filter_improper_keys</code>)
+     *
+     * @return list of all courses
      */
-    public List<Course> getCourses() {
+    public List<Course> getCourses(Map<String, Object> filter) {
+        if (!GET_COURSES_FILTER_KEYS.containsAll(filter.keySet())) {
+            throw new IllegalArgumentException("filter_improper_keys");
+        }
+
+        List<String> filterConditions = new ArrayList<>();
+        List<Object> filterValues = new ArrayList<>();
+        Boolean published = (Boolean) filter.get("published");
+        if (published != null) {
+            filterConditions.add("published = ?");
+            filterValues.add(published);
+        }
+        String filterSql = filterConditions.isEmpty() ? "" :
+            " WHERE " + StringUtils.join(filterConditions, " AND ");
+
         try {
-            ArrayList<Course> courses = new ArrayList<Course>();
-            List<Map<String, Object>> queryResults = this.queryRunner.query(this.db,
-                "SELECT * FROM course", new MapListHandler());
-            for (Map<String, Object> args : queryResults) {
-               args.put("service", this);
-               courses.add(new Course(args));
-           }
+            String sql = "SELECT * FROM course" + filterSql;
+            List<Map<String, Object>> results = this.queryRunner.query(this.db, sql,
+                new MapListHandler(), filterValues.toArray());
+
+            ArrayList<Course> courses = new ArrayList<>();
+            for (Map<String, Object> args : results) {
+                args.put("service", this);
+                courses.add(new Course(args));
+            }
             return courses;
+
         } catch (SQLException e) {
             throw new IOError(e);
         }
+    }
+
+    /**
+     * Returns a list of all courses.
+     *
+     * @see #getCourses(Map)
+     */
+    public List<Course> getCourses() {
+        return this.getCourses(new HashMap<String, Object>());
     }
 
     /**
@@ -581,18 +613,18 @@ public class ApplicationService {
     }
 
     /**
-     * Gibt eine Liste aller Kriterien zurück.
+     * Returns a list of all criteria.
      *
-     * @param filter Filter
-     * @param agent ausführender Benutzer
-     * @return Liste aller Kriterien
+     * @param filter filter (errors: <code>filter_improper_keys</code>)
+     * @param agent active user
+     * @return list of all criteria
      */
     public List<Criterion> getCriteria(Map<String, Object> filter, User agent) {
         if (!GET_CRITERIA_FILTER_KEYS.containsAll(filter.keySet())) {
-            throw new IllegalArgumentException("illegal filter: improper keys");
+            throw new IllegalArgumentException("filter_improper_keys");
         }
 
-        ArrayList<Criterion> criteria = new ArrayList<Criterion>(this.criteria.values());
+        ArrayList<Criterion> criteria = new ArrayList<>(this.criteria.values());
         final String requiredInformationTypeId =
             (String) filter.get("required_information_type_id");
         if (requiredInformationTypeId != null) {
@@ -608,7 +640,7 @@ public class ApplicationService {
     }
 
     /**
-     * Gibt eine Liste aller Kriterien zurück.
+     * Returns a list of all criteria.
      *
      * @see #getCriteria(Map, User)
      */

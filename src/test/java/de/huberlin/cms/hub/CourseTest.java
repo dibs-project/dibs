@@ -34,7 +34,7 @@ public class CourseTest extends HubTest {
     public void testApply() {
         Application application = course.apply(user.getId(), null);
         Evaluation evaluation = application.getEvaluationByCriterionId("qualification");
-        assertTrue(user.getApplications(null).contains(application));
+        assertTrue(user.getApplications().contains(application));
         assertEquals(Evaluation.STATUS_INFORMATION_MISSING, evaluation.getStatus());
         assertNull(evaluation.getInformation());
         assertNull(evaluation.getValue());
@@ -77,8 +77,14 @@ public class CourseTest extends HubTest {
 
     @Test
     public void testStartAdmission() {
+        String applicationId = course.apply(user.getId(), null).getId();
+        HashMap<String, Object> args = new HashMap<String, Object>();
+        args.put("grade", 4.0);
+        user.createInformation("qualification", args, null);
         course.startAdmission(null);
         assertTrue(service.getCourse(course.getId()).isAdmission());
+        assertEquals(Application.STATUS_ADMITTED, service.getApplication(applicationId)
+            .getStatus());
     }
 
     @Test
