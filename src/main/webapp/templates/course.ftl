@@ -34,13 +34,13 @@
                 [#elseif user.role == "admin"]
                     <li>
                         [#if course.published]
-                                <form method="POST" action="/courses/${course.id}/unpublish/">
-                                    <button>Veröffentl. zurückziehen</button>
-                                </form>
+                            <form method="POST" action="/courses/${course.id}/unpublish/">
+                                <button>Veröffentl. zurückziehen</button>
+                            </form>
                         [#else]
-                                <form method="POST" action="/courses/${course.id}/publish/">
-                                    <button>Veröffentlichen</button>
-                                </form>
+                            <form method="POST" action="/courses/${course.id}/publish/">
+                                <button>Veröffentlichen</button>
+                            </form>
                         [/#if]
                     </li>
                     [#if !course.admission]
