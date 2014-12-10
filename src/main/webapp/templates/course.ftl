@@ -38,17 +38,17 @@
                                 <button>Veröffentl. zurückziehen</button>
                             </form>
                         </li>
-                        [#if !course.admission]
-                            <li>
-                                <form method="POST" action="/courses/${course.id}/start-admission/">
-                                    <button>Zulassung starten</button>
-                                </form>
-                            </li>
-                        [/#if]
                     [#else]
                         <li>
                             <form method="POST" action="/courses/${course.id}/publish/">
                                 <button>Veröffentlichen</button>
+                            </form>
+                        </li>
+                    [/#if]
+                    [#if !course.admission]
+                        <li>
+                            <form method="POST" action="/courses/${course.id}/start-admission/">
+                                <button>Zulassung starten</button>
                             </form>
                         </li>
                     [/#if]
