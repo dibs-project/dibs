@@ -5,9 +5,9 @@
 [@page "Mit hochschulstart.de Verbinden"]
     <section>
         <p>
-            Du benötigst ein Konto auf
-            <a href="https://dosv.hochschulstart.de/" target="_blank">hochschulstart.de</a>.
-            Falls du noch keines hast, kannst du dich
+            Falls du noch kein Konto auf
+            <a href="https://dosv.hochschulstart.de/" target="_blank">hochschulstart.de</a>
+            hast, kannst du dich
             <a href="https://dosv.hochschulstart.de/" target="_blank">jetzt registrieren</a>.
         </p>
 
