@@ -16,7 +16,7 @@
         <p><button>Anmelden</button></p>
     </form>
 
-    <p><a href="/register/">Noch kein Benutzerkonto? Registrieren!</a></p>
+    <p><a href="/register/">Noch kein Benutzerkonto? Jetzt registrieren!</a></p>
 [/@page]
 
 [/#escape]

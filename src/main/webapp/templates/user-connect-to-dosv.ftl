@@ -6,18 +6,20 @@
     <section>
         <p>
             Du benötigst ein Konto auf
-            <a href="https://dosv.hochschulstart.de/">hochschulstart.de</a>.
+            <a href="https://dosv.hochschulstart.de/" target="_blank">hochschulstart.de</a>.
+            Falls du noch keines hast, kannst du dich
+            <a href="https://dosv.hochschulstart.de/" target="_blank">jetzt registrieren</a>.
         </p>
 
-        <form method="POST" action="/users/${user.id}/connect-to-dosv/">
+        <form method="POST" action="${url}">
             [@form_error/]
             <label>
-                <small>BID</small>
-                <input name="dosv_bid" value="${(form.dosv_bid[0])!}"/>
+                <small>Bewerber-ID (BID)</small>
+                <input name="dosv-bid" value="${(form['dosv-bid'][0])!}"/>
             </label>
             <label>
-                <small>BAN</small>
-                <input name="dosv_ban" value="${(form.dosv_ban[0])!}"/>
+                <small>Bewerber-Authentifizierungsnummer (BAN)</small>
+                <input name="dosv-ban" value="${(form['dosv-ban'][0])!}"/>
             </label>
             <p><button>Verbinden</button></p>
         </form>
