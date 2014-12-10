@@ -19,12 +19,16 @@ public class Settings extends HubObject {
     private String semester;
     private String storageVersion;
     private Date dosvSyncTime;
+    private Date dosvRemoteApplicationsPullTime;
 
     Settings(Map<String, Object> args) {
         super(args);
         this.semester = (String) args.get("semester");
         this.storageVersion = (String) args.get("storage_version");
         this.dosvSyncTime = new Date(((Timestamp) args.get("dosv_sync_time")).getTime());
+        this.dosvRemoteApplicationsPullTime =
+            args.get("dosv_remote_applications_pull_time") == null ? null : new Date(
+                ((Timestamp) args.get("dosv_remote_applications_pull_time")).getTime());
     }
 
     /**
@@ -47,6 +51,14 @@ public class Settings extends HubObject {
      * Letzter Update-Zeitpunkt der mit dem DoSV synchronisierten Daten.
      */
     public Date getDosvSyncTime() {
-        return this.dosvSyncTime;
+        return new Date(dosvSyncTime.getTime());
+    }
+
+    /**
+     * Server timestamp of the last DoSV application pull.
+     */
+    public Date getDosvApplicationsServerTime() {
+        return dosvRemoteApplicationsPullTime == null ? null : new Date(
+            dosvRemoteApplicationsPullTime.getTime());
     }
 }

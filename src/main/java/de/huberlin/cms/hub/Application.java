@@ -196,7 +196,7 @@ public class Application extends HubObject {
      * Time of the Application's last modification.
      */
     public Date getModificationTime() {
-        return modificationTime;
+        return new Date(modificationTime.getTime());
     }
 
     /**
