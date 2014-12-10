@@ -229,7 +229,8 @@ header > nav li:first-child button {
 }
 
 .notification {
-    font-style: italic;
+    padding: 0.25rem;
+    border: 1px dotted #333;
 }
 
 /* ==== Dash ==== */
