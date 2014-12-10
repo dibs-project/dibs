@@ -63,15 +63,15 @@ public class Application extends HubObject {
      * Accepts an admission for this Application.
      *
      * @throws IllegalStateException code: <code>"application_not_admitted"</code> if the
-     * status is not <code>"admitted"</code>, <code>"application_is_dosv"</code> if the
-     * admission can only be accepted via Hochschulstart.de.
+     * status is not <code>"admitted"</code>
      */
     public void accept() {
         if (!getStatus().equals(STATUS_ADMITTED)) {
             throw new IllegalStateException("application_not_admitted");
         }
-        // TODO IllegalStateException("application_is_dosv") once Course.startAdmission()
-        // is testable for DoSV courses
+        // TODO IllegalStateException("application_is_dosv") if the
+        // admission can only be accepted via Hochschulstart.de once Course.startAdmission()
+        // is testable for DoSV courses.
         setStatus(STATUS_CONFIRMED, true, null);
     }
 
