@@ -158,6 +158,7 @@ section.with-aside > aside li {
 section.with-aside > aside button,
 section.with-aside > aside a.button {
     display: block;
+    width: 100%;
 }
 
 /* ==== Form ==== */

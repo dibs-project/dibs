@@ -67,7 +67,12 @@ public class DosvSyncIT extends HubTest {
     @Test
     public void testSynchronizeApplications() {
         user.connectToDosv(bid, ban, null);
-        dosvCourse.apply(user.getId(), null);
+        String applicationId = dosvCourse.apply(user.getId(), null).getId();
         service.getDosvSync().synchronize();
+        assertEquals(-1, service.getApplication(applicationId).getDosvVersion());
+        service.getDosvSync().synchronize();
+        assertEquals(0, service.getApplication(applicationId).getDosvVersion());
+        service.getDosvSync().synchronize();
+        assertEquals(0, service.getApplication(applicationId).getDosvVersion());
     }
 }

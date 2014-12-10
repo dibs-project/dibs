@@ -12,7 +12,8 @@ CREATE TABLE settings (
     id VARCHAR(256) PRIMARY KEY,
     semester VARCHAR(6),
     storage_version VARCHAR(256),
-    dosv_sync_time TIMESTAMP NOT NULL
+    dosv_sync_time TIMESTAMP NOT NULL,
+    dosv_remote_applications_pull_time TIMESTAMP
 );
 
 CREATE TABLE quota (
@@ -38,6 +39,7 @@ CREATE TABLE course (
     capacity INT NOT NULL,
     allocation_rule_id VARCHAR(256) REFERENCES allocation_rule,
     published BOOLEAN NOT NULL DEFAULT FALSE,
+    admission BOOLEAN NOT NULL DEFAULT FALSE,
     modification_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     dosv BOOLEAN NOT NULL
 );
