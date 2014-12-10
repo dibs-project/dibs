@@ -36,6 +36,8 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
+import javax.xml.ws.WebServiceException;
 
 import org.glassfish.jersey.server.CloseableService;
 import org.glassfish.jersey.server.mvc.Viewable;
@@ -61,7 +63,7 @@ public class Pages implements Closeable {
     private HashMap<String, Object> model;
 
     public Pages(@Context Configuration config, @Context CloseableService closeables,
-            @CookieParam("session") Cookie sessionCookie) {
+            @Context UriInfo urlInfo, @CookieParam("session") Cookie sessionCookie) {
         closeables.add(this);
 
         // NOTE: kann deutlich optimiert werden
@@ -97,6 +99,7 @@ public class Pages implements Closeable {
         this.model.put("service", this.service);
         this.model.put("user", this.user);
         this.model.put("session", this.session);
+        this.model.put("url", urlInfo.getRequestUri());
     }
 
     @Override
@@ -213,34 +216,63 @@ public class Pages implements Closeable {
 
     /* User.connectToDosv */
 
-    // TODO: test!
-
     @GET
     @Path("users/{id}/connect-to-dosv")
-    public Viewable userConnectToDosv() {
-        return this.userConnectToDosv(null, null);
+    public Viewable userConnectToDosv(@QueryParam("course-id") String courseId) {
+        return this.userConnectToDosv(courseId, null, null, null);
     }
 
     @POST
     @Path("users/{id}/connect-to-dosv")
-    public Response userConnectToDosv(MultivaluedMap<String, String> form) {
+    public Response userConnectToDosv(@QueryParam("course-id") String courseId,
+            MultivaluedMap<String, String> form) {
         try {
-            // TODO: can we use minus (i.e. dosv-bid) in maps in templates?
             Util.checkContainsRequired(form,
-                new HashSet<>(Arrays.asList("dosv_bid", "dosv_ban")));
-            this.user.connectToDosv(form.getFirst("dosv_bid"), form.getFirst("dosv_ban"),
-                this.user);
-            // TODO: post to resource Course.apply
-            return Response.seeOther(UriBuilder.fromUri("/").build()).build();
-        } catch (IllegalArgumentException e) {
-            return Response.status(400).entity(this.userConnectToDosv(form, e)).build();
+                new HashSet<>(Arrays.asList("dosv-bid", "dosv-ban")));
+
+            boolean connected = this.user.connectToDosv(form.getFirst("dosv-bid"),
+                form.getFirst("dosv-ban"), this.user);
+            if (connected == false) {
+                throw new IllegalArgumentException("dosv_bid_dosv_ban_bad");
+            }
+
+            URI url = null;
+            if (courseId == null) {
+                // TODO redirect to /users/{id}
+                url = UriBuilder.fromUri("/").build();
+            } else {
+                url = UriBuilder.fromUri("/courses/{id}?post=user-connect-to-dosv")
+                    .build(courseId);
+            }
+            return Response.seeOther(url).build();
+
+        } catch (IllegalArgumentException | WebServiceException e) {
+            IllegalArgumentException formError = null;
+            Exception error = null;
+            if (e instanceof IllegalArgumentException) {
+                formError = (IllegalArgumentException) e;
+            } else {
+                error = e;
+            }
+            return Response.status(400)
+                .entity(this.userConnectToDosv(courseId, form, formError, error)).build();
         }
     }
 
-    private Viewable userConnectToDosv(MultivaluedMap<String, String> form,
-            IllegalArgumentException formError) {
+    private Viewable userConnectToDosv(@QueryParam("course-id") String courseId,
+            MultivaluedMap<String, String> form, IllegalArgumentException formError,
+            Exception error) {
         this.model.put("form", form);
         this.model.put("formError", formError);
+        if (courseId != null) {
+            this.model.put("notification",
+                "Um dich auf einen Studiengang zu bewerben, dessen Zulassung über hochschulstart.de läuft, musst du erst dein Konto mit hochschulstart.de verbinden.");
+        }
+        // WebServiceException
+        if (error != null) {
+            this.model.put("notification",
+                "Konnte wegen einer technischen Störung keine Verbindung mit hochschulstart.de herstellen. Bitte versuche es in ein paar Minuten noch ein mal.");
+        }
         return new Viewable("/user-connect-to-dosv.ftl", this.model);
     }
 
@@ -269,10 +301,14 @@ public class Pages implements Closeable {
     @GET
     @Path("courses/{id}")
     public Viewable course(@PathParam("id") String id,
-            @QueryParam("error") String error) {
+            @QueryParam("post") String post, @QueryParam("error") String error) {
         Course course = this.service.getCourse(id);
         this.model.put("course", course);
         this.model.put("applications", course.getApplications());
+        if (post != null && post.equals("user-connect-to-dosv")) {
+            this.model.put("notification",
+                "Dein Konto wurde mit hochschulstart.de verbunden. Du kannst dich jetzt auf diesen Studiengang bewerben.");
+        }
         if (error != null) {
             if (error.equals("course_has_applications")) {
                 this.model.put("notification",
@@ -291,14 +327,28 @@ public class Pages implements Closeable {
     public Response apply(@PathParam("id") String id) {
         Course course = this.service.getCourse(id);
         URI url = null;
+
         try {
             Application application = course.apply(this.user.getId(), this.user);
-            url = UriBuilder.fromUri("/applications/{id}/").build(application.getId());
+            url = UriBuilder.fromUri("/applications/{id}").build(application.getId());
+
         } catch (IllegalStateException e) {
-            // TODO: user_not_connected: redirect to User.connectToDosv
-            // course_not_published is handled by 404 after redirect
-            url = UriBuilder.fromUri("/courses/{id}/").build(id);
+            switch (e.getCode()) {
+            case "course_not_published":
+                // handled by 404 after redirect
+                url = UriBuilder.fromUri("/courses/{id}").build(id);
+                break;
+            case "user_not_connected":
+                url = UriBuilder
+                    .fromUri("/users/{id}/connect-to-dosv?course-id={course-id}")
+                    .build(this.user.getId(), id);
+                break;
+            default:
+                // unreachable
+                throw new RuntimeException(e);
+            }
         }
+
         return Response.seeOther(url).build();
     }
 
