@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -309,13 +308,9 @@ public class Pages implements Closeable {
             this.model.put("notification",
                 "Dein Konto wurde mit hochschulstart.de verbunden. Du kannst dich jetzt auf diesen Studiengang bewerben.");
         }
-        if (error != null) {
-            if (error.equals("course_has_applications")) {
-                this.model.put("notification",
-                    "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");
-            } else {
-                throw new BadRequestException();
-            }
+        if (error != null && error.equals("course_has_applications")) {
+            this.model.put("notification",
+                "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");
         }
         return new Viewable("/course.ftl", this.model);
     }

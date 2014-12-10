@@ -7,12 +7,18 @@ package de.huberlin.cms.hub.dosv;
 
 import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.EINGEGANGEN;
 import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.GUELTIG;
+import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.ZUGELASSEN;
+import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.ZULASSUNGSANGEBOT_LIEGT_VOR;
+import static de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus.ZURUECKGEZOGEN;
 import static de.hochschulstart.hochschulschnittstelle.commonv1_0.ErgebnisStatus.ZURUECKGEWIESEN;
 import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.IN_VORBEREITUNG;
 import static de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.StudienangebotsStatus.OEFFENTLICH_SICHTBAR;
+import static de.huberlin.cms.hub.Application.STATUS_ADMITTED;
 import static de.huberlin.cms.hub.Application.STATUS_COMPLETE;
+import static de.huberlin.cms.hub.Application.STATUS_CONFIRMED;
 import static de.huberlin.cms.hub.Application.STATUS_INCOMPLETE;
 import static de.huberlin.cms.hub.Application.STATUS_VALID;
+import static de.huberlin.cms.hub.Application.STATUS_WITHDRAWN;
 
 import java.io.IOError;
 import java.sql.Connection;
@@ -86,12 +92,20 @@ import de.huberlin.cms.hub.User;
  * <li><code>STATUS_INCOMPLETE -> EINGEGANGEN</code></li>
  * <li><code>STATUS_COMPLETE -> EINGEGANGEN</code></li>
  * <li><code>STATUS_VALID -> GUELTIG</code></li>
+ * <li><code>STATUS_ADMITTED <- ZULASSUNGSANGEBOT_LIEGT_VOR</code></li>
+ * <li><code>STATUS_CONFIRMED <- ZUGELASSEN</code></li>
+ * <li><code>STATUS_WITHDRAWN <- ZURUECKGEZOGEN</code></li>
  * </ul>
+ * <p>
+ * Each application status is set either by HUB or via Hochschulstart.de.
+ * To avoid synchronisation conflicts between <code>STATUS_CONFIRMED</code> and
+ * <code>STATUS_WITHDRAWN</code>, users can withdraw their application only via Hochschulstart.
  *
  * @author Markus Michler
  */
 public class DosvSync {
     private final static Map<String, BewerbungsBearbeitungsstatus> APPLICATION_STATUS_MAPPING_TO_DOSV;
+    private final static Map<BewerbungsBearbeitungsstatus, String> APPLICATION_STATUS_MAPPING_FROM_DOSV;
     private ApplicationService service;
     private Properties dosvConfig;
 
@@ -100,6 +114,12 @@ public class DosvSync {
         APPLICATION_STATUS_MAPPING_TO_DOSV.put(STATUS_INCOMPLETE, EINGEGANGEN);
         APPLICATION_STATUS_MAPPING_TO_DOSV.put(STATUS_COMPLETE, EINGEGANGEN);
         APPLICATION_STATUS_MAPPING_TO_DOSV.put(STATUS_VALID, GUELTIG);
+
+        APPLICATION_STATUS_MAPPING_FROM_DOSV = new HashMap<>();
+        APPLICATION_STATUS_MAPPING_FROM_DOSV.put(ZULASSUNGSANGEBOT_LIEGT_VOR,
+            STATUS_ADMITTED);
+        APPLICATION_STATUS_MAPPING_FROM_DOSV.put(ZUGELASSEN, STATUS_CONFIRMED);
+        APPLICATION_STATUS_MAPPING_FROM_DOSV.put(ZURUECKGEZOGEN, STATUS_WITHDRAWN);
     }
 
     private static XMLGregorianCalendar toXMLGregorianCalendar(Date date) {
@@ -146,12 +166,22 @@ public class DosvSync {
     }
 
     /**
-     * Synchronisiert Studiengänge, Bewerbungen, und Ranglisten mit dem System des DoSV.
+     * Synchronizes Courses, Applications and Ranks with the DoSV.
+     *
+     * @throws
      */
     public void synchronize() {
         Date newSyncTime = new Date();
         pushCourses();
-        pushApplications();
+        boolean applicationsPushed = false;
+        // TODO adjust number of retries to minimize the possibility of a RuntimeException
+        for (int i = 0; !applicationsPushed && i < 10; i++) {
+            pullApplicationStatus();
+            applicationsPushed = pushApplications();
+        }
+        if (!applicationsPushed) {
+            throw new RuntimeException("Sync exceeded maximum number of retries.");
+        }
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -179,7 +209,7 @@ public class DosvSync {
                 course.isPublished() ? OEFFENTLICH_SICHTBAR : IN_VORBEREITUNG;
 
             // TODO Feld Course.subject
-            String dosvSubjectKey = Integer.toString(course.getId().hashCode());
+            String dosvSubjectKey = course.getId().split(":")[1];
             // TODO Studienangebot nicht übertragen, wenn die Zulassung begonnen hat.
             /** Studienangebot - SAF 101 */
             Studienfach studienfach = new Studienfach();
@@ -247,6 +277,63 @@ public class DosvSync {
         }
     }
 
+    private void pullApplicationStatus() {
+        Connection db = service.getDb();
+        Date[] updateTime = new Date[1];
+        updateTime[0] = service.getSettings().getDosvApplicationsServerTime();
+        List<Bewerbung> bewerbungen;
+
+        /* SAF 303 */
+        // NOTE Instantiation is resource intensive so it happens here and not in the constructor
+        DosvClient dosvClient = new DosvClient(dosvConfig);
+        try {
+            List<String> referenzen =
+                dosvClient.anfragenNeueGeaenderteBewerbungenDurchHS(updateTime);
+            bewerbungen =
+                dosvClient.uebermittelnNeueGeaenderteBewerbungenAnHS(referenzen);
+        } catch (BewerbungenServiceFehler e) {
+            throw new RuntimeException(e);
+        }
+
+        // write changed Applications to DB
+        try {
+            db.setAutoCommit(false);
+            for (Bewerbung bewerbung : bewerbungen) {
+                String newStatus =
+                    APPLICATION_STATUS_MAPPING_FROM_DOSV.get(bewerbung.getBearbeitungsstatus());
+                Einfachstudienangebotsbewerbung einfachstudienangebotsbewerbung =
+                    (Einfachstudienangebotsbewerbung) bewerbung;
+                EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
+                    einfachstudienangebotsbewerbung.getEinfachstudienangebotsSchluessel();
+                if (newStatus == null) {
+                    service.getQueryRunner().update(service.getDb(),
+                        "UPDATE application SET dosv_version = ? "
+                        + "WHERE course_id = ? AND EXISTS (SELECT id FROM \"user\" WHERE id = user_id AND dosv_bid = ?)",
+                        einfachstudienangebotsbewerbung.getVersionSeSt(),
+                        "course:" + einfachstudienangebotsSchluessel.
+                            getStudienfachSchluessel(),
+                        einfachstudienangebotsbewerbung.getBewerberId());
+                } else {
+                    service.getQueryRunner().update(service.getDb(),
+                        "UPDATE application SET status = ?, dosv_version = ?, modification_time = CURRENT_TIMESTAMP "
+                        + "WHERE course_id = ? AND EXISTS (SELECT id FROM \"user\" WHERE id = user_id AND dosv_bid = ?)",
+                        newStatus, einfachstudienangebotsbewerbung.getVersionSeSt(),
+                        "course:" + einfachstudienangebotsSchluessel.
+                            getStudienfachSchluessel(),
+                        einfachstudienangebotsbewerbung.getBewerberId());
+                }
+            }
+
+            service.getQueryRunner().update(service.getDb(),
+                "UPDATE settings SET dosv_remote_applications_pull_time = ?",
+                new Timestamp(updateTime[0].getTime()));
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
     private boolean pushApplications() {
         boolean done = true;
         List<Bewerbung> bewerbungenNeu = new ArrayList<>();
@@ -267,7 +354,7 @@ public class DosvSync {
                 new EinfachstudienangebotsSchluessel();
             // TODO Field Course.subject
             einfachstudienangebotsSchluessel.setStudienfachSchluessel(
-                Integer.toString(course.getId().hashCode()));
+                course.getId().split(":")[1]);
             // TODO Field Course.degree
             einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
 

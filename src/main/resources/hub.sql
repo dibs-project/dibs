@@ -12,7 +12,8 @@ CREATE TABLE settings (
     id VARCHAR(256) PRIMARY KEY,
     semester VARCHAR(6),
     storage_version VARCHAR(256),
-    dosv_sync_time TIMESTAMP NOT NULL
+    dosv_sync_time TIMESTAMP NOT NULL,
+    dosv_remote_applications_pull_time TIMESTAMP
 );
 
 CREATE TABLE quota (
