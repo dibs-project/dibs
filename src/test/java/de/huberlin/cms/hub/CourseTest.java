@@ -74,4 +74,23 @@ public class CourseTest extends HubTest {
         course.apply(user.getId(), null);
         course.unpublish(null);
     }
+
+    @Test
+    public void testStartAdmission() {
+        String applicationId = course.apply(user.getId(), null).getId();
+        HashMap<String, Object> args = new HashMap<String, Object>();
+        args.put("grade", 4.0);
+        user.createInformation("qualification", args, null);
+        course.startAdmission(null);
+        assertTrue(service.getCourse(course.getId()).isAdmission());
+        assertEquals(Application.STATUS_ADMITTED, service.getApplication(applicationId)
+            .getStatus());
+    }
+
+    @Test
+    public void testStartAdmissionUnpublished() {
+        exception.expect(IllegalStateException.class);
+        course.unpublish(null);
+        course.startAdmission(null);
+    }
 }

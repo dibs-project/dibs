@@ -52,7 +52,8 @@ public class Application extends HubObject {
         this.userId = (String) args.get("user_id");
         this.courseId = (String) args.get("course_id");
         this.status = (String) args.get("status");
-        this.modificationTime = (Date) args.get("modification_time");
+        this.modificationTime =
+            new Date(((Timestamp) args.get("modification_time")).getTime());
         this.dosvVersion = (int) args.get("dosv_version");
     }
 
@@ -76,6 +77,15 @@ public class Application extends HubObject {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+    }
+
+    /**
+     * Returns a list of all evaluations belonging to this application.
+     *
+     * @see #getEvaluations(Map, User)
+     */
+    public List<Evaluation> getEvaluations(User agent) {
+        return this.getEvaluations(new HashMap<String, Object>(), agent);
     }
 
     /**
@@ -120,15 +130,6 @@ public class Application extends HubObject {
         } catch (SQLException e) {
             throw new IOError(e);
         }
-    }
-
-    /**
-     * Returns a list of all evaluations belonging to this application.
-     *
-     * @see #getEvaluations(Map, User)
-     */
-    public List<Evaluation> getEvaluations(User agent) {
-        return this.getEvaluations(new HashMap<String, Object>(), agent);
     }
 
     // TODO replace doCommit with transaction
@@ -202,7 +203,7 @@ public class Application extends HubObject {
      * Time of the Application's last modification.
      */
     public Date getModificationTime() {
-        return modificationTime;
+        return new Date(modificationTime.getTime());
     }
 
     /**
