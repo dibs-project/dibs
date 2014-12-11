@@ -10,13 +10,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import de.hu_berlin.dosv.DosvClient;
-import de.huberlin.cms.hub.Application;
 import de.huberlin.cms.hub.Course;
 import de.huberlin.cms.hub.HubTest;
 import de.huberlin.cms.hub.User;
@@ -63,28 +63,27 @@ public class DosvSyncIT extends HubTest {
         service.getDosvSync().synchronize();
         dosvCourse.unpublish(null);
         service.getDosvSync().synchronize();
-        assertTrue(service.getSettings().getDosvSyncTime()
-            .after(dosvCourse.getModificationTime()));
     }
 
     @Test
     public void testSynchronizeApplications() {
         user.connectToDosv(bid, ban, null);
-        Application application = dosvCourse.apply(user.getId(), null);
+        String applicationId = dosvCourse.apply(user.getId(), null).getId();
         service.getDosvSync().synchronize();
-        assertEquals(-1, application.getDosvVersion());
+        assertEquals(-1, service.getApplication(applicationId).getDosvVersion());
         service.getDosvSync().synchronize();
-        assertEquals(0, service.getApplication(application.getId()).getDosvVersion());
+        assertEquals(0, service.getApplication(applicationId).getDosvVersion());
         service.getDosvSync().synchronize();
-        assertEquals(0, service.getApplication(application.getId()).getDosvVersion());
-        assertTrue(service.getSettings().getDosvSyncTime()
-            .after(application.getModificationTime()));
+        assertEquals(0, service.getApplication(applicationId).getDosvVersion());
     }
 
     @Test
     public void testSystem() {
         user.connectToDosv(bid, ban, null);
         dosvCourse.apply(user.getId(), null);
+        HashMap<String, Object> args = new HashMap<String, Object>();
+        args.put("grade", 4.0);
+        user.createInformation("qualification", args, null);
         service.getDosvSync().synchronize();
         dosvCourse.startAdmission(null);
         service.getDosvSync().synchronize();

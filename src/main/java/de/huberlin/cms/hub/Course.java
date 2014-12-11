@@ -33,7 +33,7 @@ public class Course extends HubObject {
     private boolean published;
     private boolean admission;
     private Date modificationTime;
-    private boolean dosv;
+    private final boolean dosv;
 
     Course(Map<String, Object> args) {
         super(args);
@@ -78,15 +78,19 @@ public class Course extends HubObject {
     }
 
     /**
-     * Legt eine Bewerbung auf einen publizierten Studiengang an.
+     * Creates an Application for a published Course.
      *
-     * @param userId ID des Bewerbers
-     * @param agent ausführender Benutzer
-     * @return angelegte Bewerbung
+     * @param userId the applicant's ID
+     * @param agent executing user
+     * @return created Application
+     *
+     * @throws HubException.IllegalStateException
+     *  if the course is not published (<code>course_not_published</code>)
+     *  or the user is not connected to the DoSV (<code>user_not_connected</code>)
      */
     public Application apply(String userId, User agent) {
         if (!service.getCourse(id).isPublished()) {
-            throw new IllegalStateException("course_published");
+            throw new IllegalStateException("course_not_published");
         }
         if (dosv == true && service.getUser(userId).getDosvBid() == null) {
             throw new IllegalStateException("user_not_connected");
@@ -212,6 +216,20 @@ public class Course extends HubObject {
             service.getJournal().record(
                 ApplicationService.ACTION_TYPE_COURSE_ADMISSION_STARTED, this.id,
                 HubObject.getId(agent), null);
+
+            for (Application application : getApplications()) {
+                application.setStatus(Application.STATUS_VALID, false, null);
+            }
+            // NOTE future iterations: will be called when a user's application status is set
+            generateRankings();
+
+            // first local admission step
+            if (!dosv) {
+                for (Rank rank : getAllocationRule().getQuota().getRanking()) {
+                    rank.getApplication().setStatus(Application.STATUS_ADMITTED, false, null);
+                }
+            }
+
             db.commit();
             db.setAutoCommit(true);
         } catch (SQLException e) {
@@ -219,11 +237,6 @@ public class Course extends HubObject {
         }
         admission = true;
         modificationTime = now;
-        // NOTE future iterations: generateRankings will be called when a user's application status is set
-        for (Application application : getApplications()) {
-            application.setStatus(Application.STATUS_VALID, null);
-        }
-        generateRankings();
     }
 
     /**

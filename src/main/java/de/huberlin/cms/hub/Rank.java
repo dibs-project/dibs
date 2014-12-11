@@ -34,18 +34,20 @@ public class Rank extends HubObject {
     /**
      * Legt einen neuen Ranglisteneintrag an.
      */
-    public static Rank create(Map<String, Object> args) {
+    public static Rank create(Map<String, Object> args, boolean doCommit) {
         try {
             ApplicationService service = (ApplicationService) args.get("service");
             Connection db = service.getDb();
             db.setAutoCommit(false);
             String id = "rank:" + Integer.toString(new Random().nextInt());
-            service.getQueryRunner().insert(service.getDb(), "INSERT INTO rank VALUES(?, ?, ?, ?, ?, ?)",
-                new MapHandler(), id, (String) args.get("quota_id"),
-                (String) args.get("user_id"), (String) args.get("application_id"),
-                (int) args.get("index"), (int) args.get("lotnumber"));
-            db.commit();
-            db.setAutoCommit(true);
+            service.getQueryRunner().insert(service.getDb(),
+                "INSERT INTO rank VALUES(?, ?, ?, ?, ?, ?)", new MapHandler(), id,
+                args.get("quota_id"), args.get("user_id"), args.get("application_id"),
+                args.get("index"), args.get("lotnumber"));
+            if (doCommit) {
+                db.commit();
+                db.setAutoCommit(true);
+            }
             args.put("id", id);
             return new Rank(args);
         } catch (SQLException e) {
