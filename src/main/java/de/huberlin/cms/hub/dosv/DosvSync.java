@@ -117,6 +117,7 @@ import de.huberlin.cms.hub.User;
  * To avoid synchronisation conflicts between <code>STATUS_CONFIRMED</code> and
  * <code>STATUS_WITHDRAWN</code>, users can withdraw their application only via Hochschulstart.
  *
+ * <p>
  * Rankings:
  * <ul>
  * <li><code>rangliste.schluessel = quota.getId()</code></li>
@@ -478,10 +479,10 @@ public class DosvSync {
     }
 
     private void pushRankings() {
+          // TODO pull webservice call out of loop
           for (Course course : service.getCourses()) {
-              if (!course.isDosv()
-                  || service.getSettings().getDosvSyncTime()
-                      .after(course.getModificationTime()) || !course.isAdmission()) {
+              if (!(course.isDosv() && service.getSettings().getDosvSyncTime()
+                      .before(course.getModificationTime()) && course.isAdmission())) {
                   continue;
               }
               Quota quota = course.getAllocationRule().getQuota();
@@ -519,6 +520,7 @@ public class DosvSync {
               }
               if (ranglisteErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
                   throw new RuntimeException(ranglisteErgebnis.getGrundZurueckweisung());
+                  // unreachable
               }
           }
       }
