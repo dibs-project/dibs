@@ -65,14 +65,20 @@ public class Ui extends ResourceConfig {
             this.property(name, servletContext.getInitParameter(name));
         }
 
-        // Datenbank einrichten
+        // setup database
         Connection db;
         try {
+            // manually load driver, because it is not guaranteed that the server's
+            // classloader supports SPI
+            Class.forName("org.postgresql.Driver");
             db = DriverManager.getConnection((String) this.getProperty("db_url"),
                 (String) this.getProperty("db_user"),
                 (String) this.getProperty("db_password"));
         } catch (SQLException e) {
             logger.severe("failed to connect to database");
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            // unreachable
             throw new RuntimeException(e);
         }
 
