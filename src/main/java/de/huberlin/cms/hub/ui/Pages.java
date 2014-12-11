@@ -373,6 +373,17 @@ public class Pages implements Closeable {
         return Response.seeOther(url.build()).build();
     }
 
+    /* Course.startAdmission */
+
+    @POST
+    @Path("courses/{id}/start-admission")
+    public Response startAdmission(@PathParam("id") String id) {
+        // TODO: handle course_unpublished error
+        Course course = this.service.getCourse(id);
+        course.startAdmission(this.user);
+        return Response.seeOther(UriBuilder.fromUri("/courses/{id}/").build(id)).build();
+    }
+
     /* Create course */
 
     @GET

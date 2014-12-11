@@ -51,7 +51,7 @@ public class ApplicationTest extends HubTest {
     @Test
     public final void testSetStatus() {
         String newStatus = Application.STATUS_COMPLETE;
-        application.setStatus(newStatus, null);
+        application.setStatus(newStatus, true, null);
         application = service.getApplication(application.getId());
         assertEquals(application.getStatus(), newStatus);
     }
