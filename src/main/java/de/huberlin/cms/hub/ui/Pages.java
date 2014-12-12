@@ -253,9 +253,15 @@ public class Pages implements Closeable {
         try {
             // NOTE hard-coded for qualification
             checkContainsRequired(form, new HashSet<String>(Arrays.asList("grade")));
+            double grade;
+            try {
+                grade = new Double(form.getFirst("grade"));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("grade_nan");
+            }
 
             Map<String, Object> args = new HashMap<>();
-            args.put("grade", new Double(form.getFirst("grade")));
+            args.put("grade", grade);
             Information information = user.createInformation(type.getId(), args, user);
 
             URI url = UriBuilder.fromUri("information/{id}/").build(information.getId());
