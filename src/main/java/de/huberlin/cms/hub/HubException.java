@@ -36,6 +36,9 @@ public abstract class HubException extends RuntimeException {
             this.objectId = objectId;
         }
 
+        /**
+         * The object's ID or a parameter used to identify the object in a given context.
+         */
         public String getObjectId() {
             return objectId;
         }

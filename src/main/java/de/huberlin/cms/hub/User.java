@@ -9,10 +9,10 @@ import java.io.IOError;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
 /**
@@ -54,7 +54,7 @@ public class User extends HubObject {
      * @param agent ausführender Benutzer
      * @return angelegte Information
      */
-    public Information createInformation(String typeId, HashMap<String, Object> args,
+    public Information createInformation(String typeId, Map<String, Object> args,
             User agent) {
         Information.Type type = this.service.getInformationTypes().get(typeId);
         if (type == null) {
@@ -92,6 +92,29 @@ public class User extends HubObject {
             }
         }
         return informationSet;
+    }
+
+    /**
+     * Returns the User's Information for a given Type.
+     * @param typeId ID of the Information.Type
+     * @return Information with the requested Type
+     */
+    public Information getInformationByType(String typeId) {
+        Information.Type type = service.getInformationTypes().get(typeId);
+        if (type == null) {
+            throw new IllegalArgumentException("illegal typeId: unknown");
+        }
+        try {
+            String sql = String.format("SELECT * FROM \"%s\" WHERE user_id = ?", typeId);
+            Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
+                sql, new MapHandler(), id);
+            if (args == null) {
+                throw new HubException.ObjectNotFoundException(typeId);
+            }
+            return type.newInstance(args, service);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
     /**

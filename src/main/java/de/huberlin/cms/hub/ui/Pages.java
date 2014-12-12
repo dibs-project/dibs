@@ -15,13 +15,17 @@ import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -35,6 +39,8 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
+import javax.xml.ws.WebServiceException;
 
 import org.glassfish.jersey.server.CloseableService;
 import org.glassfish.jersey.server.mvc.Viewable;
@@ -42,13 +48,17 @@ import org.glassfish.jersey.server.mvc.Viewable;
 import de.huberlin.cms.hub.Application;
 import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Course;
+import de.huberlin.cms.hub.HubException;
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+import de.huberlin.cms.hub.Information;
 import de.huberlin.cms.hub.Session;
 import de.huberlin.cms.hub.User;
 
+// TODO put private "overloaded" methods directly after their public counterparts
 /**
  * @author Sven Pfaller
+ * @author Markus Michler
  */
 @Path("/")
 @Produces("text/html")
@@ -60,7 +70,7 @@ public class Pages implements Closeable {
     private HashMap<String, Object> model;
 
     public Pages(@Context Configuration config, @Context CloseableService closeables,
-            @CookieParam("session") Cookie sessionCookie) {
+            @Context UriInfo urlInfo, @CookieParam("session") Cookie sessionCookie) {
         closeables.add(this);
 
         // NOTE: kann deutlich optimiert werden
@@ -96,6 +106,7 @@ public class Pages implements Closeable {
         this.model.put("service", this.service);
         this.model.put("user", this.user);
         this.model.put("session", this.session);
+        this.model.put("url", urlInfo.getRequestUri());
     }
 
     @Override
@@ -210,6 +221,127 @@ public class Pages implements Closeable {
         return new Viewable("/register.ftl", this.model);
     }
 
+    /* User.createInformation */
+
+    @GET
+    @Path("users/{id}/create-information")
+    public Viewable createInformation(@PathParam("id") String id, @QueryParam("type")
+            String typeId) {
+        Information.Type type = service.getInformationTypes().get(typeId);
+        if (type == null) {
+            throw new NotFoundException();
+        }
+        return createInformation(id, type.getId(), null, null);
+    }
+
+    private Viewable createInformation(String userId, String typeId,
+            MultivaluedMap<String, String> form, IllegalArgumentException formError) {
+        model.put("type", typeId);
+        model.put("form", form);
+        model.put("formError", formError);
+        return new Viewable(String.format("/user-create-information-%s.ftl", typeId), model);
+    }
+
+    @POST
+    @Path("users/{id}/create-information")
+    public Response createInformation(@PathParam("id") String id, @QueryParam("type")
+            String typeId, MultivaluedMap<String, String> form) {
+        Information.Type type = service.getInformationTypes().get(typeId);
+        if (type == null) {
+            throw new NotFoundException();
+        }
+        try {
+            // NOTE hard-coded for qualification
+            checkContainsRequired(form, new HashSet<String>(Arrays.asList("grade")));
+
+            Map<String, Object> args = new HashMap<>();
+            args.put("grade", new Double(form.getFirst("grade")));
+            Information information = user.createInformation(type.getId(), args, user);
+
+            URI url = UriBuilder.fromUri("information/{id}/").build(information.getId());
+
+            return Response.seeOther(url).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(400).entity(createInformation(id, type.getId(), form, e))
+                .build();
+        }
+    }
+
+    /* User.connectToDosv */
+
+    @GET
+    @Path("users/{id}/connect-to-dosv")
+    public Viewable userConnectToDosv(@QueryParam("course-id") String courseId) {
+        return this.userConnectToDosv(courseId, null, null, null);
+    }
+
+    @POST
+    @Path("users/{id}/connect-to-dosv")
+    public Response userConnectToDosv(@QueryParam("course-id") String courseId,
+            MultivaluedMap<String, String> form) {
+        try {
+            Util.checkContainsRequired(form,
+                new HashSet<>(Arrays.asList("dosv-bid", "dosv-ban")));
+
+            boolean connected = this.user.connectToDosv(form.getFirst("dosv-bid"),
+                form.getFirst("dosv-ban"), this.user);
+            if (connected == false) {
+                throw new IllegalArgumentException("dosv_bid_dosv_ban_bad");
+            }
+
+            URI url = null;
+            if (courseId == null) {
+                // TODO redirect to /users/{id}
+                url = UriBuilder.fromUri("/").build();
+            } else {
+                url = UriBuilder.fromUri("/courses/{id}?post=user-connect-to-dosv")
+                    .build(courseId);
+            }
+            return Response.seeOther(url).build();
+
+        } catch (IllegalArgumentException | WebServiceException e) {
+            IllegalArgumentException formError = null;
+            Exception error = null;
+            if (e instanceof IllegalArgumentException) {
+                formError = (IllegalArgumentException) e;
+            } else {
+                error = e;
+            }
+            return Response.status(400)
+                .entity(this.userConnectToDosv(courseId, form, formError, error)).build();
+        }
+    }
+
+    private Viewable userConnectToDosv(@QueryParam("course-id") String courseId,
+            MultivaluedMap<String, String> form, IllegalArgumentException formError,
+            Exception error) {
+        this.model.put("form", form);
+        this.model.put("formError", formError);
+        if (courseId != null) {
+            this.model.put("notification",
+                "Um dich auf einen Studiengang zu bewerben, dessen Zulassung über hochschulstart.de läuft, musst du erst dein Konto mit hochschulstart.de verbinden.");
+        }
+        // WebServiceException
+        if (error != null) {
+            this.model.put("notification",
+                "Konnte wegen einer technischen Störung keine Verbindung mit hochschulstart.de herstellen. Bitte versuche es in ein paar Minuten noch ein mal.");
+        }
+        return new Viewable("/user-connect-to-dosv.ftl", this.model);
+    }
+
+    /* Information */
+
+    @GET
+    @Path("information/{id}/")
+    public Viewable information(@PathParam("id") String id) {
+        Information information = service.getInformation(id);
+
+        model.put("information", information);
+
+        // TODO introduce conditional for different Information.Types
+        return new Viewable("/information-qualification.ftl", model);
+    }
+
     /* Application */
 
     @GET
@@ -219,6 +351,23 @@ public class Pages implements Closeable {
         this.model.put("application", application);
         this.model.put("applicant", application.getUser());
         this.model.put("course", application.getCourse());
+
+        List<Information.Type> requiredInformationTypes = new ArrayList<>();
+        // TODO replace hardcoded list with backend method
+        requiredInformationTypes.add(service.getInformationTypes().get("qualification"));
+
+        Map<String, Information> requiredInformationMap = new HashMap<>();
+        for (Information.Type type : requiredInformationTypes) {
+            Information information = null;
+            try {
+                information = user.getInformationByType(type.getId());
+            } catch (HubException.ObjectNotFoundException e) {
+                // do nothing
+            }
+            requiredInformationMap.put(type.getId(), information);
+        }
+
+        this.model.put("requiredInformationMap", requiredInformationMap);
         return new Viewable("/application.ftl", this.model);
     }
 
@@ -235,10 +384,14 @@ public class Pages implements Closeable {
     @GET
     @Path("courses/{id}")
     public Viewable course(@PathParam("id") String id,
-            @QueryParam("error") String error) {
+            @QueryParam("post") String post, @QueryParam("error") String error) {
         Course course = this.service.getCourse(id);
         this.model.put("course", course);
         this.model.put("applications", course.getApplications());
+        if (post != null && post.equals("user-connect-to-dosv")) {
+            this.model.put("notification",
+                "Dein Konto wurde mit hochschulstart.de verbunden. Du kannst dich jetzt auf diesen Studiengang bewerben.");
+        }
         if (error != null && error.equals("course_has_applications")) {
             this.model.put("notification",
                 "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");
@@ -253,14 +406,28 @@ public class Pages implements Closeable {
     public Response apply(@PathParam("id") String id) {
         Course course = this.service.getCourse(id);
         URI url = null;
+
         try {
             Application application = course.apply(this.user.getId(), this.user);
-            url = UriBuilder.fromUri("/applications/{id}/").build(application.getId());
+            url = UriBuilder.fromUri("/applications/{id}").build(application.getId());
+
         } catch (IllegalStateException e) {
-            // TODO: user_not_connected: redirect to User.connectToDosv
-            // course_not_published is handled by 404 after redirect
-            url = UriBuilder.fromUri("/courses/{id}/").build(id);
+            switch (e.getCode()) {
+            case "course_not_published":
+                // handled by 404 after redirect
+                url = UriBuilder.fromUri("/courses/{id}").build(id);
+                break;
+            case "user_not_connected":
+                url = UriBuilder
+                    .fromUri("/users/{id}/connect-to-dosv?course-id={course-id}")
+                    .build(this.user.getId(), id);
+                break;
+            default:
+                // unreachable
+                throw new RuntimeException(e);
+            }
         }
+
         return Response.seeOther(url).build();
     }
 
