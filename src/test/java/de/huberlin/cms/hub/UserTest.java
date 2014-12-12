@@ -29,4 +29,26 @@ public class UserTest extends HubTest {
         this.exception.expectMessage("typeId");
         this.user.createInformation("_foo", new HashMap<String, Object>(), null);
     }
+
+    @Test
+    public void testGetInformationByType() {
+        HashMap<String, Object> args = new HashMap<String, Object>();
+        args.put("grade", 4.0);
+        Information information = user.createInformation("qualification", args, null);
+        assertEquals(information, user.getInformationByType("qualification"));
+    }
+
+    @Test
+    public void testGetInformationByTypeUnknownType() {
+        exception.expect(IllegalArgumentException.class);
+        HashMap<String, Object> args = new HashMap<String, Object>();
+        args.put("grade", 4.0);
+        user.createInformation("foo", args, null);
+    }
+
+    @Test
+    public void testGetInformationByTypeNonExisting() {
+        exception.expect(HubException.ObjectNotFoundException.class);
+        user.getInformationByType("qualification");
+    }
 }
