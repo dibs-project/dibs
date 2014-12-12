@@ -226,7 +226,7 @@ public class Pages implements Closeable {
 
     @POST
     @Path("applications/{id}/accept")
-    public Response accept(@PathParam("id") String id) {
+    public Response applicationAccept(@PathParam("id") String id) {
         URI url = null;
         Application application = null;
         try {
@@ -267,7 +267,7 @@ public class Pages implements Closeable {
 
     @POST
     @Path("courses/{id}/apply")
-    public Response apply(@PathParam("id") String id) {
+    public Response courseApply(@PathParam("id") String id) {
         Course course = this.service.getCourse(id);
         URI url = null;
         try {
@@ -312,7 +312,7 @@ public class Pages implements Closeable {
 
     @POST
     @Path("courses/{id}/start-admission")
-    public Response startAdmission(@PathParam("id") String id) {
+    public Response courseStartAdmission(@PathParam("id") String id) {
         // TODO: handle course_unpublished error
         Course course = this.service.getCourse(id);
         course.startAdmission(this.user);

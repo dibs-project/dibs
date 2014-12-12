@@ -16,13 +16,17 @@
             <p>Status: [@application_status application.status/].</p>
         </div>
         <aside>
-            [#if user.role == "applicant"]
-                [#if application.status == "admitted"]
-                    <form method="POST" action="/applications/${application.id}/accept">
-                        <button>Zulassung annehmen</button>
-                    </form>
+            <ul>
+                [#if user.role == "applicant"]
+                    [#if application.status == "admitted"]
+                        <li>
+                            <form method="POST" action="/applications/${application.id}/accept">
+                                <button>Zulassung annehmen</button>
+                            </form>
+                        </li>
+                    [/#if]
                 [/#if]
-            [/#if]
+            </ul>
         </aside>
     </section>
 [/@page]

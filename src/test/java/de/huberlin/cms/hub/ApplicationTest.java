@@ -31,7 +31,7 @@ public class ApplicationTest extends HubTest {
     }
 
     @Test
-    public void testAcceptNoAdmission() {
+    public void testAcceptNotAdmitted() {
         exception.expect(IllegalStateException.class);
         service.getApplication(application.getId()).accept();
     }
