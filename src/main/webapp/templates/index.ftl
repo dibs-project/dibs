@@ -23,13 +23,6 @@
             <p class="dash-apply"><a href="/courses/">Jetzt bewerben!</a></p>
         </section>
     [/#if]
-
-    <section>
-        <h2>Navigation</h2>
-        <ul>
-            <li><a href="/courses/">Studiengänge</a></li>
-        </ul>
-    </section>
 [/@page]
 
 [/#escape]

@@ -219,6 +219,9 @@ public class Course extends HubObject {
                 ApplicationService.ACTION_TYPE_COURSE_ADMISSION_STARTED, this.id,
                 HubObject.getId(agent), null);
 
+            for (Application application : getApplications()) {
+                application.setStatus(Application.STATUS_VALID, false, null);
+            }
             // NOTE future iterations: will be called when a user's application status is set
             generateRankings();
 
