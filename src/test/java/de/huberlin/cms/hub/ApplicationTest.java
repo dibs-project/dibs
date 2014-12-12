@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections4.Predicate;
 import org.junit.Before;
@@ -24,6 +25,9 @@ public class ApplicationTest extends HubTest {
 
     @Test
     public void testAccept() {
+        Map<String, Object> args = new HashMap<>();
+        args.put("grade", 2.0);
+        user.createInformation("qualification", args, null);
         course.startAdmission(null);
         application = service.getApplication(application.getId());
         application.accept();
