@@ -111,7 +111,7 @@ public class User extends HubObject {
             if (args == null) {
                 throw new HubException.ObjectNotFoundException(typeId);
             }
-            return service.getInformationTypes().get(typeId).newInstance(args, service);
+            return type.newInstance(args, service);
         } catch (SQLException e) {
             throw new IOError(e);
         }

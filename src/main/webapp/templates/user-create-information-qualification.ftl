@@ -10,7 +10,7 @@
             <input name="grade" value="${(form.grade[0])!}"/>
         </label>
 
-        <p><button>Information anlegen</button></p>
+        <p><button>Hochschulreife anlegen</button></p>
     </form>
 [/@page]
 
