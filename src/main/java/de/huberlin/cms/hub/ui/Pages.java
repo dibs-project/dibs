@@ -15,17 +15,22 @@ import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
@@ -41,13 +46,17 @@ import org.glassfish.jersey.server.mvc.Viewable;
 import de.huberlin.cms.hub.Application;
 import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Course;
+import de.huberlin.cms.hub.HubException;
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
+import de.huberlin.cms.hub.Information;
 import de.huberlin.cms.hub.Session;
 import de.huberlin.cms.hub.User;
 
+// TODO put private "overloaded" methods directly after their public counterparts
 /**
  * @author Sven Pfaller
+ * @author Markus Michler
  */
 @Path("/")
 @Produces("text/html")
@@ -209,6 +218,65 @@ public class Pages implements Closeable {
         return new Viewable("/register.ftl", this.model);
     }
 
+    /* User.createInformation */
+
+    @GET
+    @Path("users/{id}/create-information")
+    public Viewable createInformation(@PathParam("id") String id, @QueryParam("type")
+            String typeId) {
+        Information.Type type = service.getInformationTypes().get(typeId);
+        if (type == null) {
+            throw new NotFoundException();
+        }
+        return createInformation(id, type.getId(), null, null);
+    }
+
+    private Viewable createInformation(String userId, String typeId,
+            MultivaluedMap<String, String> form, IllegalArgumentException formError) {
+        model.put("type", typeId);
+        model.put("form", form);
+        model.put("formError", formError);
+        return new Viewable(String.format("/user-create-information-%s.ftl", typeId), model);
+    }
+
+    @POST
+    @Path("users/{id}/create-information")
+    public Response createInformation(@PathParam("id") String id, @QueryParam("type")
+            String typeId, MultivaluedMap<String, String> form) {
+        Information.Type type = service.getInformationTypes().get(typeId);
+        if (type == null) {
+            throw new NotFoundException();
+        }
+        try {
+            // NOTE hard-coded for qualification
+            checkContainsRequired(form, new HashSet<String>(Arrays.asList("grade")));
+
+            Map<String, Object> args = new HashMap<>();
+            args.put("grade", new Double(form.getFirst("grade")));
+            Information information = user.createInformation(type.getId(), args, user);
+
+            URI url = UriBuilder.fromUri("information/{id}/").build(information.getId());
+
+            return Response.seeOther(url).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(400).entity(createInformation(id, type.getId(), form, e))
+                .build();
+        }
+    }
+
+    /* Information */
+
+    @GET
+    @Path("information/{id}/")
+    public Viewable information(@PathParam("id") String id) {
+        Information information = service.getInformation(id);
+
+        model.put("information", information);
+
+        // TODO introduce conditional for different Information.Types
+        return new Viewable("/information-qualification.ftl", model);
+    }
+
     /* Application */
 
     @GET
@@ -218,6 +286,23 @@ public class Pages implements Closeable {
         this.model.put("application", application);
         this.model.put("applicant", application.getUser());
         this.model.put("course", application.getCourse());
+
+        List<Information.Type> requiredInformationTypes = new ArrayList<>();
+        // TODO replace hardcoded list with backend method
+        requiredInformationTypes.add(service.getInformationTypes().get("qualification"));
+
+        Map<String, Information> requiredInformationMap = new HashMap<>();
+        for (Information.Type type : requiredInformationTypes) {
+            Information information = null;
+            try {
+                information = user.getInformationByType(type.getId());
+            } catch (HubException.ObjectNotFoundException e) {
+                // do nothing
+            }
+            requiredInformationMap.put(type.getId(), information);
+        }
+
+        this.model.put("requiredInformationMap", requiredInformationMap);
         return new Viewable("/application.ftl", this.model);
     }
 
@@ -233,12 +318,17 @@ public class Pages implements Closeable {
 
     @GET
     @Path("courses/{id}")
-    public Viewable course(@PathParam("id") String id) {
+    public Viewable course(@PathParam("id") String id,
+            @QueryParam("error") String error) {
         Course course = this.service.getCourse(id);
         this.model.put("course", course);
         this.model.put("applications", course.getApplications());
         // TODO: course.getAllocationRule().getQuota().getRanking();
         this.model.put("ranks", course.getApplications());
+        if (error != null && error.equals("course_has_applications")) {
+            this.model.put("notification",
+                "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");
+        }
         return new Viewable("/course.ftl", this.model);
     }
 
@@ -276,10 +366,14 @@ public class Pages implements Closeable {
     @POST
     @Path("courses/{id}/unpublish")
     public Response courseUnpublish(@PathParam("id") String id) {
-        // TODO: handle course_has_applications error
         Course course = this.service.getCourse(id);
-        course.unpublish(this.user);
-        return Response.seeOther(UriBuilder.fromUri("/courses/{id}/").build(id)).build();
+        UriBuilder url = UriBuilder.fromUri("/courses/{id}").resolveTemplate("id", id);
+        try {
+            course.unpublish(this.user);
+        } catch (IllegalStateException e) {
+            url.queryParam("error", e.getCode());
+        }
+        return Response.seeOther(url.build()).build();
     }
 
     /* Course.startAdmission */

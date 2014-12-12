@@ -18,6 +18,7 @@
                     <nav>
                         <ul>
                             <li><a href="/">Home</a></li>
+                            <li><a href="/courses/">Studiengänge</a></li>
                             <li><a href="/">${user.name}</a></li>
                             <li>
                                 <form method="POST" action="/logout/">
@@ -30,6 +31,10 @@
             </header>
 
             <div class="main">
+                [#if notification??]
+                    <p class="notification">${notification}</p>
+                [/#if]
+
                 <h1 class="title">${title}</h1>
 
                 [#nested/]
@@ -53,6 +58,12 @@
         "admitted": "Zugelassen",
         "confirmed": "Zugelassen"
     }[status]}[#t/]
+[/#macro]
+
+[#macro information_type typeId]
+    ${{
+        "qualification": "Hochschulreife"
+    }[typeId]}[#t/]
 [/#macro]
 
 [/#escape]

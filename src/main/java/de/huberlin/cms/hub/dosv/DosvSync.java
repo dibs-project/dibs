@@ -25,6 +25,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -37,6 +38,17 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.hochschulstart.hochschulschnittstelle.benutzerservicev1_0.BenutzerServiceFehler;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlserviceparamv1_0.RanglisteErgebnis;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlserviceparamv1_0.StudienpaketErgebnis;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlservicev1_0.BewerberauswahlServiceFehler;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Bewerberplatzbedarf;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Paketbestandteil;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Rangliste;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.RanglistenEbene;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.RanglistenStatus;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Ranglisteneintrag;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.RanglisteneintragsStatus;
+import de.hochschulstart.hochschulschnittstelle.bewerberauswahlv1_0.Studienpaket;
 import de.hochschulstart.hochschulschnittstelle.bewerbungenserviceparamv1_0.BewerbungErgebnis;
 import de.hochschulstart.hochschulschnittstelle.bewerbungenservicev1_0.BewerbungenServiceFehler;
 import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.Bewerbung;
@@ -62,19 +74,22 @@ import de.hu_berlin.dosv.DosvClient;
 import de.huberlin.cms.hub.Application;
 import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Course;
+import de.huberlin.cms.hub.Quota;
+import de.huberlin.cms.hub.Rank;
 import de.huberlin.cms.hub.Settings;
 import de.huberlin.cms.hub.User;
 
 // TODO document error handling
 /**
- * DoSV synchronisation class for Courses, Applications and Ranks.
+ * DoSV synchronisation class for Courses, Applications and Ranks. All resources are synced
+ * as early as possible.
  * <p>
  * <strong>Data Mapping between HUB and the DoSV system</strong>
  * <p>
  * General:
  * <ul>
  * <li><code>abschluss.schluessel</code> is always <code>"bachelor"</code></li>
- * <li><code>studienfach.schluessel = course.getId().hashCode()</code></li>
+ * <li><code>studienfach.schluessel = course.getId()</code></li>
  * </ul>
  * <p>
  * Courses:
@@ -85,6 +100,7 @@ import de.huberlin.cms.hub.User;
  * <li><code>integrationseinstellungen.*bescheidVersandart: hochschule</code></li>
  * <li><code>studienfach.nameDE, einfachstudienangebot.nameDE, *.beschreibungDE =
  * course.name</code></li>
+ * <li><code>studienpaket.schluessel = course.getId()</code></li>
  * </ul>
  * <p>
  * Applications:
@@ -100,6 +116,12 @@ import de.huberlin.cms.hub.User;
  * Each application status is set either by HUB or via Hochschulstart.de.
  * To avoid synchronisation conflicts between <code>STATUS_CONFIRMED</code> and
  * <code>STATUS_WITHDRAWN</code>, users can withdraw their application only via Hochschulstart.
+ *
+ * <p>
+ * Rankings:
+ * <ul>
+ * <li><code>rangliste.schluessel = quota.getId()</code></li>
+ * </ul>
  *
  * @author Markus Michler
  */
@@ -136,6 +158,7 @@ public class DosvSync {
     }
 
     public DosvSync(ApplicationService service) {
+        // TODO validate dosvConfig
         this.service = service;
         dosvConfig = new Properties();
         dosvConfig.putAll(service.getConfig());
@@ -166,7 +189,7 @@ public class DosvSync {
     }
 
     /**
-     * Synchronizes Courses, Applications and Ranks with the DoSV.
+     * Synchronises Courses, Applications and Ranks.
      *
      * @throws
      */
@@ -182,6 +205,7 @@ public class DosvSync {
         if (!applicationsPushed) {
             throw new RuntimeException("Sync exceeded maximum number of retries.");
         }
+        pushRankings();
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -197,27 +221,53 @@ public class DosvSync {
 
     private void pushCourses() {
         List<Studienangebot> studienangebote = new ArrayList<>();
+        List<Studienpaket> studienpakete = new ArrayList<>();
 
         Date dosvSyncTime = service.getSettings().getDosvSyncTime();
         for (Course course : service.getCourses()) {
             if (!course.isDosv() || dosvSyncTime.after(course.getModificationTime())) {
                 continue;
             }
+            // TODO Feld Course.subject
+            String dosvCourseKey = course.getId();
+            if (course.isAdmission()) {
+                /* Studienpaket - SAF 401 */
+                EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
+                    new EinfachstudienangebotsSchluessel();
+                einfachstudienangebotsSchluessel.setStudienfachSchluessel(dosvCourseKey);
+                einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
+
+                Bewerberplatzbedarf bewerberplatzbedarf = new Bewerberplatzbedarf();
+                bewerberplatzbedarf.setNenner(1);
+                bewerberplatzbedarf.setZaehler(1);
+
+                Paketbestandteil paketbestandteil = new Paketbestandteil();
+                paketbestandteil
+                    .setEinfachstudienangebotsSchluessel(einfachstudienangebotsSchluessel);
+                paketbestandteil.setBewerberplatzbedarf(bewerberplatzbedarf);
+
+                Studienpaket studienpaket = new Studienpaket();
+                studienpaket.setSchluessel(dosvCourseKey);
+                studienpaket.setKapazitaet(course.getCapacity());
+                studienpaket.getPaketbestandteil().add(paketbestandteil);
+                studienpaket.setNameDe(course.getName());
+
+                studienpakete.add(studienpaket);
+                continue;
+            }
+
             // TODO Studienangebote können nur im Status IN_VORBEREITUNG geändert werden,
             // deshalb Änderung und Sichtbarmachung auf zwei übertragene Objekte aufteilen.
             StudienangebotsStatus studienangebotsStatus =
                 course.isPublished() ? OEFFENTLICH_SICHTBAR : IN_VORBEREITUNG;
 
-            // TODO Feld Course.subject
-            String dosvSubjectKey = course.getId().split(":")[1];
-            // TODO Studienangebot nicht übertragen, wenn die Zulassung begonnen hat.
-            /** Studienangebot - SAF 101 */
+            /* Studienangebot - SAF 101 */
             Studienfach studienfach = new Studienfach();
-            studienfach.setSchluessel(dosvSubjectKey);
+            studienfach.setSchluessel(dosvCourseKey);
             studienfach.setNameDe(course.getName());
             Abschluss abschluss = new Abschluss();
             abschluss.setSchluessel("bachelor");
-            abschluss.setNameDe("Bachelor"); // TODO Feld Course.degree
+            abschluss.setNameDe("Bachelor"); // TODO Field Course.degree
 
             Studiengang studiengang = new Studiengang();
             studiengang.setNameDe(course.getName());
@@ -236,6 +286,7 @@ public class DosvSync {
 
             Koordinierungsangebotsdaten koordinierungsangebotsdaten =
                 new Koordinierungsangebotsdaten();
+
             // TODO application period in Course
             Date startApplicationTime = new Date();
             Date endApplicationTime = new Date(startApplicationTime.getTime() + 1000);
@@ -244,11 +295,11 @@ public class DosvSync {
             koordinierungsangebotsdaten
                 .setEndeBewerbungsfrist(toXMLGregorianCalendar(endApplicationTime));
             koordinierungsangebotsdaten
-                .setUrlHSBewerbungsportal("http://example.org/"); // TODO Konfigurierbar
+                .setUrlHSBewerbungsportal("http://example.org/"); // TODO configure
 
             Einfachstudienangebot einfachstudienangebot = new Einfachstudienangebot();
             einfachstudienangebot.setNameDe(course.getName());
-            // TODO Feld Course.description
+            // TODO Field Course.description
             einfachstudienangebot.setBeschreibungDe(course.getName());
             einfachstudienangebot.setStudiengang(studiengang);
             einfachstudienangebot.setIntegrationseinstellungen(integrationseinstellungen);
@@ -257,13 +308,13 @@ public class DosvSync {
             einfachstudienangebot.setStatus(studienangebotsStatus);
 
             studienangebote.add(einfachstudienangebot);
-
-            // TODO Studienpaket (SAF 401) nur anlegen/ändern, wenn die Zulassung begonnen hat.
         }
         try {
+            // NOTE Instantiation is resource intensive so it happens here and not in the constructor
+            DosvClient dosvClient = new DosvClient(dosvConfig);
+
             List<StudienangebotErgebnis> studienangebotErgebnisse =
-                // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
-                new DosvClient(dosvConfig).anlegenAendernStudienangeboteDurchHS(studienangebote);
+                dosvClient.anlegenAendernStudienangeboteDurchHS(studienangebote);
             for (StudienangebotErgebnis studienangebotErgebnis : studienangebotErgebnisse) {
                 if (studienangebotErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
                     throw new RuntimeException(
@@ -272,7 +323,16 @@ public class DosvSync {
                             + " : " + studienangebotErgebnis.getGrundZurueckweisung());
                 }
             }
-        } catch (StudiengaengeServiceFehler e) {
+            List<StudienpaketErgebnis> studienpaketErgebnisse =
+                dosvClient.anlegenAendernStudienpaketeDurchHS(studienpakete);
+            for (StudienpaketErgebnis studienpaketErgebnis : studienpaketErgebnisse) {
+                if (studienpaketErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
+                    throw new RuntimeException(
+                        studienpaketErgebnis.getStudienpaketSchluessel() + " : "
+                            + studienpaketErgebnis.getGrundZurueckweisung());
+                }
+            }
+        } catch (StudiengaengeServiceFehler | BewerberauswahlServiceFehler e) {
             throw new RuntimeException(e);
         }
     }
@@ -310,16 +370,14 @@ public class DosvSync {
                         "UPDATE application SET dosv_version = ? "
                         + "WHERE course_id = ? AND EXISTS (SELECT id FROM \"user\" WHERE id = user_id AND dosv_bid = ?)",
                         einfachstudienangebotsbewerbung.getVersionSeSt(),
-                        "course:" + einfachstudienangebotsSchluessel.
-                            getStudienfachSchluessel(),
+                        einfachstudienangebotsSchluessel.getStudienfachSchluessel(),
                         einfachstudienangebotsbewerbung.getBewerberId());
                 } else {
                     service.getQueryRunner().update(service.getDb(),
                         "UPDATE application SET status = ?, dosv_version = ?, modification_time = CURRENT_TIMESTAMP "
                         + "WHERE course_id = ? AND EXISTS (SELECT id FROM \"user\" WHERE id = user_id AND dosv_bid = ?)",
                         newStatus, einfachstudienangebotsbewerbung.getVersionSeSt(),
-                        "course:" + einfachstudienangebotsSchluessel.
-                            getStudienfachSchluessel(),
+                        einfachstudienangebotsSchluessel.getStudienfachSchluessel(),
                         einfachstudienangebotsbewerbung.getBewerberId());
                 }
             }
@@ -352,9 +410,9 @@ public class DosvSync {
             }
             EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
                 new EinfachstudienangebotsSchluessel();
+
             // TODO Field Course.subject
-            einfachstudienangebotsSchluessel.setStudienfachSchluessel(
-                course.getId().split(":")[1]);
+            einfachstudienangebotsSchluessel.setStudienfachSchluessel(course.getId());
             // TODO Field Course.degree
             einfachstudienangebotsSchluessel.setAbschlussSchluessel("bachelor");
 
@@ -419,4 +477,51 @@ public class DosvSync {
 
         return done;
     }
+
+    private void pushRankings() {
+          // TODO pull webservice call out of loop
+          for (Course course : service.getCourses()) {
+              if (!(course.isDosv() && service.getSettings().getDosvSyncTime()
+                      .before(course.getModificationTime()) && course.isAdmission())) {
+                  continue;
+              }
+              Quota quota = course.getAllocationRule().getQuota();
+              List<Rank> ranking = quota.getRanking();
+              Rangliste rangliste = new Rangliste();
+
+              rangliste.setNameDe(quota.getName());
+              rangliste.setSchluessel(quota.getId());
+              rangliste.setStudienpaketSchluessel(course.getId());
+              rangliste.setStatus(RanglistenStatus.BEFUELLT);
+              // "Kopfdaten"
+              rangliste.setPlaetzeProzentual((double) quota.getPercentage());
+              // TODO List<Integer, Integer> Quota.level
+              rangliste.setEbene(RanglistenEbene.HAUPTQUOTEN);
+              rangliste.setIstVorwegzulasserrangliste(false);
+              rangliste.setIstChancenrangliste(false);
+              rangliste.setAbarbeitungsposition(1);
+
+              for (Rank rank : ranking) {
+                  Ranglisteneintrag ranglisteneintrag = new Ranglisteneintrag();
+                  ranglisteneintrag.setBewerberId(rank.getUser().getDosvBid());
+                  ranglisteneintrag.setRang(rank.getIndex() + 1);
+                  ranglisteneintrag.setStatus(RanglisteneintragsStatus.BELEGT);
+                  rangliste.getEintrag().add(ranglisteneintrag);
+              }
+
+              RanglisteErgebnis ranglisteErgebnis;
+              try {
+                  // NOTE Instantiation is resource intensive so it happens here and not in the constructor
+                  ranglisteErgebnis =
+                      new DosvClient(dosvConfig).uebermittelnRanglistenAnSeSt(Arrays
+                          .asList(rangliste)).get(0);
+              } catch (BewerberauswahlServiceFehler e) {
+                  throw new RuntimeException(e);
+              }
+              if (ranglisteErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
+                  throw new RuntimeException(ranglisteErgebnis.getGrundZurueckweisung());
+                  // unreachable
+              }
+          }
+      }
 }
