@@ -229,6 +229,11 @@ header > nav li:first-child button {
     border-left: none;
 }
 
+.notification {
+    padding: 0.25rem;
+    border: 1px dotted #333;
+}
+
 /* ==== Dash ==== */
 
 .dash-apply {

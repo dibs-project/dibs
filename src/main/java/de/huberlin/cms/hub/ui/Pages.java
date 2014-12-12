@@ -26,6 +26,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Cookie;
@@ -233,10 +234,15 @@ public class Pages implements Closeable {
 
     @GET
     @Path("courses/{id}")
-    public Viewable course(@PathParam("id") String id) {
+    public Viewable course(@PathParam("id") String id,
+            @QueryParam("error") String error) {
         Course course = this.service.getCourse(id);
         this.model.put("course", course);
         this.model.put("applications", course.getApplications());
+        if (error != null && error.equals("course_has_applications")) {
+            this.model.put("notification",
+                "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");
+        }
         return new Viewable("/course.ftl", this.model);
     }
 
@@ -274,10 +280,14 @@ public class Pages implements Closeable {
     @POST
     @Path("courses/{id}/unpublish")
     public Response courseUnpublish(@PathParam("id") String id) {
-        // TODO: handle course_has_applications error
         Course course = this.service.getCourse(id);
-        course.unpublish(this.user);
-        return Response.seeOther(UriBuilder.fromUri("/courses/{id}/").build(id)).build();
+        UriBuilder url = UriBuilder.fromUri("/courses/{id}").resolveTemplate("id", id);
+        try {
+            course.unpublish(this.user);
+        } catch (IllegalStateException e) {
+            url.queryParam("error", e.getCode());
+        }
+        return Response.seeOther(url.build()).build();
     }
 
     /* Course.startAdmission */

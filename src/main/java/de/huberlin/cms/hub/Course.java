@@ -171,8 +171,10 @@ public class Course extends HubObject {
     }
 
     /**
-     * Zieht die Publikation zurück. Kann nur erfolgen, wenn noch keine Bewerbungen auf
-     * diesen Studiengang vorliegen.
+     * Unpublishes the course.
+     *
+     * @throws HubException.IllegalStateException if an {@link Application} for this
+     *     course exists (<code>course_has_applications</code>)
      */
     public void unpublish(User agent) {
         Date now = new Date();
@@ -217,6 +219,9 @@ public class Course extends HubObject {
                 ApplicationService.ACTION_TYPE_COURSE_ADMISSION_STARTED, this.id,
                 HubObject.getId(agent), null);
 
+            for (Application application : getApplications()) {
+                application.setStatus(Application.STATUS_VALID, false, null);
+            }
             // NOTE future iterations: will be called when a user's application status is set
             generateRankings();
 
