@@ -85,12 +85,16 @@ public class Course extends HubObject {
      * @return created Application
      *
      * @throws HubException.IllegalStateException
-     *  if the course is not published (<code>course_not_published</code>)
+     *  if the course is not published (<code>course_not_published</code>),
+     *  the course is in admission (<code>course_in_admission</code>)
      *  or the user is not connected to the DoSV (<code>user_not_connected</code>)
      */
     public Application apply(String userId, User agent) {
         if (!service.getCourse(id).isPublished()) {
             throw new IllegalStateException("course_not_published");
+        }
+        if (service.getCourse(id).isAdmission()) {
+            throw new IllegalStateException("course_in_admission");
         }
         if (dosv == true && service.getUser(userId).getDosvBid() == null) {
             throw new IllegalStateException("user_not_connected");

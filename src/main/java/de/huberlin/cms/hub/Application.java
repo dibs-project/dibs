@@ -21,6 +21,8 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.lang3.StringUtils;
 
+import de.huberlin.cms.hub.HubException.IllegalStateException;
+
 /**
  * Bewerbung, mit der Benutzer am Zulassungsverfahren teilnehmen.
  *
@@ -35,6 +37,7 @@ public class Application extends HubObject {
     public static final String STATUS_VALID = "valid";
     public static final String STATUS_WITHDRAWN = "withdrawn";
     public static final String STATUS_ADMITTED = "admitted";
+    // TODO change to "accepted"?
     public static final String STATUS_CONFIRMED = "confirmed";
 
     /** Supported filters for {@link #getEvaluations(Map, User)}. */
@@ -55,6 +58,22 @@ public class Application extends HubObject {
         this.modificationTime =
             new Date(((Timestamp) args.get("modification_time")).getTime());
         this.dosvVersion = (int) args.get("dosv_version");
+    }
+
+    /**
+     * Accepts an admission for this Application.
+     *
+     * @throws IllegalStateException if the status is not <code>"admitted"</code>.
+     * (code: <code>"application_not_admitted"</code>)
+     */
+    public void accept() {
+        if (!getStatus().equals(STATUS_ADMITTED)) {
+            throw new IllegalStateException("application_not_admitted");
+        }
+        // TODO IllegalStateException("application_is_dosv") if the
+        // admission can only be accepted via Hochschulstart.de once Course.startAdmission()
+        // is testable for DoSV courses.
+        setStatus(STATUS_CONFIRMED, true, null);
     }
 
     /**
