@@ -18,6 +18,7 @@
                     <nav>
                         <ul>
                             <li><a href="/">Home</a></li>
+                            <li><a href="/courses/">Studiengänge</a></li>
                             <li><a href="/">${user.name}</a></li>
                             <li>
                                 <form method="POST" action="/logout/">
