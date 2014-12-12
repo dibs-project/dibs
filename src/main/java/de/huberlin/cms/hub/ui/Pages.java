@@ -305,8 +305,13 @@ public class Pages implements Closeable {
         try {
             checkContainsRequired(form,
                 new HashSet<String>(Arrays.asList("name", "capacity")));
+            int capacity;
+            try {
+                capacity = Integer.parseInt(form.getFirst("capacity"));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("capacity_nan");
+            }
 
-            int capacity = Integer.parseInt(form.getFirst("capacity"));
             Course course = this.service.createCourse(form.getFirst("name"), capacity,
                 form.containsKey("dosv"), user);
             // NOTE the first prototype does not feature a frontend for AllocationRule and
