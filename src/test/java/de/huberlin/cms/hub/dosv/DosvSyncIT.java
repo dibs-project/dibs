@@ -10,6 +10,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -80,6 +81,9 @@ public class DosvSyncIT extends HubTest {
     public void testSystem() {
         user.connectToDosv(bid, ban, null);
         dosvCourse.apply(user.getId(), null);
+        HashMap<String, Object> args = new HashMap<String, Object>();
+        args.put("grade", 4.0);
+        user.createInformation("qualification", args, null);
         service.getDosvSync().synchronize();
         dosvCourse.startAdmission(null);
         service.getDosvSync().synchronize();

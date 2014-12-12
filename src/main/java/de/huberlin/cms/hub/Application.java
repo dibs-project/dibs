@@ -52,7 +52,8 @@ public class Application extends HubObject {
         this.userId = (String) args.get("user_id");
         this.courseId = (String) args.get("course_id");
         this.status = (String) args.get("status");
-        this.modificationTime = (Date) args.get("modification_time");
+        this.modificationTime =
+            new Date(((Timestamp) args.get("modification_time")).getTime());
         this.dosvVersion = (int) args.get("dosv_version");
     }
 
