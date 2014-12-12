@@ -32,23 +32,21 @@
                     </li>
 
                 [#elseif user.role == "admin"]
-                    [#if course.published]
-                        <li>
+                    <li>
+                        [#if course.published]
                             <form method="POST" action="/courses/${course.id}/unpublish/">
                                 <button>Veröffentl. zurückziehen</button>
                             </form>
-                        </li>
-                        [#if !course.admission]
-                            <li>
-                                <form method="POST" action="/courses/${course.id}/start-admission/">
-                                    <button>Zulassung starten</button>
-                                </form>
-                            </li>
-                        [/#if]
-                    [#else]
-                        <li>
+                        [#else]
                             <form method="POST" action="/courses/${course.id}/publish/">
                                 <button>Veröffentlichen</button>
+                            </form>
+                        [/#if]
+                    </li>
+                    [#if !course.admission]
+                        <li>
+                            <form method="POST" action="/courses/${course.id}/start-admission/">
+                                <button>Zulassung starten</button>
                             </form>
                         </li>
                     [/#if]

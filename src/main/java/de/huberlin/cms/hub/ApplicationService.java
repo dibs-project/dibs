@@ -66,7 +66,7 @@ public class ApplicationService {
     public static final String ACTION_TYPE_COURSE_UNPUBLISHED = "course_unpublished";
     /** Aktionstyp: Bewerbung für den Studiengang angelegt. */
     public static final String ACTION_TYPE_COURSE_APPLIED = "course_applied";
-    /** Aktionstyp: Bewerbung für den Studiengang angelegt. */
+    /** Action type: The admission of applicants for a course has started. */
     public static final String ACTION_TYPE_COURSE_ADMISSION_STARTED = "course_admission_started";
     /** Aktionstyp: Bewerbungstatus bearbeitet. */
     public static final String ACTION_TYPE_APPLICATION_STATUS_SET = "application_status_set";

@@ -5,6 +5,8 @@
 
 package de.huberlin.cms.hub.ui;
 
+import static org.apache.commons.collections4.MapUtils.toProperties;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOError;
@@ -14,6 +16,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -61,14 +65,20 @@ public class Ui extends ResourceConfig {
             this.property(name, servletContext.getInitParameter(name));
         }
 
-        // Datenbank einrichten
+        // setup database
         Connection db;
         try {
+            // manually load driver, because it is not guaranteed that the server's
+            // classloader supports SPI
+            Class.forName("org.postgresql.Driver");
             db = DriverManager.getConnection((String) this.getProperty("db_url"),
                 (String) this.getProperty("db_user"),
                 (String) this.getProperty("db_password"));
         } catch (SQLException e) {
             logger.severe("failed to connect to database");
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            // unreachable
             throw new RuntimeException(e);
         }
 
@@ -85,6 +95,33 @@ public class Ui extends ResourceConfig {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+
+        /* Set up timer task for DoSV synchronisation */
+        Long interval =
+            Long.parseLong((String) this.getProperty("dosv_sync_interval")) * 1000 * 60;
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Connection db;
+                Properties config = toProperties(Ui.this.getProperties());
+                try {
+                    db = DriverManager.getConnection(config.getProperty("db_url"),
+                        config.getProperty("db_user"),
+                        config.getProperty("db_password"));
+                } catch (SQLException e) {
+                    throw new IOError(e);
+                }
+
+                new ApplicationService(db, config).getDosvSync().synchronize();
+                logger.info("DoSV synchronized");
+
+                try {
+                    db.close();
+                } catch (SQLException e) {
+                    throw new IOError(e);
+                }
+            }
+        }, interval, interval);
     }
 
     public static void main(String[] args) throws Exception {

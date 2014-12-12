@@ -120,7 +120,7 @@ public class Quota extends HubObject {
             args.put("index", i);
             args.put("lotnumber", lotnumbers.get(application));
             args.put("service", this.service);
-            ranking.add(Rank.create(args, false));
+            ranking.add(Rank.create(args));
         }
         return ranking;
     }

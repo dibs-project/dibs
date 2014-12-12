@@ -1,7 +1,6 @@
 package de.huberlin.cms.hub;
 
 import java.io.IOError;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Random;
@@ -35,20 +34,14 @@ public class Rank extends HubObject {
     /**
      * Legt einen neuen Ranglisteneintrag an.
      */
-    public static Rank create(Map<String, Object> args, boolean doCommit) {
+    public static Rank create(Map<String, Object> args) {
         try {
             ApplicationService service = (ApplicationService) args.get("service");
-            Connection db = service.getDb();
-            db.setAutoCommit(false);
             String id = "rank:" + Integer.toString(new Random().nextInt());
-            service.getQueryRunner().insert(service.getDb(), "INSERT INTO rank VALUES(?, ?, ?, ?, ?, ?)",
-                new MapHandler(), id, args.get("quota_id"),
-                args.get("user_id"), args.get("application_id"),
-                (int) args.get("index"), (int) args.get("lotnumber"));
-            if (doCommit) {
-                db.commit();
-                db.setAutoCommit(true);
-            }
+            service.getQueryRunner().insert(service.getDb(),
+                "INSERT INTO rank VALUES(?, ?, ?, ?, ?, ?)", new MapHandler(), id,
+                args.get("quota_id"), args.get("user_id"), args.get("application_id"),
+                args.get("index"), args.get("lotnumber"));
             args.put("id", id);
             return new Rank(args);
         } catch (SQLException e) {

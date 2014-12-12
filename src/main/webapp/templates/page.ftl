@@ -30,6 +30,10 @@
             </header>
 
             <div class="main">
+                [#if notification??]
+                    <p class="notification">${notification}</p>
+                [/#if]
+
                 <h1 class="title">${title}</h1>
 
                 [#nested/]
