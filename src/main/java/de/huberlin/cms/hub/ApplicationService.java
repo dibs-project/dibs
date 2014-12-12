@@ -470,21 +470,21 @@ public class ApplicationService {
     }
 
     /**
-     * Legt einen neuen Studiengang an.
+     * Creates a new course.
      *
-     * @param name Name des Studiengangs
-     * @param capacity Kapazität des Studiengangs
-     * @param agent ausführender Benutzer
-     * @return angelegter Studiengang
-     * @throws IllegalArgumentException wenn <code>name</code> leer ist oder
-     *     <code>capacity</code> nicht positiv ist
+     * @param name name
+     * @param capacity capacity, i.e. number of places (errors:
+     *     <code>capacity_nonpositive</code>)
+     * @param dosv whether this Course is using the DoSV for the admission process
+     * @param agent active user
+     * @return new course
      */
     public Course createCourse(String name, int capacity, boolean dosv, User agent) {
         if (name.isEmpty()) {
-            throw new IllegalArgumentException("illegal name: empty");
+            throw new IllegalArgumentException("name_empty");
         }
-        if (capacity <= 0) {
-            throw new IllegalArgumentException("illegal capacity: nonpositive number");
+        if (capacity < 0) {
+            throw new IllegalArgumentException("capacity_nonpositive");
         }
 
         try {
