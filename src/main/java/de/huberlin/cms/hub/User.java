@@ -62,9 +62,19 @@ public class User extends HubObject {
         }
         Information information = type.create(args, this, agent);
 
-        // Pseudo-Ereignis auslösen
-        for (Application application : this.getApplications()) {
-            application.userInformationCreated(this, information);
+        try {
+            // XXX open a transaction as called methods rely on it
+            // TODO implement proper transaction system
+            Connection db = this.service.getDb();
+            db.setAutoCommit(false);
+            // Pseudo-Ereignis auslösen
+            for (Application application : this.getApplications()) {
+                application.userInformationCreated(this, information);
+            }
+            db.commit();
+            db.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new IOError(e);
         }
 
         return information;

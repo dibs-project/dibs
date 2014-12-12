@@ -6,7 +6,6 @@
 package de.huberlin.cms.hub;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -20,7 +19,6 @@ import org.junit.Test;
 
 public class QuotaTest extends HubTest {
     private Quota quota;
-    private Application incompleteApplication;
     private List<Application> validApplications = new ArrayList<>();
     private List<Rank> ranking;
 
@@ -46,7 +44,8 @@ public class QuotaTest extends HubTest {
             user.createInformation("qualification", informationArgs, null);
         }
 
-        incompleteApplication = course.apply(user.getId(), null);
+        // create incomplete application
+        course.apply(user.getId(), null);
     }
 
     @Test

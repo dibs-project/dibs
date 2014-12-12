@@ -377,6 +377,23 @@ public class Pages implements Closeable {
         return new Viewable("/application.ftl", this.model);
     }
 
+    /* Application.accept */
+
+    @POST
+    @Path("applications/{id}/accept")
+    public Response applicationAccept(@PathParam("id") String id) {
+        URI url = null;
+        Application application = null;
+        try {
+            application = service.getApplication(id);
+            application.accept();
+        } catch (IllegalStateException e) {
+            // TODO
+        }
+        url = UriBuilder.fromUri("/applications/{id}/").build(application.getId());
+        return Response.seeOther(url).build();
+    }
+
     /* Courses */
 
     @GET
@@ -394,6 +411,7 @@ public class Pages implements Closeable {
         Course course = this.service.getCourse(id);
         this.model.put("course", course);
         this.model.put("applications", course.getApplications());
+        this.model.put("ranks", course.getAllocationRule().getQuota().getRanking());
         if (post != null && post.equals("user-connect-to-dosv")) {
             this.model.put("notification",
                 "Dein Konto wurde mit hochschulstart.de verbunden. Du kannst dich jetzt auf diesen Studiengang bewerben.");
@@ -409,7 +427,7 @@ public class Pages implements Closeable {
 
     @POST
     @Path("courses/{id}/apply")
-    public Response apply(@PathParam("id") String id) {
+    public Response courseApply(@PathParam("id") String id) {
         Course course = this.service.getCourse(id);
         URI url = null;
 
@@ -467,7 +485,7 @@ public class Pages implements Closeable {
 
     @POST
     @Path("courses/{id}/start-admission")
-    public Response startAdmission(@PathParam("id") String id) {
+    public Response courseStartAdmission(@PathParam("id") String id) {
         // TODO: handle course_unpublished error
         Course course = this.service.getCourse(id);
         course.startAdmission(this.user);
