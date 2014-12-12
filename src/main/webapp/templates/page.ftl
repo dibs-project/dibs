@@ -59,4 +59,10 @@
     }[status]}[#t/]
 [/#macro]
 
+[#macro information_type typeId]
+    ${{
+        "qualification": "Hochschulreife"
+    }[typeId]}[#t/]
+[/#macro]
+
 [/#escape]
