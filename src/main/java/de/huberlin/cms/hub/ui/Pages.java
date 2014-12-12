@@ -15,9 +15,11 @@ import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,15 +45,16 @@ import org.glassfish.jersey.server.mvc.Viewable;
 import de.huberlin.cms.hub.Application;
 import de.huberlin.cms.hub.ApplicationService;
 import de.huberlin.cms.hub.Course;
+import de.huberlin.cms.hub.HubException;
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 import de.huberlin.cms.hub.HubException.ObjectNotFoundException;
 import de.huberlin.cms.hub.Information;
-import de.huberlin.cms.hub.Qualification;
 import de.huberlin.cms.hub.Session;
 import de.huberlin.cms.hub.User;
 
 /**
  * @author Sven Pfaller
+ * @author Markus Michler
  */
 @Path("/")
 @Produces("text/html")
@@ -217,44 +220,52 @@ public class Pages implements Closeable {
 
     @GET
     @Path("users/{id}/create-information")
-    public Viewable createInformation(@PathParam("id") String userId, @QueryParam("type") String typeId) {
-        return this.createInformation(userId, typeId, null, null);
+    public Viewable createInformation(@PathParam("id") String userId, @QueryParam("type")
+            String typeId) {
+        return createInformation(userId, typeId, null, null);
     }
 
-    private Viewable createInformation(String userId, String typeId, MultivaluedMap<String, String> form,
-        IllegalArgumentException formError) {
-        this.model.put("form", form);
-        this.model.put("formError", formError);
-        this.model.put("type", typeId);
-        return new Viewable("/user-create-information-" + typeId + ".ftl", this.model);
+    private Viewable createInformation(String userId, String typeId,
+            MultivaluedMap<String, String> form, IllegalArgumentException formError) {
+        model.put("form", form);
+        model.put("formError", formError);
+        model.put("type", typeId);
+        return new Viewable(String.format("/user-create-information-%s.ftl", typeId), model);
     }
 
     @POST
     @Path("users/{id}/create-information")
-    public Response createInformation(@PathParam("id") String userId, @QueryParam("type") String typeId, MultivaluedMap<String, String> form) {
+    public Response createInformation(@PathParam("id") String userId, @QueryParam("type")
+            String typeId, MultivaluedMap<String, String> form) {
+        try {
+            checkContainsRequired(form, new HashSet<String>(Arrays.asList("grade")));
 
-        checkContainsRequired(form, new HashSet<String>(Arrays.asList("grade")));
+            Map<String, Object> args = new HashMap<>();
+            args.put("grade", new Double(form.getFirst("grade")));
+            String informationId = user.createInformation(typeId, args, user).getId();
 
-        Map<String, Object> args = new HashMap<>();
-        args.put("grade", new Double(form.getFirst("grade")));
+            URI url = UriBuilder.fromUri("users/{id}/information/{information-id}/")
+                .build(userId, informationId);
 
-        String informationId = user.createInformation(typeId, args, user).getId();
-
-        URI url = UriBuilder.fromUri("users/{id}/information/{information-id}/").build(userId, informationId);
-
-        return Response.seeOther(url).build();
+            return Response.seeOther(url).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(400).entity(createInformation(userId, typeId, form, e))
+                .build();
+        }
     }
 
     /* Information */
 
     @GET
     @Path("users/{user-id}/information/{information-id}/")
-    public Viewable information(@PathParam("user-id") String userId, @PathParam("information-id") String informationId) {
+    public Viewable information(@PathParam("user-id") String userId,
+            @PathParam("information-id") String informationId) {
         Information information = service.getInformation(informationId);
 
-        this.model.put("information", information);
+        model.put("information", information);
 
-        return new Viewable("/information-qualification.ftl", this.model);
+        // TODO introduce conditional for different Information.Types
+        return new Viewable("/information-qualification.ftl", model);
     }
 
     /* Application */
@@ -266,7 +277,23 @@ public class Pages implements Closeable {
         this.model.put("application", application);
         this.model.put("applicant", application.getUser());
         this.model.put("course", application.getCourse());
-        this.model.put("informationSet", application.getUser().getInformationSet(user));
+
+        List<Information.Type> requiredInformationTypes = new ArrayList<>();
+        // TODO replace hardcoded list with backend method
+        requiredInformationTypes.add(service.getInformationTypes().get("qualification"));
+
+        Map<String, Information> requiredTypesToInformationMap = new HashMap<>();
+        for (Information.Type type : requiredInformationTypes) {
+            Information information = null;
+            try {
+                information = user.getInformationByType(type.getId());
+            } catch (HubException.ObjectNotFoundException e) {
+                // do nothing
+            }
+            requiredTypesToInformationMap.put(type.getId(), information);
+        }
+
+        this.model.put("requiredTypesToInformationMap", requiredTypesToInformationMap);
         return new Viewable("/application.ftl", this.model);
     }
 

@@ -16,11 +16,20 @@
         <p>Status: [@application_status application.status/].</p>
 
         [#if user.role == "applicant"]
-            <dl>
-                <dt>Benötigte Informationen</dt>
-                <dd><a href="/users/${applicant.id}/create-information?type=qualification">HZB</a></dd>
-                <dd><a href="/users/${applicant.id}/information/${informationSet[0].id}/">${informationSet[0].type.id}</a></dd>
-            </dl>
+            <section>
+                <h2>Benötigte Informationen</h2>
+                <ul>
+                    [#list requiredTypesToInformationMap?keys as type]
+                        <li>
+                            [#if requiredTypesToInformationMap[type]??]
+                                <a href="/users/${applicant.id}/information/${requiredTypesToInformationMap[type].id}/">[@information_type type/]</a> ✔
+                            [#else]
+                                [@information_type type/] <a class="button" href="/users/${applicant.id}/create-information?type=${type}">anlegen</a>
+                            [/#if]
+                        </li>
+                    [/#list]
+                </ul>
+            </section>
         [/#if]
     </section>
 [/@page]
