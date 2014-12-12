@@ -30,7 +30,6 @@ public class Rank extends HubObject {
         lotnumber = (Integer) args.get("lotnumber");
     }
 
-    // TODO replace doCommit with transaction
     /**
      * Legt einen neuen Ranglisteneintrag an.
      */
