@@ -35,7 +35,14 @@ html {
     font-family: "Open Sans", sans-serif;
 }
 
-h1, h2, h3, p, ul, dl, label {
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+dl,
+label {
     display: block;
     margin: 1.5rem 0;
     padding: 0;
@@ -57,9 +64,17 @@ h3 {
     font-size: 1.33rem;
 }
 
-ul {
+ul,
+ol {
     padding-left: 1.5rem;
+}
+
+ul {
     list-style: square;
+}
+
+ol {
+    list-style: decimal;
 }
 
 dt {

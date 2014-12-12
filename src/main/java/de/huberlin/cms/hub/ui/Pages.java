@@ -405,6 +405,7 @@ public class Pages implements Closeable {
         Course course = this.service.getCourse(id);
         this.model.put("course", course);
         this.model.put("applications", course.getApplications());
+        this.model.put("ranks", course.getAllocationRule().getQuota().getRanking());
         if (post != null && post.equals("user-connect-to-dosv")) {
             this.model.put("notification",
                 "Dein Konto wurde mit hochschulstart.de verbunden. Du kannst dich jetzt auf diesen Studiengang bewerben.");
