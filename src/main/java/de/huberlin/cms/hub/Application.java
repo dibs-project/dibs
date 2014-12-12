@@ -80,15 +80,22 @@ public class Application extends HubObject {
     }
 
     /**
-     * Returns a list of all evaluations belonging to this application.
+     * All evaluations belonging to this application.
      *
-     * @param filter filter (errors: <code>filter_improper_keys</code>)
+     * @see #getEvaluations(Map, User)
+     */
+    public List<Evaluation> getEvaluations(User agent) {
+        return this.getEvaluations(new HashMap<String, Object>(), agent);
+    }
+
+    /**
+     * All evaluations belonging to this application.
+     *
      * @param agent active user
-     * @return list of all evaluations belonging to this application
      */
     public List<Evaluation> getEvaluations(Map<String, Object> filter, User agent) {
         if (!GET_EVALUATIONS_FILTER_KEYS.containsAll(filter.keySet())) {
-            throw new IllegalArgumentException("filter_improper_keys");
+            throw new IllegalArgumentException("filter_unknown_keys");
         }
 
         ArrayList<String> filterConditions = new ArrayList<>();
@@ -123,16 +130,6 @@ public class Application extends HubObject {
         }
     }
 
-    /**
-     * Returns a list of all evaluations belonging to this application.
-     *
-     * @see #getEvaluations(Map, User)
-     */
-    public List<Evaluation> getEvaluations(User agent) {
-        return this.getEvaluations(new HashMap<String, Object>(), agent);
-    }
-
-
     // TODO replace doCommit with transaction
     void setStatus(String status, boolean doCommit, User agent) {
         Date now = new Date();
@@ -161,6 +158,9 @@ public class Application extends HubObject {
         for (Evaluation evaluation : this.getEvaluations(filter, null)) {
             evaluation.assignInformation(information);
         }
+
+        // TODO will be replaced by update method / (pseudo) event
+        setStatus(STATUS_VALID, false, null);
     }
 
     void userInformationCreated(User user, Information information) {

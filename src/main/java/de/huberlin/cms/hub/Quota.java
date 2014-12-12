@@ -9,18 +9,21 @@ import java.io.IOError;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
-
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.lang3.StringUtils;
 
 import de.huberlin.cms.hub.HubException.IllegalStateException;
 
@@ -28,10 +31,14 @@ import de.huberlin.cms.hub.HubException.IllegalStateException;
  * Contains the criteria for the creation of a ranking list for a percentage of a course's
  * available places.
  *
- * @author Markus Michler
  * @author David Koschnick
+ * @author Markus Michler
  */
 public class Quota extends HubObject {
+    /** Supported filters for {@link #getApplications(Map)}. */
+    public static final Set<String> GET_APPLICATIONS_FILTER_KEYS =
+        new HashSet<>(Arrays.asList("status"));
+
     private final String name;
     private final int percentage;
 
@@ -83,7 +90,9 @@ public class Quota extends HubObject {
      * @return Rangliste
      */
     public List<Rank> generateRanking() {
-        List<Application> applications = this.getApplications();
+        Map<String, Object> filterArgs = new HashMap<>();
+        filterArgs.put("status", Application.STATUS_VALID);
+        List<Application> applications = this.getApplications(filterArgs);
         final Map<Application,List<Evaluation>> evaluations = this.getEvaluations();
         final HashMap<Application,Integer> lotnumbers = new HashMap<>();
         for (Application application : applications) {
@@ -161,25 +170,50 @@ public class Quota extends HubObject {
     }
 
     /**
-     * Gibt alle Bewerbungen für die Quote des Studiengangs zurück.
+     * All Applications that are included in this Quota.
      *
-     * @return Liste mit Bewerbungen
+     * @see #getApplications(Map)
      */
     public List<Application> getApplications() {
-        ArrayList<Application> applications = new ArrayList<Application>();
+        return getApplications(new HashMap<String, Object>());
+    }
+
+    /**
+     * All Applications that are included in this Quota.
+     */
+    public List<Application> getApplications(Map<String, Object> filter) {
+        if (!GET_APPLICATIONS_FILTER_KEYS.containsAll(filter.keySet())) {
+            throw new IllegalArgumentException("filter_unknown_keys");
+        }
+
+        ArrayList<String> filterConditions = new ArrayList<>();
+        ArrayList<Object> filterValues = new ArrayList<>();
+        filterConditions.add("allocation_rule.quota_id = ?");
+        filterValues.add(id);
+
+        String status = (String) filter.get("status");
+        if (status != null) {
+            filterConditions.add("status = ?");
+            filterValues.add(status);
+        }
+
+        String filterSql = " WHERE " + StringUtils.join(filterConditions, " AND ");
+
         try {
             String sql = "SELECT application.* FROM application "
                     + "LEFT JOIN course ON application.course_id = course.id "
                     + "LEFT JOIN allocation_rule ON course.allocation_rule_id = allocation_rule.id "
-                    + "WHERE allocation_rule.quota_id = ?";
-            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
-            queryResults = service.getQueryRunner().query(service.getDb(), sql,
-                new MapListHandler(), this.id);
-            for (Map<String, Object> args : queryResults) {
-                args.put("service", this.service);
+                    + filterSql;
+            List<Map<String, Object>> results = service.getQueryRunner().query(
+                service.getDb(), sql, new MapListHandler(), filterValues.toArray());
+
+            List<Application> applications = new ArrayList<>();
+            for (Map<String, Object> args : results) {
+                args.put("service", service);
                 applications.add(new Application(args));
             }
             return applications;
+
         } catch (SQLException e) {
             throw new IOError(e);
         }
