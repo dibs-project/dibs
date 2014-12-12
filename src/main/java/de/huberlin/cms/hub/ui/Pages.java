@@ -323,8 +323,7 @@ public class Pages implements Closeable {
         Course course = this.service.getCourse(id);
         this.model.put("course", course);
         this.model.put("applications", course.getApplications());
-        // TODO: course.getAllocationRule().getQuota().getRanking();
-        this.model.put("ranks", course.getApplications());
+        this.model.put("ranks", course.getAllocationRule().getQuota().getRanking());
         if (error != null && error.equals("course_has_applications")) {
             this.model.put("notification",
                 "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");

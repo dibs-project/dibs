@@ -62,8 +62,7 @@
                 <ol>
                     [#list ranks as rank]
                         [#-- TODO: optimize --]
-                        [#-- TODO: rank.application.id --]
-                        <li><a href="/applications/${rank.id}/">${rank.user.name}</a></li>
+                        <li><a href="/applications/${rank.application.id}/">${rank.user.name}</a></li>
                     [/#list]
                 </ol>
             </section>
