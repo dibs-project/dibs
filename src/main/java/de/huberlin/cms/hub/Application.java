@@ -80,7 +80,7 @@ public class Application extends HubObject {
     }
 
     /**
-     * Returns a list of all evaluations belonging to this application.
+     * All evaluations belonging to this application.
      *
      * @see #getEvaluations(Map, User)
      */
@@ -89,15 +89,13 @@ public class Application extends HubObject {
     }
 
     /**
-     * Returns a list of all evaluations belonging to this application.
+     * All evaluations belonging to this application.
      *
-     * @param filter filter (errors: <code>filter_improper_keys</code>)
      * @param agent active user
-     * @return list of all evaluations belonging to this application
      */
     public List<Evaluation> getEvaluations(Map<String, Object> filter, User agent) {
         if (!GET_EVALUATIONS_FILTER_KEYS.containsAll(filter.keySet())) {
-            throw new IllegalArgumentException("filter_improper_keys");
+            throw new IllegalArgumentException("filter_unknown_keys");
         }
 
         ArrayList<String> filterConditions = new ArrayList<>();
@@ -161,7 +159,7 @@ public class Application extends HubObject {
             evaluation.assignInformation(information);
         }
 
-        // TODO will be replaced by update method/ (pseudo) event
+        // TODO will be replaced by update method / (pseudo) event
         setStatus(STATUS_VALID, false, null);
     }
 

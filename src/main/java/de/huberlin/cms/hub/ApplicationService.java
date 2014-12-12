@@ -86,9 +86,6 @@ public class ApplicationService {
     /** Supported filters for {@link #getCriteria(Map, User)}. */
     public static final Set<String> GET_CRITERIA_FILTER_KEYS =
         new HashSet<>(Arrays.asList("required_information_type_id"));
-    /** Supported filters for {@link Quota#getApplications(Map)}. */
-    public static final Set<String> GET_APPLICATIONS_FILTER_KEYS =
-        new HashSet<>(Arrays.asList("status"));
 
     private static final long MONTH_DURATION = 30 * 24 * 60 * 60 * 1000L;
 
@@ -528,15 +525,20 @@ public class ApplicationService {
     }
 
     /**
-     * Returns a list of all courses.
+     * All courses in HUB.
      *
-     * @param filter filter (errors: <code>filter_improper_keys</code>)
-     *
-     * @return list of all courses
+     * @see #getCourses(Map)
+     */
+    public List<Course> getCourses() {
+        return this.getCourses(new HashMap<String, Object>());
+    }
+
+    /**
+     * All courses in HUB.
      */
     public List<Course> getCourses(Map<String, Object> filter) {
         if (!GET_COURSES_FILTER_KEYS.containsAll(filter.keySet())) {
-            throw new IllegalArgumentException("filter_improper_keys");
+            throw new IllegalArgumentException("filter_unknown_keys");
         }
 
         List<String> filterConditions = new ArrayList<>();
@@ -564,15 +566,6 @@ public class ApplicationService {
         } catch (SQLException e) {
             throw new IOError(e);
         }
-    }
-
-    /**
-     * Returns a list of all courses.
-     *
-     * @see #getCourses(Map)
-     */
-    public List<Course> getCourses() {
-        return this.getCourses(new HashMap<String, Object>());
     }
 
     /**
@@ -616,15 +609,22 @@ public class ApplicationService {
     }
 
     /**
-     * Returns a list of all criteria.
+     * All criteria in HUB.
      *
-     * @param filter filter (errors: <code>filter_improper_keys</code>)
+     * @see #getCriteria(Map, User)
+     */
+    public List<Criterion> getCriteria(User agent) {
+        return this.getCriteria(new HashMap<String, Object>(), agent);
+    }
+
+    /**
+     * All criteria in HUB.
+     *
      * @param agent active user
-     * @return list of all criteria
      */
     public List<Criterion> getCriteria(Map<String, Object> filter, User agent) {
         if (!GET_CRITERIA_FILTER_KEYS.containsAll(filter.keySet())) {
-            throw new IllegalArgumentException("filter_improper_keys");
+            throw new IllegalArgumentException("filter_unknown_keys");
         }
 
         ArrayList<Criterion> criteria = new ArrayList<>(this.criteria.values());
@@ -640,15 +640,6 @@ public class ApplicationService {
                 });
         }
         return criteria;
-    }
-
-    /**
-     * Returns a list of all criteria.
-     *
-     * @see #getCriteria(Map, User)
-     */
-    public List<Criterion> getCriteria(User agent) {
-        return this.getCriteria(new HashMap<String, Object>(), agent);
     }
 
     /**

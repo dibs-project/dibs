@@ -9,12 +9,15 @@ import java.io.IOError;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
@@ -28,10 +31,14 @@ import de.huberlin.cms.hub.HubException.IllegalStateException;
  * Contains the criteria for the creation of a ranking list for a percentage of a course's
  * available places.
  *
- * @author Markus Michler
  * @author David Koschnick
+ * @author Markus Michler
  */
 public class Quota extends HubObject {
+    /** Supported filters for {@link #getApplications(Map)}. */
+    public static final Set<String> GET_APPLICATIONS_FILTER_KEYS =
+        new HashSet<>(Arrays.asList("status"));
+
     private final String name;
     private final int percentage;
 
@@ -163,9 +170,8 @@ public class Quota extends HubObject {
     }
 
     /**
-     * Returns all Applications that are included in this Quota.
+     * All Applications that are included in this Quota.
      *
-     * @return List of Applications belonging to this Quota
      * @see #getApplications(Map)
      */
     public List<Application> getApplications() {
@@ -173,13 +179,10 @@ public class Quota extends HubObject {
     }
 
     /**
-     * Returns all Applications that are included in this Quota. May be further filtered.
-     *
-     * @param filter filter Map (code: <code>filter_unknown_keys</code>)
-     * @return List of filtered Applications belonging to this Quota
+     * All Applications that are included in this Quota.
      */
     public List<Application> getApplications(Map<String, Object> filter) {
-        if (!ApplicationService.GET_APPLICATIONS_FILTER_KEYS.containsAll(filter.keySet())) {
+        if (!GET_APPLICATIONS_FILTER_KEYS.containsAll(filter.keySet())) {
             throw new IllegalArgumentException("filter_unknown_keys");
         }
 
@@ -215,7 +218,6 @@ public class Quota extends HubObject {
             throw new IOError(e);
         }
     }
-
 
     /**
      * Ruft die Rangliste für die Quote ab.
