@@ -4,7 +4,11 @@
 
 [@page "Anmelden"]
     <form method="POST" action="/login/">
-        [@form_error/]
+        [@form_error {
+            "form_email_missing": "Email-Adresse fehlt.",
+            "form_password_missing": "Passwort fehlt.",
+            "email_password_bad": "Zugangsdaten sind nicht korrekt."
+        }/]
         <label>
             <small>Email-Adresse</small>
             <input name="email" value="${(form.email[0])!}"/>
