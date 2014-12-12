@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -52,6 +53,7 @@ import de.huberlin.cms.hub.Information;
 import de.huberlin.cms.hub.Session;
 import de.huberlin.cms.hub.User;
 
+// TODO put private overloaded methods directly after their public counterparts
 /**
  * @author Sven Pfaller
  * @author Markus Michler
@@ -220,36 +222,44 @@ public class Pages implements Closeable {
 
     @GET
     @Path("users/{id}/create-information")
-    public Viewable createInformation(@PathParam("id") String userId, @QueryParam("type")
+    public Viewable createInformation(@PathParam("id") String id, @QueryParam("type")
             String typeId) {
-        return createInformation(userId, typeId, null, null);
+        Information.Type type = service.getInformationTypes().get(typeId);
+        if (type == null) {
+            throw new NotFoundException();
+        }
+        return createInformation(id, type.getId(), null, null);
     }
 
     private Viewable createInformation(String userId, String typeId,
             MultivaluedMap<String, String> form, IllegalArgumentException formError) {
+        model.put("type", typeId);
         model.put("form", form);
         model.put("formError", formError);
-        model.put("type", typeId);
         return new Viewable(String.format("/user-create-information-%s.ftl", typeId), model);
     }
 
     @POST
     @Path("users/{id}/create-information")
-    public Response createInformation(@PathParam("id") String userId, @QueryParam("type")
+    public Response createInformation(@PathParam("id") String id, @QueryParam("type")
             String typeId, MultivaluedMap<String, String> form) {
+        Information.Type type = service.getInformationTypes().get(typeId);
+        if (type == null) {
+            throw new NotFoundException();
+        }
         try {
+            // NOTE hard-coded for qualification
             checkContainsRequired(form, new HashSet<String>(Arrays.asList("grade")));
 
             Map<String, Object> args = new HashMap<>();
             args.put("grade", new Double(form.getFirst("grade")));
-            String informationId = user.createInformation(typeId, args, user).getId();
+            Information information = user.createInformation(type.getId(), args, user);
 
-            URI url = UriBuilder.fromUri("users/{id}/information/{information-id}/")
-                .build(userId, informationId);
+            URI url = UriBuilder.fromUri("information/{id}/").build(information.getId());
 
             return Response.seeOther(url).build();
         } catch (IllegalArgumentException e) {
-            return Response.status(400).entity(createInformation(userId, typeId, form, e))
+            return Response.status(400).entity(createInformation(id, type.getId(), form, e))
                 .build();
         }
     }
@@ -257,10 +267,9 @@ public class Pages implements Closeable {
     /* Information */
 
     @GET
-    @Path("users/{user-id}/information/{information-id}/")
-    public Viewable information(@PathParam("user-id") String userId,
-            @PathParam("information-id") String informationId) {
-        Information information = service.getInformation(informationId);
+    @Path("information/{id}/")
+    public Viewable information(@PathParam("id") String id) {
+        Information information = service.getInformation(id);
 
         model.put("information", information);
 
@@ -282,7 +291,7 @@ public class Pages implements Closeable {
         // TODO replace hardcoded list with backend method
         requiredInformationTypes.add(service.getInformationTypes().get("qualification"));
 
-        Map<String, Information> requiredTypesToInformationMap = new HashMap<>();
+        Map<String, Information> requiredInformationMap = new HashMap<>();
         for (Information.Type type : requiredInformationTypes) {
             Information information = null;
             try {
@@ -290,10 +299,10 @@ public class Pages implements Closeable {
             } catch (HubException.ObjectNotFoundException e) {
                 // do nothing
             }
-            requiredTypesToInformationMap.put(type.getId(), information);
+            requiredInformationMap.put(type.getId(), information);
         }
 
-        this.model.put("requiredTypesToInformationMap", requiredTypesToInformationMap);
+        this.model.put("requiredTypesToInformationMap", requiredInformationMap);
         return new Viewable("/application.ftl", this.model);
     }
 

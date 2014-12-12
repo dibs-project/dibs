@@ -39,6 +39,14 @@ public class UserTest extends HubTest {
     }
 
     @Test
+    public void testGetInformationByTypeUnknownType() {
+        exception.expect(IllegalArgumentException.class);
+        HashMap<String, Object> args = new HashMap<String, Object>();
+        args.put("grade", 4.0);
+        user.createInformation("foo", args, null);
+    }
+
+    @Test
     public void testGetInformationByTypeNonExisting() {
         exception.expect(HubException.ObjectNotFoundException.class);
         user.getInformationByType("qualification");

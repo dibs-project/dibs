@@ -97,9 +97,13 @@ public class User extends HubObject {
     /**
      * Returns the User's Information for a given Type.
      * @param typeId ID of the Information.Type
-     * @return the Information with the requested Type
+     * @return Information with the requested Type
      */
     public Information getInformationByType(String typeId) {
+        Information.Type type = service.getInformationTypes().get(typeId);
+        if (type == null) {
+            throw new IllegalArgumentException("illegal typeId: unknown");
+        }
         try {
             String sql = String.format("SELECT * FROM \"%s\" WHERE user_id = ?", typeId);
             Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
