@@ -83,9 +83,5 @@ public class QuotaTest extends HubTest {
             rankedApplications.add(rank.getApplication());
         }
         assertEquals(new HashSet<Application>(validApplications), rankedApplications);
-        // no ranked application incomplete?
-        for (Rank rank : ranking) {
-            assertNotEquals(incompleteApplication, rank.getApplication());
-        }
     }
 }
