@@ -20,10 +20,10 @@
         <section>
             <h2>Benötigte Informationen</h2>
             <ul>
-                [#list requiredTypesToInformationMap?keys as typeId]
+                [#list requiredInformationMap?keys as typeId]
                     <li>
-                        [#if requiredTypesToInformationMap[typeId]??]
-                            <a href="/information/${requiredTypesToInformationMap[typeId].id}/">[@information_type typeId/]</a> ✔
+                        [#if requiredInformationMap[typeId]??]
+                            <a href="/information/${requiredInformationMap[typeId].id}/">[@information_type typeId/]</a> ✔
                         [#else]
                             [@information_type typeId/] <a class="button" href="/users/${applicant.id}/create-information?type=${typeId}">anlegen</a>
                         [/#if]

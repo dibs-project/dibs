@@ -53,7 +53,7 @@ import de.huberlin.cms.hub.Information;
 import de.huberlin.cms.hub.Session;
 import de.huberlin.cms.hub.User;
 
-// TODO put private overloaded methods directly after their public counterparts
+// TODO put private "overloaded" methods directly after their public counterparts
 /**
  * @author Sven Pfaller
  * @author Markus Michler
@@ -302,7 +302,7 @@ public class Pages implements Closeable {
             requiredInformationMap.put(type.getId(), information);
         }
 
-        this.model.put("requiredTypesToInformationMap", requiredInformationMap);
+        this.model.put("requiredInformationMap", requiredInformationMap);
         return new Viewable("/application.ftl", this.model);
     }
 
