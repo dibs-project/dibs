@@ -43,9 +43,9 @@
     </html>
 [/#macro]
 
-[#macro form_error]
+[#macro form_error message_map]
     [#if formError??]
-        <p>Fehler: ${formError}</p>
+        <p>${message_map[formError.message]}</p>
     [/#if]
 [/#macro]
 

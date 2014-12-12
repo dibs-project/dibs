@@ -4,7 +4,11 @@
 
 [@page "Registrieren"]
     <form method="POST" action="/register/">
-        [@form_error/]
+        [@form_error {
+            "form_name_missing": "Name fehlt.",
+            "form_email_missing": "Email-Adresse fehlt.",
+            "form_password_missing": "Passwort fehlt."
+        }/]
         <label>
             <small>Name</small>
             <input name="name" value="${(form.name[0])!}"/>

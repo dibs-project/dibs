@@ -243,14 +243,14 @@ public class Course extends HubObject {
     }
 
     /**
-     * Name des Studiengangs.
+     * Name.
      */
     public String getName() {
         return this.name;
     }
 
     /**
-     * Kapazität des Studiengangs.
+     * Capacity, i.e. number of places.
      */
     public int getCapacity() {
         return this.capacity;

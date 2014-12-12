@@ -76,7 +76,7 @@ public class Qualification extends Information {
             }
             double grade = (Double) args.get("grade");
             if (!isInRange(grade, 1.0, 6.0)) {
-                throw new IllegalArgumentException("illegal grade in args: out of range");
+                throw new IllegalArgumentException("args_grade_out_of_range");
             }
 
             ApplicationService service = user.getService();

@@ -12,7 +12,11 @@
         </p>
 
         <form method="POST" action="${url}">
-            [@form_error/]
+            [@form_error {
+                "form_dosv-bid_missing": "Bewerber-ID (BID) fehlt.",
+                "form_dosv-ban_missing": "Bewerber-Authentifizierungsnummer (BAN) fehlt.",
+                "dosv_bid_dosv_ban_bad": "Zugangsdaten sind nicht korrekt."
+            }/]
             <label>
                 <small>Bewerber-ID (BID)</small>
                 <input name="dosv-bid" value="${(form['dosv-bid'][0])!}"/>

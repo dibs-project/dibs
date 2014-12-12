@@ -4,7 +4,12 @@
 
 [@page "Studiengang anlegen"]
     <form method="POST" action="/create-course/">
-        [@form_error/]
+        [@form_error {
+            "form_name_missing": "Name fehlt.",
+            "form_capacity_missing": "Kapazität fehlt.",
+            "capacity_nan": "Kapazität ist keine Zahl.",
+            "capacity_nonpositive": "Kapazität ist nicht positiv."
+        }/]
         <label>
             <small>Name</small>
             <input name="name" value="${(form.name[0])!}"/>
