@@ -199,7 +199,7 @@ public class DosvSync {
         boolean applicationsPushed = false;
         // TODO adjust number of retries to minimize the possibility of a RuntimeException
         for (int i = 0; !applicationsPushed && i < 10; i++) {
-            pullApplicationStatus();
+            pullApplications();
             applicationsPushed = pushApplications();
         }
         if (!applicationsPushed) {
@@ -337,7 +337,7 @@ public class DosvSync {
         }
     }
 
-    private void pullApplicationStatus() {
+    private void pullApplications() {
         Connection db = service.getDb();
         Date[] updateTime = new Date[1];
         updateTime[0] = service.getSettings().getDosvApplicationsServerTime();
@@ -486,7 +486,6 @@ public class DosvSync {
                   continue;
               }
               Quota quota = course.getAllocationRule().getQuota();
-              List<Rank> ranking = quota.getRanking();
               Rangliste rangliste = new Rangliste();
 
               rangliste.setNameDe(quota.getName());
@@ -501,7 +500,7 @@ public class DosvSync {
               rangliste.setIstChancenrangliste(false);
               rangliste.setAbarbeitungsposition(1);
 
-              for (Rank rank : ranking) {
+              for (Rank rank : quota.getRanking()) {
                   Ranglisteneintrag ranglisteneintrag = new Ranglisteneintrag();
                   ranglisteneintrag.setBewerberId(rank.getUser().getDosvBid());
                   ranglisteneintrag.setRang(rank.getIndex() + 1);
