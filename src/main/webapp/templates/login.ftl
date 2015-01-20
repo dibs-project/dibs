@@ -10,7 +10,7 @@
             "email_password_bad": "Zugangsdaten sind nicht korrekt."
         }/]
         <label>
-            <small>Email-Adresse</small>
+            <small>E-Mail-Adresse</small>
             <input name="email" value="${(form.email[0])!}"/>
         </label>
         <label>
