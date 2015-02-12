@@ -105,6 +105,8 @@ public class ApplicationService {
     private Journal journal;
     private Map<String, Information.Type> informationTypes;
     private Map<String, Criterion> criteria;
+    private Integer transactionLevel;
+    private boolean abortTransaction;
     private QueryRunner queryRunner;
     private DosvSync dosvSync;
 
@@ -132,6 +134,8 @@ public class ApplicationService {
         args.put("service", this);
         this.criteria.put("qualification", new QualificationCriterion(args));
 
+        this.transactionLevel = -1;
+        this.abortTransaction = false;
         this.queryRunner = new QueryRunner();
         this.dosvSync = new DosvSync(this);
     }
@@ -625,6 +629,67 @@ public class ApplicationService {
             return new Settings(args);
         } catch (SQLException e) {
             throw new IOError(e);
+        }
+    }
+
+    /**
+     * Begins a database transaction. Has to used in conjunction with {@link #endTransaction}.
+     */
+    public void beginTransaction() {
+        if (transactionLevel == -1) {
+            try {
+                // TODO record inital commit mode as soon as autocommit is not required by setup anymore
+                db.setAutoCommit(false);
+            } catch (SQLException e) {
+                throw new IOError(e);
+            }
+        }
+        transactionLevel++;
+    }
+
+    /**
+     * Ends a database transaction and commits if all other nested transactions are successful.
+     *
+     * @see #endTransaction(boolean)
+     */
+    public void endTransaction() {
+        endTransaction(false);
+    }
+
+    /**
+     * Ends a database transaction and commits or rolls back if no other nested transactions
+     * are open.
+     * Has to used in conjunction with {@link #beginTransaction}. The transaction fails
+     * if <code>abort</code> is <code>true</code> in this or one of the inner transactions.
+     *
+     * @param abort rolls the transaction back if <code>true</code>, otherwise the outermost
+     * transaction will commit.
+     *
+     * @throws IllegalStateException when the outmost nested transaction is already closed
+     * (code: <code>"transaction_not_open"</code>).
+     */
+    public void endTransaction(boolean abort) {
+        if (transactionLevel == -1) {
+            throw new IllegalStateException("transaction_not_open");
+        }
+
+        if (abort) {
+            abortTransaction = true;
+        }
+        transactionLevel--;
+
+        if (transactionLevel == -1) {
+            try {
+                if (abortTransaction) {
+                    db.rollback();
+                } else {
+                    db.commit();
+                }
+                db.setAutoCommit(true);
+            } catch (SQLException e) {
+                throw new IOError(e);
+            }
+            abortTransaction = false;
         }
     }
 
