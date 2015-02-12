@@ -440,36 +440,6 @@ public class ApplicationService {
     }
 
     /**
-     * Verwendete Datenbankverbindung.
-     */
-    public Connection getDb() {
-        return db;
-    }
-
-    /**
-     * Konfiguration. Die Einstellungen sind in <code>default.properties</code> dokumentiert.
-     */
-    public Properties getConfig() {
-        return config;
-    }
-
-    /**
-     * Gibt die Einstellungen des Bewerbungssystems zurück.
-     *
-     * @return Einstellungen des Bewerbungssystems
-     */
-    public Settings getSettings() {
-        try {
-            Map<String, Object> args = this.queryRunner.query(this.db,
-                "SELECT * FROM settings", new MapHandler());
-            args.put("service", this);
-            return new Settings(args);
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
      * Creates a new course.
      *
      * @param name name
@@ -642,11 +612,28 @@ public class ApplicationService {
         return criteria;
     }
 
+
     /**
-     * Das Protokollbuch des Bewerbungsdienstes.
+     * Konfiguration. Die Einstellungen sind in <code>default.properties</code> dokumentiert.
      */
-    public Journal getJournal() {
-        return new Journal(this);
+    public Properties getConfig() {
+        return config;
+    }
+
+    /**
+     * Gibt die Einstellungen des Bewerbungssystems zurück.
+     *
+     * @return Einstellungen des Bewerbungssystems
+     */
+    public Settings getSettings() {
+        try {
+            Map<String, Object> args = this.queryRunner.query(this.db,
+                "SELECT * FROM settings", new MapHandler());
+            args.put("service", this);
+            return new Settings(args);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
     /**
@@ -664,6 +651,20 @@ public class ApplicationService {
     }
 
     /**
+     * Das Protokollbuch des Bewerbungsdienstes.
+     */
+    public Journal getJournal() {
+        return new Journal(this);
+    }
+
+    /**
+     * Verwendete Datenbankverbindung.
+     */
+    public Connection getDb() {
+        return db;
+    }
+
+    /**
      * Führt Datenbankabfragen aus. Das Abfrageergebnis wird mit Hilfe des
      * <code>ResultSetHandler<code> in eine <code>Map</code> oder eine Liste von Maps
      * umgewandelt.
@@ -672,7 +673,7 @@ public class ApplicationService {
         return this.queryRunner;
     }
 
-     /**
+    /**
      * DoSV-Synchronisationsklasse.
      */
     public DosvSync getDosvSync() {
