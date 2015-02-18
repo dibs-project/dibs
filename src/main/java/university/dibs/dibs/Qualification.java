@@ -21,7 +21,6 @@ import static university.dibs.dibs.Util.isInRange;
 import org.apache.commons.dbutils.handlers.MapHandler;
 
 import java.io.IOError;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -97,18 +96,16 @@ public class Qualification extends Information {
             }
 
             ApplicationService service = user.getService();
-            Connection db = service.getDb();
 
             try {
-                db.setAutoCommit(false);
+                service.beginTransaction();
                 String id = "qualification:" + Integer.toString(new Random().nextInt());
                 service.getQueryRunner().insert(service.getDb(),
                     "INSERT INTO qualification VALUES (?, ?, ?)", new MapHandler(), id,
                     user.getId(), grade);
                 service.getJournal().record(ApplicationService.ACTION_TYPE_INFORMATION_CREATED,
                     user.getId(), DibsObject.getId(agent), id);
-                db.commit();
-                db.setAutoCommit(true);
+                service.endTransaction();
                 return service.getInformation(id);
             } catch (SQLException e) {
                 throw new IOError(e);

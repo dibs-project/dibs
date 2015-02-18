@@ -160,14 +160,13 @@ public class ApplicationService {
         // TODO: validate role
 
         try {
-            this.db.setAutoCommit(false);
+            this.beginTransaction();
             String id = String.format("user:%s", new Random().nextInt());
             new QueryRunner().insert(this.getDb(),
                 "INSERT INTO \"user\" VALUES(?, ?, ?, ?, ?)",
                 new MapHandler(), id, name, email, credential, role);
             this.journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
-            this.db.commit();
-            this.db.setAutoCommit(true);
+            this.endTransaction();
             return this.getUser(id);
         } catch (SQLException e) {
             // TODO: check for duplicate email
@@ -432,14 +431,13 @@ public class ApplicationService {
         }
 
         try {
-            this.db.setAutoCommit(false);
+            this.beginTransaction();
             String id = String.format("course:%s", new Random().nextInt());
             this.queryRunner.insert(this.getDb(),
                 "INSERT INTO course (id, name, capacity, dosv) VALUES (?, ?, ?, ?)",
                 new MapHandler(), id, name, capacity, dosv);
             this.journal.record(ACTION_TYPE_COURSE_CREATED, null, DibsObject.getId(agent), name);
-            this.db.commit();
-            this.db.setAutoCommit(true);
+            this.endTransaction();
             return this.getCourse(id);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -633,18 +631,19 @@ public class ApplicationService {
     }
 
     /**
-     * Begins a database transaction. Has to used in conjunction with {@link #endTransaction}.
+     * Begins a database transaction. Has to be used in conjunction with {@link #endTransaction}.
      */
     public void beginTransaction() {
-        if (transactionLevel == -1) {
+        if (this.transactionLevel == -1) {
             try {
-                // TODO record inital commit mode as soon as autocommit is not required by setup anymore
-                db.setAutoCommit(false);
+                // TODO record inital commit mode as soon as autocommit is not required by setup
+                // anymore
+                this.db.setAutoCommit(false);
             } catch (SQLException e) {
                 throw new IOError(e);
             }
         }
-        transactionLevel++;
+        this.transactionLevel++;
     }
 
     /**
@@ -653,43 +652,43 @@ public class ApplicationService {
      * @see #endTransaction(boolean)
      */
     public void endTransaction() {
-        endTransaction(false);
+        this.endTransaction(false);
     }
 
     /**
      * Ends a database transaction and commits or rolls back if no other nested transactions
      * are open.
-     * Has to used in conjunction with {@link #beginTransaction}. The transaction fails
+     * Has to be used in conjunction with {@link #beginTransaction}. The transaction fails
      * if <code>abort</code> is <code>true</code> in this or one of the inner transactions.
      *
      * @param abort rolls the transaction back if <code>true</code>, otherwise the outermost
-     * transaction will commit.
+     *     transaction will commit.
      *
      * @throws IllegalStateException when the outmost nested transaction is already closed
-     * (code: <code>"transaction_not_open"</code>).
+     *     (code: <code>"transaction_not_open"</code>).
      */
     public void endTransaction(boolean abort) {
-        if (transactionLevel == -1) {
+        if (this.transactionLevel == -1) {
             throw new IllegalStateException("transaction_not_open");
         }
 
         if (abort) {
-            abortTransaction = true;
+            this.abortTransaction = true;
         }
-        transactionLevel--;
+        this.transactionLevel--;
 
-        if (transactionLevel == -1) {
+        if (this.transactionLevel == -1) {
             try {
-                if (abortTransaction) {
-                    db.rollback();
+                if (this.abortTransaction) {
+                    this.db.rollback();
                 } else {
-                    db.commit();
+                    this.db.commit();
                 }
-                db.setAutoCommit(true);
+                this.db.setAutoCommit(true);
             } catch (SQLException e) {
                 throw new IOError(e);
             }
-            abortTransaction = false;
+            this.abortTransaction = false;
         }
     }
 

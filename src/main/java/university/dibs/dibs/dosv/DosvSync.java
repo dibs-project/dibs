@@ -213,12 +213,12 @@ public class DosvSync {
         this.pushRankings();
         try {
             Connection db = this.service.getDb();
-            db.setAutoCommit(false);
+            this.service.beginTransaction();
             this.service.getQueryRunner().update(db, "UPDATE settings SET dosv_sync_time = ?",
                 new Timestamp(newSyncTime.getTime()));
             this.service.getJournal().record(
                 ApplicationService.ACTION_TYPE_DOSV_SYNC_SYNCHRONIZED, null, null, null);
-            db.setAutoCommit(true);
+            this.service.endTransaction();
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -344,7 +344,6 @@ public class DosvSync {
     }
 
     private void pullApplications() {
-        Connection db = this.service.getDb();
         Date[] updateTime = new Date[1];
         updateTime[0] = this.service.getSettings().getDosvApplicationsServerTime();
         List<Bewerbung> bewerbungen;
@@ -363,7 +362,7 @@ public class DosvSync {
 
         // write changed Applications to DB
         try {
-            db.setAutoCommit(false);
+            this.service.beginTransaction();
             for (Bewerbung bewerbung : bewerbungen) {
                 String newStatus =
                     APPLICATION_STATUS_MAPPING_FROM_DOSV.get(bewerbung.getBearbeitungsstatus());
@@ -393,8 +392,7 @@ public class DosvSync {
             this.service.getQueryRunner().update(this.service.getDb(),
                 "UPDATE settings SET dosv_remote_applications_pull_time = ?",
                 new Timestamp(updateTime[0].getTime()));
-            db.commit();
-            db.setAutoCommit(true);
+            this.service.endTransaction();
         } catch (SQLException e) {
             throw new IOError(e);
         }

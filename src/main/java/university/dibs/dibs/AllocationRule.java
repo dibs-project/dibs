@@ -23,7 +23,6 @@ import university.dibs.dibs.DibsException.IllegalStateException;
 import org.apache.commons.dbutils.handlers.MapHandler;
 
 import java.io.IOError;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Random;
@@ -63,8 +62,7 @@ public class AllocationRule extends DibsObject {
         }
         // NOTE Race Condition: SELECT-UPDATE
         try {
-            Connection db = this.service.getDb();
-            db.setAutoCommit(false);
+            this.service.beginTransaction();
             String quotaId = "quota:" + Integer.toString(new Random().nextInt());
             this.service.getQueryRunner().insert(this.service.getDb(),
                 "INSERT INTO quota VALUES (?, ?, ?)", new MapHandler(), quotaId, name, percentage);
@@ -74,8 +72,7 @@ public class AllocationRule extends DibsObject {
             this.service.getJournal().record(
                 ApplicationService.ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED, this.id,
                 DibsObject.getId(agent), quotaId);
-            db.commit();
-            db.setAutoCommit(true);
+            this.service.endTransaction();
             return service.getQuota(this.quotaId);
         } catch (SQLException e) {
             throw new IOError(e);

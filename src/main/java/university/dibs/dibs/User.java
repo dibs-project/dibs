@@ -20,7 +20,6 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import java.io.IOError;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,18 +77,9 @@ public class User extends DibsObject {
         }
         Information information = type.create(args, this, agent);
 
-        try {
-            // TODO implement proper transaction system
-            Connection db = this.service.getDb();
-            db.setAutoCommit(false);
-            // Pseudo-Ereignis auslösen
-            for (Application application : this.getApplications()) {
-                application.userInformationCreated(this, information);
-            }
-            db.commit();
-            db.setAutoCommit(true);
-        } catch (SQLException e) {
-            throw new IOError(e);
+        // Pseudo-Ereignis auslösen
+        for (Application application : this.getApplications()) {
+            application.userInformationCreated(this, information);
         }
 
         return information;
@@ -181,8 +171,7 @@ public class User extends DibsObject {
             return false;
         }
         try {
-            Connection db = service.getDb();
-            db.setAutoCommit(false);
+            this.service.beginTransaction();
             service.getQueryRunner().update(this.service.getDb(),
                 "UPDATE \"user\" SET dosv_bid = ?, dosv_ban = ? WHERE id = ?", dosvBid,
                 dosvBan, id);
@@ -190,8 +179,7 @@ public class User extends DibsObject {
             this.dosvBan = dosvBan;
             service.getJournal().record(ApplicationService.APPLICATION_TYPE_USER_CONNECTED_TO_DOSV,
                 id, DibsObject.getId(agent), null);
-            db.commit();
-            db.setAutoCommit(true);
+            this.service.endTransaction();
         } catch (SQLException e) {
             // TODO Fehler bei Verletzung unique-constraint dosv_bid abfangen
             throw new IOError(e);
