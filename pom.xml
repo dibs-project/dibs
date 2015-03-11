@@ -9,10 +9,12 @@
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
     </properties>
 
+    <!-- NOTE used for the DosvClient dependency which will be
+    consolidated into the project in the near future -->
     <repositories>
         <repository>
-            <id>meo</id>
-            <url>http://141.20.2.231:8080/maven</url>
+            <id>github-snapshot</id>
+            <url>https://github.com/hu-dosv/maven-repo/raw/master/snapshots</url>
         </repository>
     </repositories>
 
