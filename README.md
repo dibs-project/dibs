@@ -20,8 +20,9 @@ For building dibs use:
 Configuring dibs
 ---------------
 
-In order to configure dibs, copy the file `/scr/main/resources/default.properties` to `/dibs.properties` and edit
-them according to your needs.
+In order to configure dibs, copy the file 
+`[project-dir]/src/main/resources/default.properties` to
+`[project-dir]/dibs.properties` and edit them according to your needs.
 
 dibs uses a PostgreSQL database. If needed you can create a local Database (with user), by
 using the tool `psql` as PostgreSQL superuser (in most cases `postgres`) with the
