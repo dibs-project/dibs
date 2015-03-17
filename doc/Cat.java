@@ -3,7 +3,7 @@
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
-package de.huberlin.cms.hub;
+package university.dibs.dibs;
 
 import java.io.IOError;
 import java.sql.PreparedStatement;
@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 public class Cat extends HubObject {
     public final static String FAVORITE_FOOD = "Cheezburger";
 
-    private static Logger logger = Logger.getLogger("de.huberlin.cms.hub");
+    private static Logger logger = Logger.getLogger("university.dibs.dibs");
 
     private String name;
     private int mood;
