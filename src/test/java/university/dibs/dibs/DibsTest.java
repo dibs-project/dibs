@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -23,7 +23,7 @@ import university.dibs.dibs.Course;
 import university.dibs.dibs.User;
 
 /**
- * Basisklasse für HUB-Tests. Übernimmt die Initialisierung (und das anschließende
+ * Basisklasse für dibs-Tests. Übernimmt die Initialisierung (und das anschließende
  * Aufräumen) der Testumgebung. Für Tests werden eine Datenbankverbindung, das
  * Bewerbungssystem und ein allgemeiner Benutzer bereitgestellt.
  * <p>
@@ -32,7 +32,7 @@ import university.dibs.dibs.User;
  *
  * @author Sven Pfaller
  */
-public abstract class HubTest {
+public abstract class DibsTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 

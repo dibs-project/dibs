@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -15,7 +15,7 @@ import java.sql.Timestamp;
  * @author Sven Pfaller
  * @author Markus Michler
  */
-public class Settings extends HubObject {
+public class Settings extends DibsObject {
     private String semester;
     private String storageVersion;
     private Date dosvSyncTime;

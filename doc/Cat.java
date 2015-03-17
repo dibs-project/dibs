@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -13,7 +13,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 /**
- * Gewöhnliche Katze. Demonstriert den HUB-Code-Stil, -Konventionen und häufig verwendete
+ * Gewöhnliche Katze. Demonstriert den dibs-Code-Stil, -Konventionen und häufig verwendete
  * Muster.
  * <p>
  * Beachte auch die Sortierung der Attribute und Methoden.
@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  *
  * @author Sven Pfaller
  */
-public class Cat extends HubObject {
+public class Cat extends DibsObject {
     public final static String FAVORITE_FOOD = "Cheezburger";
 
     private static Logger logger = Logger.getLogger("university.dibs.dibs");

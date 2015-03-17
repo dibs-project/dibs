@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -33,7 +33,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 
 import university.dibs.dibs.ApplicationService;
-import university.dibs.dibs.HubException.IllegalStateException;
+import university.dibs.dibs.DibsException.IllegalStateException;
 
 /**
  * @author Sven Pfaller

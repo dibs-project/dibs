@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -18,7 +18,7 @@ import java.util.Random;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
-import university.dibs.dibs.HubException.IllegalStateException;
+import university.dibs.dibs.DibsException.IllegalStateException;
 
 /**
  * University course which users apply for.
@@ -26,7 +26,7 @@ import university.dibs.dibs.HubException.IllegalStateException;
  * @author Phuong Anh Ha
  * @author Markus Michler
  */
-public class Course extends HubObject {
+public class Course extends DibsObject {
     private String name;
     private int capacity;
     private String allocationRuleId;
@@ -68,7 +68,7 @@ public class Course extends HubObject {
             this.allocationRuleId = ruleId;
             service.getJournal().record(
                 ApplicationService.ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED,
-                this.id, HubObject.getId(agent), ruleId);
+                this.id, DibsObject.getId(agent), ruleId);
             db.commit();
             db.setAutoCommit(true);
             return service.getAllocationRule(allocationRuleId);
@@ -84,7 +84,7 @@ public class Course extends HubObject {
      * @param agent executing user
      * @return created Application
      *
-     * @throws HubException.IllegalStateException
+     * @throws DibsException.IllegalStateException
      *  if the course is not published (<code>course_not_published</code>),
      *  the course is in admission (<code>course_in_admission</code>)
      *  or the user is not connected to the DoSV (<code>user_not_connected</code>)
@@ -130,7 +130,7 @@ public class Course extends HubObject {
             }
 
             service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_APPLIED,
-                this.id, HubObject.getId(agent), applicationId);
+                this.id, DibsObject.getId(agent), applicationId);
             service.getDb().commit();
             service.getDb().setAutoCommit(true);
             return application;
@@ -164,7 +164,7 @@ public class Course extends HubObject {
                 "UPDATE course SET published = TRUE, modification_time = ? WHERE id = ?",
                 new Timestamp(now.getTime()), getId());
             service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_PUBLISHED,
-                this.id, HubObject.getId(agent), null);
+                this.id, DibsObject.getId(agent), null);
             db.commit();
             db.setAutoCommit(true);
         } catch (SQLException e) {
@@ -177,7 +177,7 @@ public class Course extends HubObject {
     /**
      * Unpublishes the course.
      *
-     * @throws HubException.IllegalStateException if an {@link Application} for this
+     * @throws DibsException.IllegalStateException if an {@link Application} for this
      *     course exists (<code>course_has_applications</code>)
      */
     public void unpublish(User agent) {
@@ -194,7 +194,7 @@ public class Course extends HubObject {
                 "UPDATE course SET published = FALSE, modification_time = ? WHERE id = ?",
                 new Timestamp(now.getTime()), getId());
             service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_UNPUBLISHED,
-                this.id, HubObject.getId(agent), null);
+                this.id, DibsObject.getId(agent), null);
             db.commit();
             db.setAutoCommit(true);
         } catch (SQLException e) {
@@ -221,7 +221,7 @@ public class Course extends HubObject {
                 new Timestamp(now.getTime()), getId());
             service.getJournal().record(
                 ApplicationService.ACTION_TYPE_COURSE_ADMISSION_STARTED, this.id,
-                HubObject.getId(agent), null);
+                DibsObject.getId(agent), null);
 
             // NOTE future iterations: will be called when a user's application status is set
             generateRankings();

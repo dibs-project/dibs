@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -12,11 +12,11 @@ import java.util.HashMap;
 
 import org.junit.Test;
 
-import university.dibs.dibs.HubException;
+import university.dibs.dibs.DibsException;
 import university.dibs.dibs.Information;
 import university.dibs.dibs.Qualification;
 
-public class UserTest extends HubTest {
+public class UserTest extends DibsTest {
     @Test
     public void testCreateInformation() {
         HashMap<String, Object> args = new HashMap<String, Object>();
@@ -52,7 +52,7 @@ public class UserTest extends HubTest {
 
     @Test
     public void testGetInformationByTypeNonExisting() {
-        exception.expect(HubException.ObjectNotFoundException.class);
+        exception.expect(DibsException.ObjectNotFoundException.class);
         user.getInformationByType("qualification");
     }
 }

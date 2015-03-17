@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -8,11 +8,11 @@ package university.dibs.dibs;
 import java.util.Map;
 
 /**
- * Objekt im HUB-Universum.
+ * Objekt im dibs-Universum.
  *
  * @author Sven Pfaller
  */
-public abstract class HubObject {
+public abstract class DibsObject {
     protected final String id;
     protected final ApplicationService service;
 
@@ -22,27 +22,27 @@ public abstract class HubObject {
      * @param object Objekt oder <code>null</code>
      * @return ID des Objekts oder <code>null</code> wenn das Objekt <code>null</code> ist
      */
-    public static String getId(HubObject object) {
+    public static String getId(DibsObject object) {
         return object != null ? object.getId() : null;
     }
 
     /**
      * Initialisert das Objekt.
      */
-    protected HubObject(Map<String, Object> args) {
+    protected DibsObject(Map<String, Object> args) {
         this.id = (String) args.get("id");
         this.service = (ApplicationService) args.get("service");
     }
 
     /**
-     * Testet ob ein anderes Objekt diesem "gleicht". Zwei HUB-Objekte sind gleich, wenn
+     * Testet ob ein anderes Objekt diesem "gleicht". Zwei dibs-Objekte sind gleich, wenn
      * sie die selbe ID haben.
      *
      * @see Object#equals()
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof HubObject && this.id.equals(((HubObject) obj).id);
+        return obj instanceof DibsObject && this.id.equals(((DibsObject) obj).id);
     }
 
     @Override

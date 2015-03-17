@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -48,12 +48,12 @@ import org.glassfish.jersey.server.mvc.Viewable;
 import university.dibs.dibs.Application;
 import university.dibs.dibs.ApplicationService;
 import university.dibs.dibs.Course;
-import university.dibs.dibs.HubException;
+import university.dibs.dibs.DibsException;
 import university.dibs.dibs.Information;
 import university.dibs.dibs.Session;
 import university.dibs.dibs.User;
-import university.dibs.dibs.HubException.IllegalStateException;
-import university.dibs.dibs.HubException.ObjectNotFoundException;
+import university.dibs.dibs.DibsException.IllegalStateException;
+import university.dibs.dibs.DibsException.ObjectNotFoundException;
 
 // TODO put private "overloaded" methods directly after their public counterparts
 /**
@@ -367,7 +367,7 @@ public class Pages implements Closeable {
             Information information = null;
             try {
                 information = user.getInformationByType(type.getId());
-            } catch (HubException.ObjectNotFoundException e) {
+            } catch (DibsException.ObjectNotFoundException e) {
                 // do nothing
             }
             requiredInformationMap.put(type.getId(), information);

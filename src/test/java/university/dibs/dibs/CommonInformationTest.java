@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -17,7 +17,7 @@ import university.dibs.dibs.Information;
  * Extension API: Basisklasse für {@link Information}-Tests. Stellt allgemeine Tests der
  * {@link Information}-API bereit.
  */
-public abstract class CommonInformationTest extends HubTest {
+public abstract class CommonInformationTest extends DibsTest {
     /**
      * Informationstyp, der getestet wird. Muss von der Unterklasse in {@link @Before}
      * gesetzt werden.

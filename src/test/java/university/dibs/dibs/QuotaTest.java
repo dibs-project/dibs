@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -23,7 +23,7 @@ import university.dibs.dibs.Quota;
 import university.dibs.dibs.Rank;
 import university.dibs.dibs.User;
 
-public class QuotaTest extends HubTest {
+public class QuotaTest extends DibsTest {
     private Quota quota;
     private List<Application> validApplications = new ArrayList<>();
     private List<Rank> ranking;

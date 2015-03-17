@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -21,7 +21,7 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.lang3.StringUtils;
 
-import university.dibs.dibs.HubException.IllegalStateException;
+import university.dibs.dibs.DibsException.IllegalStateException;
 
 /**
  * Bewerbung, mit der Benutzer am Zulassungsverfahren teilnehmen.
@@ -29,7 +29,7 @@ import university.dibs.dibs.HubException.IllegalStateException;
  * @author Markus Michler
  * @author Sven Pfaller
  */
-public class Application extends HubObject {
+public class Application extends DibsObject {
 
     // Konstanten für den Bewerbungsstatus
     public static final String STATUS_INCOMPLETE = "incomplete";
@@ -158,7 +158,7 @@ public class Application extends HubObject {
                 "UPDATE application SET status = ?, modification_time = ? WHERE id = ?",
                 status, new Timestamp(now.getTime()), this.id);
             service.getJournal().record(ApplicationService.ACTION_TYPE_APPLICATION_STATUS_SET,
-                this.id, HubObject.getId(agent), status);
+                this.id, DibsObject.getId(agent), status);
             if (doCommit) {
                 service.getDb().commit();
                 service.getDb().setAutoCommit(true);

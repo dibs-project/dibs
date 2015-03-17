@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import university.dibs.dibs.Session;
 
-public class SessionTest extends HubTest {
+public class SessionTest extends DibsTest {
     private Session session;
 
     @Before

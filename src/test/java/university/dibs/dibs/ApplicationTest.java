@@ -15,9 +15,9 @@ import org.junit.Test;
 import university.dibs.dibs.Application;
 import university.dibs.dibs.Evaluation;
 import university.dibs.dibs.Information;
-import university.dibs.dibs.HubException.IllegalStateException;
+import university.dibs.dibs.DibsException.IllegalStateException;
 
-public class ApplicationTest extends HubTest {
+public class ApplicationTest extends DibsTest {
     private Application application;
 
     @Before

@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -18,9 +18,9 @@ import university.dibs.dibs.AllocationRule;
 import university.dibs.dibs.Application;
 import university.dibs.dibs.Evaluation;
 import university.dibs.dibs.Information;
-import university.dibs.dibs.HubException.IllegalStateException;
+import university.dibs.dibs.DibsException.IllegalStateException;
 
-public class CourseTest extends HubTest {
+public class CourseTest extends DibsTest {
     @Test
     public void testCreateAllocationRule() {
         course.unpublish(null);

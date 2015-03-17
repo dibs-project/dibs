@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -16,9 +16,9 @@ import org.junit.Test;
 import university.dibs.dibs.ApplicationService;
 import university.dibs.dibs.Journal;
 import university.dibs.dibs.JournalRecord;
-import university.dibs.dibs.HubException.ObjectNotFoundException;
+import university.dibs.dibs.DibsException.ObjectNotFoundException;
 
-public class JournalTest extends HubTest {
+public class JournalTest extends DibsTest {
     private Journal journal;
 
     @Before

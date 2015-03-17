@@ -1,20 +1,20 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
 package university.dibs.dibs;
 
 /**
- * Exception-Basisklasse für HUB-spezifische Anwendungsfälle.
+ * Exception-Basisklasse für dibs-spezifische Anwendungsfälle.
  *
  * @author Markus Michler
  */
 @SuppressWarnings("serial")
-public abstract class HubException extends RuntimeException {
+public abstract class DibsException extends RuntimeException {
     protected String code;
 
-    public HubException(String code) {
+    public DibsException(String code) {
         this.code = code;
     }
 
@@ -28,7 +28,7 @@ public abstract class HubException extends RuntimeException {
      *
      * @author Markus Michler
      */
-    public static class ObjectNotFoundException extends HubException {
+    public static class ObjectNotFoundException extends DibsException {
         private String objectId;
 
         public ObjectNotFoundException(String objectId) {
@@ -50,12 +50,12 @@ public abstract class HubException extends RuntimeException {
 
     /**
      * Zeigt an, dass eine Methode zu einem unzulässigen Zeitpunkt aufgerufen wurde:
-     * HUB ist in einem mit der Ausführung der Operation inkompatiblen Zustand.
+     * dibs ist in einem mit der Ausführung der Operation inkompatiblen Zustand.
      *
      * @author Markus Michler
      * @see java.lang.IllegalStateException
      */
-    public static class IllegalStateException extends HubException {
+    public static class IllegalStateException extends DibsException {
         public IllegalStateException(String code) {
             super(code);
         }

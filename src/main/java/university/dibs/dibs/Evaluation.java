@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -15,7 +15,7 @@ import java.util.Map;
  *
  * @author Sven Pfaller
  */
-public class Evaluation extends HubObject {
+public class Evaluation extends DibsObject {
     /** Status: Information fehlt noch, bzw.&nbsp;wurde noch nicht zugeordnet. */
     public final static String STATUS_INFORMATION_MISSING = "information_missing";
     /** Status: Bewertung durchgeführt. */

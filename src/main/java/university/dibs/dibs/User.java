@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -21,7 +21,7 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
  * @author Sven Pfaller
  * @author Markus Michler
  */
-public class User extends HubObject {
+public class User extends DibsObject {
     /** Role: applicant. */
     public static String ROLE_APPLICANT = "applicant";
     /** Role: administrator. */
@@ -119,7 +119,7 @@ public class User extends HubObject {
             Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
                 sql, new MapHandler(), id);
             if (args == null) {
-                throw new HubException.ObjectNotFoundException(typeId);
+                throw new DibsException.ObjectNotFoundException(typeId);
             }
             return type.newInstance(args, service);
         } catch (SQLException e) {
@@ -173,7 +173,7 @@ public class User extends HubObject {
             this.dosvBid = dosvBid;
             this.dosvBan = dosvBan;
             service.getJournal().record(ApplicationService.APPLICATION_TYPE_USER_CONNECTED_TO_DOSV,
-                id, HubObject.getId(agent), null);
+                id, DibsObject.getId(agent), null);
             db.commit();
             db.setAutoCommit(true);
         } catch (SQLException e) {
@@ -184,7 +184,7 @@ public class User extends HubObject {
     }
 
     /**
-     * Name which HUB uses to address the user.
+     * Name which dibs uses to address the user.
      */
     public String getName() {
         return this.name;

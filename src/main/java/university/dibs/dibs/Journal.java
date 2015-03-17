@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -18,7 +18,7 @@ import java.util.Random;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
-import university.dibs.dibs.HubException.ObjectNotFoundException;
+import university.dibs.dibs.DibsException.ObjectNotFoundException;
 
 /**
  * Respräsentiert das Protokollbuch, welches die gesamten Prozessaktionen des
