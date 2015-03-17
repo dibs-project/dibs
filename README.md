@@ -1,4 +1,4 @@
-HUB
+dibs
 ===
 
 Application system with DoSV-support.
@@ -10,29 +10,30 @@ Dependencies
  * PostgreSQL   >= 9.2
  * Apache Maven >= 3.0
 
-Building HUB
+Building dibs
 ------------
 
-For building HUB use:
+For building dibs use:
 
     mvn compile
 
-Configuring HUB
+Configuring dibs
 ---------------
 
-In order to configure HUB, copy the file `default.properties` to `hub.properties` and edit
-them according to your needs.
+In order to configure dibs, copy the file 
+`[project-dir]/src/main/resources/default.properties` to
+`[project-dir]/dibs.properties` and edit them according to your needs.
 
-HUB uses a PostgreSQL database. If needed you can create a local Database (with user), by
+dibs uses a PostgreSQL database. If needed you can create a local Database (with user), by
 using the tool `psql` as PostgreSQL superuser (in most cases `postgres`) with the
 following commands:
 
-    CREATE USER hub WITH PASSWORD 'hub';
-    CREATE DATABASE hub WITH OWNER hub;
+    CREATE USER dibs WITH PASSWORD 'dibs';
+    CREATE DATABASE dibs WITH OWNER dibs;
 
-By default, user name, password and database name are set to "hub".
+By default, user name, password and database name are set to "dibs".
 
-Before synchronizing HUB to the "Dialogorientiertes Serviceverfahren", the web services
+Before synchronizing dibs to the "Dialogorientiertes Serviceverfahren", the web services
 must be configured: Insert values for keys with the `dosv_` prefix.
 
 Browser Support

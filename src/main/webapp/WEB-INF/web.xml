@@ -6,7 +6,7 @@
         <filter-class>org.glassfish.jersey.servlet.ServletContainer</filter-class>
         <init-param>
             <param-name>javax.ws.rs.Application</param-name>
-            <param-value>de.huberlin.cms.hub.ui.Ui</param-value>
+            <param-value>university.dibs.dibs.ui.Ui</param-value>
         </init-param>
         <init-param>
             <param-name>jersey.config.servlet.filter.staticContentRegex</param-name>

@@ -1,10 +1,10 @@
-HUB-User Documentation
+dibs-User Documentation
 ======================
 
 Overview
 ---------
 
-HUB is a system for receiving university applications, evaluating application information
+dibs is a system for receiving university applications, evaluating application information
 and applicant ranking. It is built as a web application.
 
 Structure:
@@ -58,13 +58,13 @@ Process:
 Backend
 -------
 
-The HUB backend is located in the `de.huberlin.cms.hub`. DoSV-specific backend classes are
-contained in `de.huberlin.cms.hub.dosv`. The root class of the backend is `ApplicationService`,
+The dibs backend is located in the `university.dibs.dibs`. DoSV-specific backend classes are
+contained in `university.dibs.dibs.dosv`. The root class of the backend is `ApplicationService`,
 which contains the database connection, access to configuration and settings and all `HubObjects`
 via their ID. `HubObject` is the base class for all objects that are stored in the database.
 Every `HubObject` contains an instance of `ApplicationService` to be used for database access.
 Objects are created via factory methods. Storage and retrieval of object information is
-handled by the creator and modification methods in HUB. Top level objects are created in
+handled by the creator and modification methods in dibs. Top level objects are created in
 the `ApplicationService` while other objects are created from the classes they are logically
 connected to.
 
@@ -76,7 +76,7 @@ The backend uses
 User Interface
 --------------
 
-The user interface code is located in the `de.huberlin.cms.hub.ui` package. `Ui` is the
+The user interface code is located in the `university.dibs.dibs.ui` package. `Ui` is the
 main class and primarily responsible for initializing the user interface. All pages (i.e.
 views) are implemented in the `Pages` class. A page is usually just a thin wrapper around
 a backend method.
