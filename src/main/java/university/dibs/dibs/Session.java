@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -18,7 +18,7 @@ import org.apache.commons.dbutils.QueryRunner;
  *
  * @author Sven Pfaller
  */
-public class Session extends HubObject {
+public class Session extends DibsObject {
     private final String userId;
     private final String device;
     private final Date startTime;

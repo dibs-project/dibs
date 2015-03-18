@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -88,7 +88,7 @@ public class Qualification extends Information {
                 service.getQueryRunner().insert(service.getDb(), "INSERT INTO qualification VALUES (?, ?, ?)",
                     new MapHandler(), id, user.getId(), grade);
                 service.getJournal().record(ApplicationService.ACTION_TYPE_INFORMATION_CREATED,
-                    user.getId(), HubObject.getId(agent), id);
+                    user.getId(), DibsObject.getId(agent), id);
                 db.commit();
                 db.setAutoCommit(true);
                 return service.getInformation(id);

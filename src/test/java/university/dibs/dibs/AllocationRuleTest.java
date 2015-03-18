@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -12,9 +12,9 @@ import org.junit.Test;
 
 import university.dibs.dibs.AllocationRule;
 import university.dibs.dibs.Quota;
-import university.dibs.dibs.HubException.IllegalStateException;
+import university.dibs.dibs.DibsException.IllegalStateException;
 
-public class AllocationRuleTest extends HubTest {
+public class AllocationRuleTest extends DibsTest {
     private AllocationRule rule;
 
     @Before

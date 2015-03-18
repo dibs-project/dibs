@@ -1,4 +1,4 @@
-HUB Prototype Theme
+dibs Prototype Theme
 ===================
 
 Layout

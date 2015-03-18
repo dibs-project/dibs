@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -17,11 +17,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import university.dibs.dibs.Course;
-import university.dibs.dibs.HubTest;
+import university.dibs.dibs.DibsTest;
 import university.dibs.dibs.User;
 import de.hu_berlin.dosv.DosvClient;
 
-public class DosvSyncIT extends HubTest {
+public class DosvSyncIT extends DibsTest {
     private String bid;
     private String ban;
     private Course dosvCourse;

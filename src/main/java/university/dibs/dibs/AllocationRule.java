@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -15,7 +15,7 @@ import java.util.Random;
 
 import org.apache.commons.dbutils.handlers.MapHandler;
 
-import university.dibs.dibs.HubException.IllegalStateException;
+import university.dibs.dibs.DibsException.IllegalStateException;
 
 /**
  * Rule for allocating a contingent of available places to a course's applicants.
@@ -23,7 +23,7 @@ import university.dibs.dibs.HubException.IllegalStateException;
  * @author Phuong Anh Ha
  * @author Markus Michler
  */
-public class AllocationRule extends HubObject {
+public class AllocationRule extends DibsObject {
     private String quotaId;
 
     AllocationRule(Map<String, Object> args) {
@@ -61,7 +61,7 @@ public class AllocationRule extends HubObject {
                 "UPDATE allocation_rule SET quota_id = ? WHERE id = ?", quotaId, this.id);
             this.quotaId = quotaId;
             service.getJournal().record(ApplicationService.ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED,
-                this.id, HubObject.getId(agent), quotaId);
+                this.id, DibsObject.getId(agent), quotaId);
             db.commit();
             db.setAutoCommit(true);
             return service.getQuota(this.quotaId);

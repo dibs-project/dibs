@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * @author Sven Pfaller
  */
-public abstract class Information extends HubObject {
+public abstract class Information extends DibsObject {
     protected String userId;
 
     protected Information(Map<String, Object> args) {

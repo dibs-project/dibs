@@ -14,7 +14,7 @@ import org.apache.commons.dbutils.handlers.MapHandler;
  * @author David Koschnick
  */
 
-public class Rank extends HubObject {
+public class Rank extends DibsObject {
     private String quotaId;
     private String userId;
     private String applicationId;

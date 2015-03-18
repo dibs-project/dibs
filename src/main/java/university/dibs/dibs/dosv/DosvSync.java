@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -84,7 +84,7 @@ import de.hu_berlin.dosv.DosvClient;
  * DoSV synchronisation class for Courses, Applications and Ranks. All resources are synced
  * as early as possible.
  * <p>
- * <strong>Data Mapping between HUB and the DoSV system</strong>
+ * <strong>Data Mapping between dibs and the DoSV system</strong>
  * <p>
  * General:
  * <ul>
@@ -113,7 +113,7 @@ import de.hu_berlin.dosv.DosvClient;
  * <li><code>STATUS_WITHDRAWN <- ZURUECKGEZOGEN</code></li>
  * </ul>
  * <p>
- * Each application status is set either by HUB or via Hochschulstart.de.
+ * Each application status is set either by dibs or via Hochschulstart.de.
  * To avoid synchronisation conflicts between <code>STATUS_CONFIRMED</code> and
  * <code>STATUS_WITHDRAWN</code>, users can withdraw their application only via Hochschulstart.
  *

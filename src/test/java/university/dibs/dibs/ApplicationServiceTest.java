@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -19,10 +19,10 @@ import university.dibs.dibs.ApplicationService;
 import university.dibs.dibs.Course;
 import university.dibs.dibs.Session;
 import university.dibs.dibs.User;
-import university.dibs.dibs.HubException.IllegalStateException;
-import university.dibs.dibs.HubException.ObjectNotFoundException;
+import university.dibs.dibs.DibsException.IllegalStateException;
+import university.dibs.dibs.DibsException.ObjectNotFoundException;
 
-public class ApplicationServiceTest extends HubTest {
+public class ApplicationServiceTest extends DibsTest {
     @Test
     public void testSetupStorageNonEmptyDatabase() {
         this.exception.expect(IllegalStateException.class);

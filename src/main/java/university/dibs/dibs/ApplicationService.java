@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -32,8 +32,8 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.lang3.StringUtils;
 
-import university.dibs.dibs.HubException.IllegalStateException;
-import university.dibs.dibs.HubException.ObjectNotFoundException;
+import university.dibs.dibs.DibsException.IllegalStateException;
+import university.dibs.dibs.DibsException.ObjectNotFoundException;
 import university.dibs.dibs.dosv.DosvSync;
 
 /**
@@ -76,7 +76,7 @@ public class ApplicationService {
     /** Aktionstyp: Kriterium zur Sortierung von Bewerbern mit Quote verknüpft. */
     public static final String ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED =
         "quota_ranking_criterion_added";
-    /** Aktionstyp: HUB wurde mit dem DoSV synchronisiert */
+    /** Aktionstyp: dibs wurde mit dem DoSV synchronisiert */
     public static final String ACTION_TYPE_DOSV_SYNC_SYNCHRONIZED =
         "dosv_sync_synchronized";
 
@@ -188,7 +188,7 @@ public class ApplicationService {
     /**
      * Creates a new user.
      *
-     * @param name name which HUB uses to address the user
+     * @param name name which dibs uses to address the user
      * @param email email address
      * @param credential credential
      * @param role role
@@ -309,7 +309,7 @@ public class ApplicationService {
     }
 
     /**
-     * Returns all Applications in HUB.
+     * Returns all Applications in dibs.
      *
      * @return List of all Applications
      */
@@ -353,7 +353,7 @@ public class ApplicationService {
     /**
      * Registers a new applicant.
      *
-     * @param name name which HUB uses to address the user
+     * @param name name which dibs uses to address the user
      * @param email email address
      * @param credential credential
      * @return new applicant
@@ -462,7 +462,7 @@ public class ApplicationService {
             String id = String.format("course:%s", new Random().nextInt());
             this.queryRunner.insert(this.getDb(), "INSERT INTO course (id, name, capacity, dosv) VALUES (?, ?, ?, ?)",
                 new MapHandler(), id, name, capacity, dosv);
-            journal.record(ACTION_TYPE_COURSE_CREATED, null, HubObject.getId(agent),
+            journal.record(ACTION_TYPE_COURSE_CREATED, null, DibsObject.getId(agent),
                 name);
             this.db.commit();
             this.db.setAutoCommit(true);
@@ -495,7 +495,7 @@ public class ApplicationService {
     }
 
     /**
-     * All courses in HUB.
+     * All courses in dibs.
      *
      * @see #getCourses(Map)
      */
@@ -504,7 +504,7 @@ public class ApplicationService {
     }
 
     /**
-     * All courses in HUB.
+     * All courses in dibs.
      */
     public List<Course> getCourses(Map<String, Object> filter) {
         if (!GET_COURSES_FILTER_KEYS.containsAll(filter.keySet())) {
@@ -579,7 +579,7 @@ public class ApplicationService {
     }
 
     /**
-     * All criteria in HUB.
+     * All criteria in dibs.
      *
      * @see #getCriteria(Map, User)
      */
@@ -588,7 +588,7 @@ public class ApplicationService {
     }
 
     /**
-     * All criteria in HUB.
+     * All criteria in dibs.
      *
      * @param agent active user
      */

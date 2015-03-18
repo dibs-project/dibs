@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -25,7 +25,7 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.lang3.StringUtils;
 
-import university.dibs.dibs.HubException.IllegalStateException;
+import university.dibs.dibs.DibsException.IllegalStateException;
 
 /**
  * Contains the criteria for the creation of a ranking list for a percentage of a course's
@@ -34,7 +34,7 @@ import university.dibs.dibs.HubException.IllegalStateException;
  * @author David Koschnick
  * @author Markus Michler
  */
-public class Quota extends HubObject {
+public class Quota extends DibsObject {
     /** Supported filters for {@link #getApplications(Map)}. */
     public static final Set<String> GET_APPLICATIONS_FILTER_KEYS =
         new HashSet<>(Arrays.asList("status"));
@@ -66,7 +66,7 @@ public class Quota extends HubObject {
             service.getQueryRunner().insert(service.getDb(), "INSERT INTO quota_ranking_criteria VALUES(?, ?)",
                 new MapHandler(), id, criterionId);
             service.getJournal().record(ApplicationService.ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED,
-                this.id, HubObject.getId(agent), criterionId);
+                this.id, DibsObject.getId(agent), criterionId);
             db.commit();
             db.setAutoCommit(true);
         } catch (SQLException e) {

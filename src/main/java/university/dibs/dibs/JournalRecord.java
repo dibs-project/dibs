@@ -1,5 +1,5 @@
 /*
- * HUB
+ * dibs
  * Copyright (C) 2014 Humboldt-Universität zu Berlin
  */
 
@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * @author Phuong Anh Ha
  */
-public class JournalRecord extends HubObject {
+public class JournalRecord extends DibsObject {
 
     private String actionType;
     private String objectId;
