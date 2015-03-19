@@ -64,3 +64,15 @@ Created with
  * Open Sans (1.1) by Google - http://opensans.com/
  * JUnit (4.11) by JUnit - http://junit.org/
  * Apache Maven (3.0) by The Apache Software Foundation - https://maven.apache.org/
+ 
+Contributers
+------------
+
+Markus Michler     markus.michler@uv.hu-berlin.de
+Sven Pfaller       sven.pfaller@hu-berlin.de
+Phuong Anh Ha      phuong.anh.ha@hu-berlin.de
+David Koschnick    david.koschnick@staff.hu-berlin.de
+Lars Schilhaneck   lars.schilhaneck.1@hu-berlin.de
+Johannes Caspary   johannes.caspary@cms.hu-berlin.de
+
+Copyright (C) 2015 Humboldt-Universität zu Berlin
