@@ -1,4 +1,5 @@
-<#--
+[#ftl]
+[#--
  dibs
  Copyright (C) 2015 Humboldt-Universität zu Berlin
  
@@ -12,9 +13,8 @@
  
  You should have received a copy of the GNU General Public License along with this
  program.  If not, see <http://www.gnu.org/licenses/>
--->
+--]
 
-[#ftl]
 [#escape x as x?html]
 
 [#macro page title]
