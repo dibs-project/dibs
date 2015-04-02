@@ -217,36 +217,6 @@ public class ApplicationServiceTest extends DibsTest {
         assertEquals("c", this.getValue());
     }
 
-    @Test
-    public final void testTransactionInnerAbort() {
-        service.beginTransaction();
-        setValue("a");
-
-        service.beginTransaction();
-        setValue("b");
-        service.endTransaction(true);
-
-        setValue("c");
-        service.endTransaction();
-
-        assertEquals(null, this.getValue());
-    }
-
-    @Test
-    public final void testTransactionOuterAbort() {
-        service.beginTransaction();
-        setValue("a");
-
-        service.beginTransaction();
-        setValue("b");
-        service.endTransaction();
-
-        setValue("c");
-        service.endTransaction(true);
-
-        assertEquals(null, this.getValue());
-    }
-
     private void setValue(String value) {
         try {
             PreparedStatement statement =

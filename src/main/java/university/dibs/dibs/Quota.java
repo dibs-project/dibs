@@ -83,7 +83,7 @@ public class Quota extends DibsObject {
         } catch (SQLException e) {
             if (e.getSQLState().equals("23505")) {
                 // unique violation ignorieren
-                service.endTransaction(true);
+                service.endTransaction();
             } else {
                 throw new IOError(e);
             }
