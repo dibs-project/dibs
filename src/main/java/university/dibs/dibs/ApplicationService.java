@@ -659,7 +659,7 @@ public class ApplicationService {
         this.transactionLevel--;
         if (this.transactionLevel == -1) {
             try {
-                    this.db.commit();
+                this.db.commit();
                 this.db.setAutoCommit(true);
             } catch (SQLException e) {
                 throw new IOError(e);

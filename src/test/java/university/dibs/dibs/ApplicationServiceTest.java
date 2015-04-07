@@ -24,41 +24,13 @@ import static org.junit.Assert.assertTrue;
 import university.dibs.dibs.DibsException.IllegalStateException;
 import university.dibs.dibs.DibsException.ObjectNotFoundException;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOError;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ApplicationServiceTest extends DibsTest {
-    @Before
-    public void setUp() throws Exception {
-        PreparedStatement statement;
-        statement = db.prepareStatement("CREATE TABLE _tmp (value VARCHAR(256))");
-        try {
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            if (e.getMessage().contains("relation _tmp already exists")) {
-                statement = db.prepareStatement("DROP TABLE _tmp; CREATE TABLE _tmp (value VARCHAR(256))");
-                statement.executeUpdate();
-            }
-        }
-        statement = db.prepareStatement("INSERT INTO _tmp (value) VALUES (NULL)");
-        statement.executeUpdate();
-    }
-
-    @After
-    public void tearDown() throws SQLException {
-        PreparedStatement statement = db.prepareStatement("DROP TABLE _tmp");
-        statement.executeUpdate();
-    }
-
     @Test
     public void testSetupStorageNonEmptyDatabase() {
         this.exception.expect(IllegalStateException.class);
@@ -191,51 +163,5 @@ public class ApplicationServiceTest extends DibsTest {
         filter.put("required_information_type_id", "qualification");
         assertEquals(Arrays.asList(this.service.getCriterion("qualification")),
                      this.service.getCriteria(filter, null));
-    }
-
-    @Test
-    public final void testTransactionIllegalState() {
-        exception.expect(DibsException.IllegalStateException.class);
-
-        service.beginTransaction();
-        service.endTransaction();
-        service.endTransaction();
-    }
-
-    @Test
-    public final void testTransactionNested() {
-        service.beginTransaction();
-        setValue("a");
-
-        service.beginTransaction();
-        setValue("b");
-        service.endTransaction();
-
-        setValue("c");
-        service.endTransaction();
-
-        assertEquals("c", this.getValue());
-    }
-
-    private void setValue(String value) {
-        try {
-            PreparedStatement statement =
-                this.db.prepareStatement("UPDATE _tmp SET value = ?");
-            statement.setString(1, value);
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    private String getValue() {
-        try {
-            PreparedStatement statement = this.db.prepareStatement("SELECT * FROM _tmp");
-            ResultSet results = statement.executeQuery();
-            results.next();
-            return results.getString("value");
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
     }
 }
