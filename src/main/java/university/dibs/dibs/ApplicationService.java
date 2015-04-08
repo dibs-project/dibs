@@ -1,17 +1,17 @@
 /*
  * dibs
- * Copyright (C) 2015 Humboldt-Universität zu Berlin
- * 
- * This program is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software Foundation,
- * either version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with this
- * program.  If not, see <http://www.gnu.org/licenses/>
+ * Copyright (C) 2015  Humboldt-Universität zu Berlin
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.  If
+ * not, see <http://www.gnu.org/licenses/>.
  */
 
 package university.dibs.dibs;
@@ -19,9 +19,19 @@ package university.dibs.dibs;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.commons.collections4.CollectionUtils.filter;
 
+import university.dibs.dibs.DibsException.IllegalStateException;
+import university.dibs.dibs.DibsException.ObjectNotFoundException;
+import university.dibs.dibs.dosv.DosvSync;
+
+import org.apache.commons.collections4.Predicate;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.InputStreamReader;
 import java.io.IOError;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -37,22 +47,12 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
-import org.apache.commons.collections4.Predicate;
-import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.MapHandler;
-import org.apache.commons.dbutils.handlers.MapListHandler;
-import org.apache.commons.lang3.StringUtils;
-
-import university.dibs.dibs.DibsException.IllegalStateException;
-import university.dibs.dibs.DibsException.ObjectNotFoundException;
-import university.dibs.dibs.dosv.DosvSync;
-
 /**
- * Repräsentiert den Bewerbungsdienst, bzw. den Bewerbungsprozess.
- * <p>
- * ApplicationService an sich ist nicht threadsafe, aber ein leichtgewichtiges Objekt.
- * Soll er in mehreren Threads benutzt werden (z.B. in einer Webanwendung) kann einfach
- * für jeden Thread ein eigenes Objekt erstellt werden.
+ * Repräsentiert den Bewerbungsdienst, bzw.&nbsp;den Bewerbungsprozess.
+ *
+ * <p>ApplicationService an sich ist nicht threadsafe, aber ein leichtgewichtiges Objekt. Soll er in
+ * mehreren Threads benutzt werden (z.B. in einer Webanwendung) kann einfach für jeden Thread ein
+ * eigenes Objekt erstellt werden.
  *
  * @author Sven Pfaller
  */
@@ -87,7 +87,7 @@ public class ApplicationService {
     /** Aktionstyp: Kriterium zur Sortierung von Bewerbern mit Quote verknüpft. */
     public static final String ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED =
         "quota_ranking_criterion_added";
-    /** Aktionstyp: dibs wurde mit dem DoSV synchronisiert */
+    /** Aktionstyp: dibs wurde mit dem DoSV synchronisiert. */
     public static final String ACTION_TYPE_DOSV_SYNC_SYNCHRONIZED =
         "dosv_sync_synchronized";
 
@@ -107,66 +107,6 @@ public class ApplicationService {
     private Map<String, Criterion> criteria;
     private QueryRunner queryRunner;
     private DosvSync dosvSync;
-
-    // TODO: dokumentieren
-    public static void setupStorage(Connection db, boolean overwrite) {
-        try {
-
-            db.setAutoCommit(false);
-
-            if (overwrite) {
-                // TODO: Tabellen automatisch aus dibs.sql lesen
-                String[] tables = {"user", "settings", "quota", "quota_ranking_criteria",
-                    "allocation_rule", "course", "journal_record", "qualification",
-                    "application", "evaluation", "rank", "session"};
-                for (String table : tables) {
-                    new QueryRunner().update(
-                        db, String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
-                }
-            }
-
-            InputStreamReader reader = new InputStreamReader(
-                ApplicationService.class.getResourceAsStream("/dibs.sql"));
-            StringBuilder str = new StringBuilder();
-            char[] buffer = new char[4096];
-            int n = 0;
-            while ((n = reader.read(buffer)) != -1) {
-                str.append(buffer, 0, n);
-            }
-            String sql = str.toString();
-
-            try {
-                PreparedStatement statement = db.prepareStatement(sql);
-                statement.execute();
-            } catch (SQLException e) {
-                // Syntax Error or Access Rule Violation
-                if (e.getSQLState().startsWith("42")) {
-                    db.rollback();
-                    db.setAutoCommit(true);
-                    throw new IllegalStateException("database_not_empty");
-                } else {
-                    throw e;
-                }
-            }
-
-            db.commit();
-            db.setAutoCommit(true);
-
-        } catch (IOException e) {
-            throw new IOError(e);
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-
-        // TODO: recursive transaction
-        ApplicationService service = new ApplicationService(db, new Properties());
-        service.createUser("Administrator", "admin", "admin:admin", User.ROLE_ADMIN);
-    }
-
-    // TODO: dokumentieren
-    public static void setupStorage(Connection db) {
-        ApplicationService.setupStorage(db, false);
-    }
 
     /**
      * Initialisiert den ApplicationService.
@@ -188,7 +128,7 @@ public class ApplicationService {
         this.criteria = new HashMap<String, Criterion>();
         Map<String, Object> args = new HashMap<String, Object>();
         args.put("id", "qualification");
-        args.put("requiredInformationType", informationTypes.get("qualification"));
+        args.put("requiredInformationType", this.informationTypes.get("qualification"));
         args.put("service", this);
         this.criteria.put("qualification", new QualificationCriterion(args));
 
@@ -221,7 +161,7 @@ public class ApplicationService {
             new QueryRunner().insert(this.getDb(),
                 "INSERT INTO \"user\" VALUES(?, ?, ?, ?, ?)",
                 new MapHandler(), id, name, email, credential, role);
-            journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
+            this.journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getUser(id);
@@ -260,7 +200,7 @@ public class ApplicationService {
      */
     public List<User> getUsers() {
         try {
-            ArrayList<User> users = new ArrayList<User>();
+            List<User> users = new ArrayList<User>();
             List<Map<String, Object>> queryResults = this.queryRunner.query(this.db,
                 "SELECT * FROM \"user\"", new MapListHandler());
             for (Map<String, Object> args : queryResults) {
@@ -373,7 +313,12 @@ public class ApplicationService {
         return this.createUser(name, email, credential, User.ROLE_APPLICANT);
     }
 
-    // TODO: document
+    /**
+     * TODO.
+     *
+     * @param credential TODO
+     * @return TODO
+     */
     public User authenticate(String credential) {
         try {
             Map<String, Object> args = new QueryRunner().query(this.getDb(),
@@ -389,7 +334,13 @@ public class ApplicationService {
         }
     }
 
-    // TODO: document
+    /**
+     * TODO.
+     *
+     * @param credential TODO
+     * @param device TODO
+     * @return TODO
+     */
     public Session login(String credential, String device) {
         if (device.isEmpty()) {
             throw new IllegalArgumentException("device_empty");
@@ -402,8 +353,7 @@ public class ApplicationService {
 
         String id = String.format("session:%s", new Random().nextInt());
         Timestamp startTime = new Timestamp(new Date().getTime());
-        Timestamp endTime = new Timestamp(startTime.getTime() +
-            ApplicationService.MONTH_DURATION);
+        Timestamp endTime = new Timestamp(startTime.getTime() + ApplicationService.MONTH_DURATION);
 
         try {
             new QueryRunner().insert(this.getDb(),
@@ -415,12 +365,21 @@ public class ApplicationService {
         }
     }
 
-    // TODO: document
+    /**
+     * TODO.
+     *
+     * @param session TODO
+     */
     public void logout(Session session) {
         session.end();
     }
 
-    // TODO: document
+    /**
+     * TODO.
+     *
+     * @param id TODO
+     * @return TODO
+     */
     public Session getSession(String id) {
         try {
             Map<String, Object> args = new QueryRunner().query(this.getDb(),
@@ -471,10 +430,10 @@ public class ApplicationService {
         try {
             this.db.setAutoCommit(false);
             String id = String.format("course:%s", new Random().nextInt());
-            this.queryRunner.insert(this.getDb(), "INSERT INTO course (id, name, capacity, dosv) VALUES (?, ?, ?, ?)",
+            this.queryRunner.insert(this.getDb(),
+                "INSERT INTO course (id, name, capacity, dosv) VALUES (?, ?, ?, ?)",
                 new MapHandler(), id, name, capacity, dosv);
-            journal.record(ACTION_TYPE_COURSE_CREATED, null, DibsObject.getId(agent),
-                name);
+            this.journal.record(ACTION_TYPE_COURSE_CREATED, null, DibsObject.getId(agent), name);
             this.db.commit();
             this.db.setAutoCommit(true);
             return this.getCourse(id);
@@ -510,12 +469,16 @@ public class ApplicationService {
      *
      * @see #getCourses(Map)
      */
+    // overload
     public List<Course> getCourses() {
         return this.getCourses(new HashMap<String, Object>());
     }
 
     /**
      * All courses in dibs.
+     *
+     * @param filter TODO
+     * @return TODO
      */
     public List<Course> getCourses(Map<String, Object> filter) {
         if (!GET_COURSES_FILTER_KEYS.containsAll(filter.keySet())) {
@@ -529,15 +492,15 @@ public class ApplicationService {
             filterConditions.add("published = ?");
             filterValues.add(published);
         }
-        String filterSql = filterConditions.isEmpty() ? "" :
-            " WHERE " + StringUtils.join(filterConditions, " AND ");
+        String filterSql = filterConditions.isEmpty()
+            ? "" : " WHERE " + StringUtils.join(filterConditions, " AND ");
 
         try {
             String sql = "SELECT * FROM course" + filterSql;
             List<Map<String, Object>> results = this.queryRunner.query(this.db, sql,
                 new MapListHandler(), filterValues.toArray());
 
-            ArrayList<Course> courses = new ArrayList<>();
+            List<Course> courses = new ArrayList<>();
             for (Map<String, Object> args : results) {
                 args.put("service", this);
                 courses.add(new Course(args));
@@ -608,6 +571,7 @@ public class ApplicationService {
      *
      * @see #getCriteria(Map, User)
      */
+    // overload
     public List<Criterion> getCriteria(User agent) {
         return this.getCriteria(new HashMap<String, Object>(), agent);
     }
@@ -615,14 +579,16 @@ public class ApplicationService {
     /**
      * All criteria in dibs.
      *
+     * @param filter TODO
      * @param agent active user
+     * @return TODO
      */
     public List<Criterion> getCriteria(Map<String, Object> filter, User agent) {
         if (!GET_CRITERIA_FILTER_KEYS.containsAll(filter.keySet())) {
             throw new IllegalArgumentException("filter_unknown_keys");
         }
 
-        ArrayList<Criterion> criteria = new ArrayList<>(this.criteria.values());
+        List<Criterion> criteria = new ArrayList<>(this.criteria.values());
         final String requiredInformationTypeId =
             (String) filter.get("required_information_type_id");
         if (requiredInformationTypeId != null) {
@@ -637,12 +603,13 @@ public class ApplicationService {
         return criteria;
     }
 
+    /* ---- Properties ---- */
 
     /**
      * Konfiguration. Die Einstellungen sind in <code>default.properties</code> dokumentiert.
      */
     public Properties getConfig() {
-        return config;
+        return this.config;
     }
 
     /**
@@ -679,13 +646,12 @@ public class ApplicationService {
      * Verwendete Datenbankverbindung.
      */
     public Connection getDb() {
-        return db;
+        return this.db;
     }
 
     /**
      * Führt Datenbankabfragen aus. Das Abfrageergebnis wird mit Hilfe des
-     * <code>ResultSetHandler<code> in eine <code>Map</code> oder eine Liste von Maps
-     * umgewandelt.
+     * <code>ResultSetHandler</code> in eine <code>Map</code> oder eine Liste von Maps umgewandelt.
      */
     public QueryRunner getQueryRunner() {
         return this.queryRunner;
@@ -695,6 +661,77 @@ public class ApplicationService {
      * DoSV-Synchronisationsklasse.
      */
     public DosvSync getDosvSync() {
-        return dosvSync;
+        return this.dosvSync;
+    }
+
+    /* ---- /Properties ---- */
+
+    /**
+     * TODO.
+     */
+    // overload
+    public static void setupStorage(Connection db) {
+        ApplicationService.setupStorage(db, false);
+    }
+
+    /**
+     * TODO.
+     *
+     * @param db TODO
+     * @param overwrite TODO
+     */
+    public static void setupStorage(Connection db, boolean overwrite) {
+        try {
+
+            db.setAutoCommit(false);
+
+            if (overwrite) {
+                // TODO: Tabellen automatisch aus dibs.sql lesen
+                String[] tables = {"user", "settings", "quota", "quota_ranking_criteria",
+                    "allocation_rule", "course", "journal_record", "qualification",
+                    "application", "evaluation", "rank", "session"};
+                for (String table : tables) {
+                    new QueryRunner().update(
+                        db, String.format("DROP TABLE IF EXISTS \"%s\" CASCADE", table));
+                }
+            }
+
+            InputStreamReader reader = new InputStreamReader(
+                ApplicationService.class.getResourceAsStream("/dibs.sql"));
+            StringBuilder str = new StringBuilder();
+            // checkstyle: ignore MagicNumber, only used here
+            char[] buffer = new char[4096];
+            int n = 0;
+            while ((n = reader.read(buffer)) != -1) {
+                str.append(buffer, 0, n);
+            }
+            String sql = str.toString();
+
+            try {
+                PreparedStatement statement = db.prepareStatement(sql);
+                statement.execute();
+            } catch (SQLException e) {
+                // Syntax Error or Access Rule Violation
+                if (e.getSQLState().startsWith("42")) {
+                    db.rollback();
+                    db.setAutoCommit(true);
+                    throw new IllegalStateException("database_not_empty");
+                } else {
+                    throw e;
+                }
+            }
+
+            db.commit();
+            db.setAutoCommit(true);
+
+        } catch (IOException e) {
+            throw new IOError(e);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+
+        // TODO: recursive transaction
+        ApplicationService service = new ApplicationService(db, new Properties());
+        service.createUser("Administrator", "admin", "admin:admin", User.ROLE_ADMIN);
     }
 }
