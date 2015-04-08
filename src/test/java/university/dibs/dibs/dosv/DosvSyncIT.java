@@ -25,15 +25,17 @@ import university.dibs.dibs.Course;
 import university.dibs.dibs.DibsTest;
 import university.dibs.dibs.User;
 
-import de.hu_berlin.dosv.DosvClient;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 public class DosvSyncIT extends DibsTest {
+    private static Logger logger = Logger.getLogger(DosvSyncIT.class.getPackage().getName());
+
     private String bid;
     private String ban;
     private Course dosvCourse;
@@ -41,12 +43,10 @@ public class DosvSyncIT extends DibsTest {
     @Before
     public void before() throws Exception {
         Properties config = service.getConfig();
-        /** Überspringt den Integration Test, wenn der DoSV-Webservice nicht konfiguriert ist */
-        assumeTrue(!config.getProperty(DosvClient.UNIVERSITY_ID).isEmpty()
-            && !config.getProperty(DosvClient.USER).isEmpty()
-            && !config.getProperty(DosvClient.PW).isEmpty()
-            && !config.getProperty("dosv_test_bid").isEmpty()
-            && !config.getProperty("dosv_test_ban").isEmpty());
+        if (this.service.getDosvSync() == null) {
+            logger.warning("DosvSync not enabled, skipping integration test");
+            assumeTrue(false);
+        }
         this.bid = config.getProperty("dosv_test_bid");
         this.ban = config.getProperty("dosv_test_ban");
         this.dosvCourse = this.service.createCourse("Computer Science", 500, true, null);

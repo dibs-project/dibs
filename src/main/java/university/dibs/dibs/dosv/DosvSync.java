@@ -39,7 +39,6 @@ import university.dibs.dibs.Rank;
 import university.dibs.dibs.Settings;
 import university.dibs.dibs.User;
 
-import de.hochschulstart.hochschulschnittstelle.benutzerservicev1_0.BenutzerServiceFehler;
 import de.hochschulstart.hochschulschnittstelle.bewerberauswahlserviceparamv1_0.RanglisteErgebnis;
 import de.hochschulstart.hochschulschnittstelle.bewerberauswahlserviceparamv1_0.StudienpaketErgebnis;
 import de.hochschulstart.hochschulschnittstelle.bewerberauswahlservicev1_0.BewerberauswahlServiceFehler;
@@ -57,8 +56,6 @@ import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.Bewerbung;
 import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.BewerbungsBearbeitungsstatus;
 import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.Einfachstudienangebotsbewerbung;
 import de.hochschulstart.hochschulschnittstelle.bewerbungenv1_0.EinfachstudienangebotsbewerbungsSchluessel;
-import de.hochschulstart.hochschulschnittstelle.commonv1_0.AutorisierungsFehler;
-import de.hochschulstart.hochschulschnittstelle.commonv1_0.UnbekannterBenutzerFehler;
 import de.hochschulstart.hochschulschnittstelle.studiengaengeserviceparamv1_0.StudienangebotErgebnis;
 import de.hochschulstart.hochschulschnittstelle.studiengaengeservicev1_0.StudiengaengeServiceFehler;
 import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Abschluss;
@@ -73,8 +70,11 @@ import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studienangebot
 import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studienfach;
 import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studiengang;
 import de.hu_berlin.dosv.DosvClient;
+import org.w3c.dom.Document;
 
 import java.io.IOError;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -86,10 +86,39 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPBody;
+import javax.xml.soap.SOAPBodyElement;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.Dispatch;
+import javax.xml.ws.Response;
+import javax.xml.ws.Service;
+import javax.xml.ws.Service.Mode;
+import javax.xml.ws.handler.Handler;
+import javax.xml.ws.handler.MessageContext;
+import javax.xml.ws.handler.soap.SOAPHandler;
+import javax.xml.ws.handler.soap.SOAPMessageContext;
+import javax.xml.ws.soap.SOAPBinding;
+import javax.xml.ws.soap.SOAPFaultException;
 
 // TODO document error handling
 /**
@@ -137,12 +166,18 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * @author Markus Michler
  */
 public class DosvSync {
+    private static Logger logger = Logger.getLogger(DosvSync.class.getPackage().getName());
+
     private static final Map<String, BewerbungsBearbeitungsstatus>
         APPLICATION_STATUS_MAPPING_TO_DOSV;
     private static final Map<BewerbungsBearbeitungsstatus, String>
         APPLICATION_STATUS_MAPPING_FROM_DOSV;
+    private static final Map<String, String> NAMESPACES;
+    private static final String WS_VERSION = "2";
+
     private ApplicationService service;
     private Properties dosvConfig;
+    private Map<String, Dispatch<SOAPMessage>> dispatches;
 
     static {
         APPLICATION_STATUS_MAPPING_TO_DOSV = new HashMap<>();
@@ -151,16 +186,30 @@ public class DosvSync {
         APPLICATION_STATUS_MAPPING_TO_DOSV.put(STATUS_VALID, GUELTIG);
 
         APPLICATION_STATUS_MAPPING_FROM_DOSV = new HashMap<>();
-        APPLICATION_STATUS_MAPPING_FROM_DOSV.put(ZULASSUNGSANGEBOT_LIEGT_VOR,
-            STATUS_ADMITTED);
+        APPLICATION_STATUS_MAPPING_FROM_DOSV.put(ZULASSUNGSANGEBOT_LIEGT_VOR, STATUS_ADMITTED);
         APPLICATION_STATUS_MAPPING_FROM_DOSV.put(ZUGELASSEN, STATUS_CONFIRMED);
         APPLICATION_STATUS_MAPPING_FROM_DOSV.put(ZURUECKGEZOGEN, STATUS_WITHDRAWN);
+
+        NAMESPACES = new HashMap<>();
+        // NOTE namespace prefixes follow the conventions used by Hochschulstart.de
+        NAMESPACES.put("ns1", "http://CommonV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("ns2", "http://ServiceverfahrenV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("ns3", "http://BenutzerServiceParamV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("ns4", "http://BenutzerV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("ns5", "http://BewerberauswahlServiceParamV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("ns6", "http://BewerberauswahlV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("ns7", "http://StudiengaengeV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("ns8", "http://BewerbungenServiceParamV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("ns9", "http://BewerbungenV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("ns10", "http://UnterstuetzungsServiceParamV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("ns11", "http://UnterstuetzungV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("ns12", "http://StudiengaengeServiceParamV1_0.HochschulSchnittstelle.hochschulstart.de");
     }
 
     /**
      * Initializes DosvSync.
      *
-     * @param service ApplicationService used accessing dibs.
+     * @param service <code>ApplicationService</code> used for accessing dibs.
      */
     public DosvSync(ApplicationService service) {
         // TODO validate dosvConfig
@@ -170,27 +219,84 @@ public class DosvSync {
         Settings settings = service.getSettings();
         this.dosvConfig.setProperty(DosvClient.SEMESTER, settings.getSemester().substring(4, 6));
         this.dosvConfig.setProperty(DosvClient.YEAR, settings.getSemester().substring(0, 4));
+
+        // webservice configuration
+        // TODO throw ConfigurationException when configuration is missing
+        Properties config = service.getConfig();
+        String[] wsEndpointSuffixes =
+            {"studiengaengeService", "benutzerService", "bewerbungenService",
+                "bewerberauswahlService"};
+        this.dispatches = new HashMap<>();
+        QName wsName = new QName("dosv");
+        Service webService = Service.create(wsName);
+        String wsUrl = config.getProperty("dosv_url");
+        webService.addPort(wsName, SOAPBinding.SOAP11HTTP_BINDING, wsUrl);
+        for (int n = 0; n < 4; n++) {
+            Dispatch<SOAPMessage> dispatch =
+                webService.createDispatch(wsName, SOAPMessage.class, Mode.MESSAGE);
+            Map<String, Object> requestContext = dispatch.getRequestContext();
+            requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, wsUrl
+                + wsEndpointSuffixes[n]);
+            requestContext.put(BindingProvider.USERNAME_PROPERTY,
+                config.getProperty("dosv_user"));
+            requestContext.put(BindingProvider.PASSWORD_PROPERTY,
+                config.getProperty("dosv_password"));
+            this.dispatches.put(wsEndpointSuffixes[n], dispatch);
+            if (logger.isLoggable(Level.FINE)) {
+                @SuppressWarnings("rawtypes")
+                // Typecast to Handler<SOAPMessageContext> not possible
+                List<Handler> handlerChain = dispatch.getBinding().getHandlerChain();
+                handlerChain.add(new SoapLogger());
+                dispatch.getBinding().setHandlerChain(handlerChain);
+            }
+        }
     }
 
     /**
      * @param dosvBid DoSV-Benutzer-ID
      * @param dosvBan DoSV-Benutzer-Autorisierungsnummer
-     * @return <code>true</code>, wenn der Benutzer authentifiziert wurde, ansonsten
-     *     <code>false</code>.
+     * @return <code>true</code>, if the user has been authenticated, otherwise
+     * <code>false</code>.
      */
     public boolean authenticate(String dosvBid, String dosvBan) {
+        SOAPMessage request;
         try {
-            // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
-            new DosvClient(this.dosvConfig).abrufenStammdatenDurchHS(dosvBid, dosvBan);
-            return true;
-        } catch (BenutzerServiceFehler e) {
-            if (e.getFaultInfo() instanceof UnbekannterBenutzerFehler
-                    || e.getFaultInfo() instanceof AutorisierungsFehler) {
+            request = MessageFactory.newInstance().createMessage();
+            SOAPBody body = request.getSOAPBody();
+            SOAPBodyElement requestElement =
+                body.addBodyElement(new QName(NAMESPACES.get("ns3"),
+                    "abrufenStammdatenDurchHSRequest", "ns3"));
+            requestElement.addNamespaceDeclaration("ns1", NAMESPACES.get("ns1"));
+            requestElement.addChildElement("version", "ns1").setValue(WS_VERSION);
+            requestElement.addChildElement("bewerberId", "ns3").setValue(dosvBid);
+            requestElement.addChildElement("BAN", "ns3").setValue(dosvBan);
+        } catch (SOAPException e) {
+            // unreachable
+            throw new RuntimeException(e);
+        }
+
+        Response<SOAPMessage> response =
+            this.dispatches.get("benutzerService").invokeAsync(request);
+
+        try {
+            response.get();
+        } catch (ExecutionException e) {
+            SOAPFaultException soapFaultException = (SOAPFaultException) e.getCause();
+            String faultType =
+                soapFaultException.getFault().getDetail().getFirstChild().getAttributes()
+                    .getNamedItem("xsi:type").getNodeValue();
+            if (faultType.equals("UnbekannterBenutzerFehler")
+                || faultType.equals("AutorisierungsFehler")) {
                 return false;
             } else {
                 throw new RuntimeException(e);
             }
+        } catch (InterruptedException e) {
+            // unreachable
+            throw new RuntimeException(e);
         }
+
+        return true;
     }
 
     /**
@@ -545,5 +651,49 @@ public class DosvSync {
             throw new RuntimeException(e);
         }
         return xmlCal;
+    }
+
+    /**
+     * Logger for SOAP-Messages. Connects to the webservice <code>Handler</code>-chain and logs the
+     * message XML.
+     */
+    private class SoapLogger implements SOAPHandler<SOAPMessageContext> {
+        @Override
+        public boolean handleMessage(SOAPMessageContext context) {
+            Document xml = context.getMessage().getSOAPPart();
+            Transformer transformer;
+            try {
+                transformer = TransformerFactory.newInstance().newTransformer();
+            } catch (TransformerConfigurationException | TransformerFactoryConfigurationError e) {
+                // unreachable
+                throw new RuntimeException(e);
+            }
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            Writer out = new StringWriter();
+            try {
+                transformer.transform(new DOMSource(xml), new StreamResult(out));
+            } catch (TransformerException e) {
+                // unreachable
+                throw new RuntimeException(e);
+            }
+            logger.fine(out.toString());
+
+            return true;
+        }
+
+        @Override
+        public boolean handleFault(SOAPMessageContext context) {
+            return this.handleMessage(context);
+        }
+
+        @Override
+        public Set<QName> getHeaders() {
+            return null;
+        }
+
+        @Override
+        public void close(MessageContext arg0) { }
     }
 }

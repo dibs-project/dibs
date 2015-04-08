@@ -97,7 +97,7 @@ public abstract class DibsTest {
             this.db = DriverManager.getConnection(this.config.getProperty("db_url"),
                 this.config.getProperty("db_user"), this.config.getProperty("db_password"));
         } catch (SQLException e) {
-            this.logger.warning("failed to connect to database, skipping test");
+            logger.warning("failed to connect to database, skipping test");
             assumeNoException(e);
         }
         ApplicationService.setupStorage(this.db, true);
