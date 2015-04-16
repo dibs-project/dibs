@@ -60,11 +60,11 @@ import university.dibs.dibs.Application;
 import university.dibs.dibs.ApplicationService;
 import university.dibs.dibs.Course;
 import university.dibs.dibs.DibsException;
+import university.dibs.dibs.DibsException.IllegalStateException;
+import university.dibs.dibs.DibsException.ObjectNotFoundException;
 import university.dibs.dibs.Information;
 import university.dibs.dibs.Session;
 import university.dibs.dibs.User;
-import university.dibs.dibs.DibsException.IllegalStateException;
-import university.dibs.dibs.DibsException.ObjectNotFoundException;
 
 // TODO put private "overloaded" methods directly after their public counterparts
 /**
@@ -86,15 +86,16 @@ public class Pages implements Closeable {
 
         // NOTE: kann deutlich optimiert werden
         try {
-            this.db = DriverManager.getConnection((String) config.getProperty("db_url"),
-                (String) config.getProperty("db_user"),
-                (String) config.getProperty("db_password"));
+            this.db =
+                    DriverManager.getConnection((String)config.getProperty("db_url"),
+                            (String)config.getProperty("db_user"),
+                            (String)config.getProperty("db_password"));
         } catch (SQLException e) {
             throw new IOError(e);
         }
 
         this.service =
-            new ApplicationService(this.db, toProperties(config.getProperties()));
+                new ApplicationService(this.db, toProperties(config.getProperties()));
 
         this.session = null;
         if (sessionCookie != null) {
@@ -149,7 +150,7 @@ public class Pages implements Closeable {
     @GET
     @Path("login")
     public Viewable login() {
-        return this.login((MultivaluedMap<String, String>) null, null);
+        return this.login((MultivaluedMap<String, String>)null, null);
     }
 
     @POST
@@ -158,19 +159,22 @@ public class Pages implements Closeable {
             MultivaluedMap<String, String> form) {
         try {
             checkContainsRequired(form,
-                new HashSet<String>(Arrays.asList("email", "password")));
+                    new HashSet<String>(Arrays.asList("email", "password")));
 
-            String credential = String.format("%s:%s", form.getFirst("email"),
-                form.getFirst("password"));
+            String credential =
+                    String.format("%s:%s", form.getFirst("email"),
+                            form.getFirst("password"));
             Session session = this.service.login(credential, request.getRemoteHost());
             if (session == null) {
                 throw new IllegalArgumentException("email_password_bad");
             }
 
-            NewCookie cookie = new NewCookie("session", session.getId(), "/", null,
-                Cookie.DEFAULT_VERSION, null, -1, session.getEndTime(), false, true);
+            NewCookie cookie =
+                    new NewCookie("session", session.getId(), "/", null,
+                            Cookie.DEFAULT_VERSION, null, -1, session.getEndTime(),
+                            false, true);
             return Response.seeOther(UriBuilder.fromUri("/").build()).cookie(cookie)
-                .build();
+                    .build();
 
         } catch (IllegalArgumentException e) {
             return Response.status(400).entity(this.login(form, e)).build();
@@ -189,12 +193,14 @@ public class Pages implements Closeable {
     @POST
     @Path("logout")
     public Response logout() {
-        ResponseBuilder response = Response
-            .seeOther(UriBuilder.fromUri("/login/").build());
+        ResponseBuilder response =
+                Response.seeOther(UriBuilder.fromUri("/login/").build());
         if (this.session != null) {
             this.service.logout(this.session);
-            NewCookie cookie = new NewCookie("session", this.session.getId(), "/", null,
-                Cookie.DEFAULT_VERSION, null, -1, this.session.getEndTime(), false, true);
+            NewCookie cookie =
+                    new NewCookie("session", this.session.getId(), "/", null,
+                            Cookie.DEFAULT_VERSION, null, -1, this.session.getEndTime(),
+                            false, true);
             response.cookie(cookie);
         }
         return response.build();
@@ -213,7 +219,7 @@ public class Pages implements Closeable {
     public Response register(MultivaluedMap<String, String> form) {
         try {
             checkContainsRequired(form,
-                new HashSet<String>(Arrays.asList("name", "email", "password")));
+                    new HashSet<String>(Arrays.asList("name", "email", "password")));
 
             String email = form.getFirst("email");
             String credential = String.format("%s:%s", email, form.getFirst("password"));
@@ -236,8 +242,8 @@ public class Pages implements Closeable {
 
     @GET
     @Path("users/{id}/create-information")
-    public Viewable createInformation(@PathParam("id") String id, @QueryParam("type")
-            String typeId) {
+    public Viewable createInformation(@PathParam("id") String id,
+            @QueryParam("type") String typeId) {
         Information.Type type = service.getInformationTypes().get(typeId);
         if (type == null) {
             throw new NotFoundException();
@@ -250,13 +256,14 @@ public class Pages implements Closeable {
         model.put("type", typeId);
         model.put("form", form);
         model.put("formError", formError);
-        return new Viewable(String.format("/user-create-information-%s.ftl", typeId), model);
+        return new Viewable(String.format("/user-create-information-%s.ftl", typeId),
+                model);
     }
 
     @POST
     @Path("users/{id}/create-information")
-    public Response createInformation(@PathParam("id") String id, @QueryParam("type")
-            String typeId, MultivaluedMap<String, String> form) {
+    public Response createInformation(@PathParam("id") String id,
+            @QueryParam("type") String typeId, MultivaluedMap<String, String> form) {
         Information.Type type = service.getInformationTypes().get(typeId);
         if (type == null) {
             throw new NotFoundException();
@@ -279,8 +286,8 @@ public class Pages implements Closeable {
 
             return Response.seeOther(url).build();
         } catch (IllegalArgumentException e) {
-            return Response.status(400).entity(createInformation(id, type.getId(), form, e))
-                .build();
+            return Response.status(400)
+                    .entity(createInformation(id, type.getId(), form, e)).build();
         }
     }
 
@@ -298,10 +305,11 @@ public class Pages implements Closeable {
             MultivaluedMap<String, String> form) {
         try {
             Util.checkContainsRequired(form,
-                new HashSet<>(Arrays.asList("dosv-bid", "dosv-ban")));
+                    new HashSet<>(Arrays.asList("dosv-bid", "dosv-ban")));
 
-            boolean connected = this.user.connectToDosv(form.getFirst("dosv-bid"),
-                form.getFirst("dosv-ban"), this.user);
+            boolean connected =
+                    this.user.connectToDosv(form.getFirst("dosv-bid"),
+                            form.getFirst("dosv-ban"), this.user);
             if (connected == false) {
                 throw new IllegalArgumentException("dosv_bid_dosv_ban_bad");
             }
@@ -311,8 +319,9 @@ public class Pages implements Closeable {
                 // TODO redirect to /users/{id}
                 url = UriBuilder.fromUri("/").build();
             } else {
-                url = UriBuilder.fromUri("/courses/{id}?post=user-connect-to-dosv")
-                    .build(courseId);
+                url =
+                        UriBuilder.fromUri("/courses/{id}?post=user-connect-to-dosv")
+                                .build(courseId);
             }
             return Response.seeOther(url).build();
 
@@ -320,12 +329,13 @@ public class Pages implements Closeable {
             IllegalArgumentException formError = null;
             Exception error = null;
             if (e instanceof IllegalArgumentException) {
-                formError = (IllegalArgumentException) e;
+                formError = (IllegalArgumentException)e;
             } else {
                 error = e;
             }
             return Response.status(400)
-                .entity(this.userConnectToDosv(courseId, form, formError, error)).build();
+                    .entity(this.userConnectToDosv(courseId, form, formError, error))
+                    .build();
         }
     }
 
@@ -335,13 +345,15 @@ public class Pages implements Closeable {
         this.model.put("form", form);
         this.model.put("formError", formError);
         if (courseId != null) {
-            this.model.put("notification",
-                "Um dich auf einen Studiengang zu bewerben, dessen Zulassung über hochschulstart.de läuft, musst du erst dein Konto mit hochschulstart.de verbinden.");
+            this.model
+                    .put("notification",
+                            "Um dich auf einen Studiengang zu bewerben, dessen Zulassung über hochschulstart.de läuft, musst du erst dein Konto mit hochschulstart.de verbinden.");
         }
         // WebServiceException
         if (error != null) {
-            this.model.put("notification",
-                "Konnte wegen einer technischen Störung keine Verbindung mit hochschulstart.de herstellen. Bitte versuche es in ein paar Minuten noch ein mal.");
+            this.model
+                    .put("notification",
+                            "Konnte wegen einer technischen Störung keine Verbindung mit hochschulstart.de herstellen. Bitte versuche es in ein paar Minuten noch ein mal.");
         }
         return new Viewable("/user-connect-to-dosv.ftl", this.model);
     }
@@ -417,20 +429,25 @@ public class Pages implements Closeable {
 
     @GET
     @Path("courses/{id}")
-    public Viewable course(@PathParam("id") String id,
-            @QueryParam("post") String post, @QueryParam("error") String error) {
+    public Viewable course(@PathParam("id") String id, @QueryParam("post") String post,
+            @QueryParam("error") String error) {
         Course course = this.service.getCourse(id);
         this.model.put("course", course);
         this.model.put("applications", course.getApplications());
         this.model.put("ranks", course.getAllocationRule().getQuota().getRanking());
         if (post != null && post.equals("user-connect-to-dosv")) {
-            this.model.put("notification",
-                "Dein Konto wurde mit hochschulstart.de verbunden. Du kannst dich jetzt auf diesen Studiengang bewerben.");
+            this.model
+                    .put("notification",
+                            "Dein Konto wurde mit hochschulstart.de verbunden. Du kannst dich jetzt auf diesen Studiengang bewerben.");
         }
         if (error != null && error.equals("course_has_applications")) {
-            this.model.put("notification",
-                "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");
+            this.model
+                    .put("notification",
+                            "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");
         }
+        /*
+         * if (error != null && error.equals("course_in_admission")) { this.model.put("notification", "Hahaha."); }
+         */
         return new Viewable("/course.ftl", this.model);
     }
 
@@ -453,10 +470,13 @@ public class Pages implements Closeable {
                 url = UriBuilder.fromUri("/courses/{id}").build(id);
                 break;
             case "user_not_connected":
-                url = UriBuilder
-                    .fromUri("/users/{id}/connect-to-dosv?course-id={course-id}")
-                    .build(this.user.getId(), id);
+                url =
+                        UriBuilder.fromUri(
+                                "/users/{id}/connect-to-dosv?course-id={course-id}")
+                                .build(this.user.getId(), id);
                 break;
+            case "course_in_admission":
+                return Response.status(500).entity(this.courseApply(id, e)).build();
             default:
                 // unreachable
                 throw new RuntimeException(e);
@@ -464,6 +484,17 @@ public class Pages implements Closeable {
         }
 
         return Response.seeOther(url).build();
+    }
+
+    private Viewable courseApply(@PathParam("id") String id, IllegalStateException error) {
+        Course course = this.service.getCourse(id);
+        this.model.put("course", course);
+        this.model
+                .put("notification",
+                        "Die Ranglisten des Studiengang"
+                                + course.getName()
+                                + " wurden schon generiert. Daher können Sie sich nicht mehr bewerben.");
+        return new Viewable("/course.ftl", this.model);
     }
 
     /* Course.publish */
@@ -516,7 +547,7 @@ public class Pages implements Closeable {
     public Response createCourse(MultivaluedMap<String, String> form) {
         try {
             checkContainsRequired(form,
-                new HashSet<String>(Arrays.asList("name", "capacity")));
+                    new HashSet<String>(Arrays.asList("name", "capacity")));
             int capacity;
             try {
                 capacity = Integer.parseInt(form.getFirst("capacity"));
@@ -524,13 +555,14 @@ public class Pages implements Closeable {
                 throw new IllegalArgumentException("capacity_nan");
             }
 
-            Course course = this.service.createCourse(form.getFirst("name"), capacity,
-                form.containsKey("dosv"), user);
+            Course course =
+                    this.service.createCourse(form.getFirst("name"), capacity,
+                            form.containsKey("dosv"), user);
             // NOTE the first prototype does not feature a frontend for AllocationRule and
             // Quota creation.
             course.createAllocationRule(this.user)
-                .createQuota("Performance", 100, this.user)
-                .addRankingCriterion("qualification", this.user);
+                    .createQuota("Performance", 100, this.user)
+                    .addRankingCriterion("qualification", this.user);
             URI url = UriBuilder.fromUri("/courses/{id}/").build(course.getId());
             return Response.seeOther(url).build();
 
