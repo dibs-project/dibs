@@ -433,7 +433,7 @@ public class Pages implements Closeable {
         }
         if (error != null && error.equals("course_in_admission")) {
             this.model.put("notification",
-                "Das Zulassungsverfahren des Studiengangs " + course.getName() + "wurde schon gestartet. Daher können Sie sich nicht bewerben.");
+                "Das Zulassungsverfahren des Studiengangs " + course.getName() + " wurde schon gestartet. Daher können Sie sich nicht bewerben.");
         }
         return new Viewable("/course.ftl", this.model);
     }
