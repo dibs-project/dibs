@@ -445,9 +445,14 @@ public class Pages implements Closeable {
                     .put("notification",
                             "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");
         }
-        /*
-         * if (error != null && error.equals("course_in_admission")) { this.model.put("notification", "Hahaha."); }
-         */
+        if (error != null && error.equals("course_in_admission")) {
+            this.model
+                    .put("notification",
+                            "Die Ranglisten des Studiengang"
+                                    + course.getName()
+                                    + " wurden schon generiert. Daher können Sie sich nicht mehr bewerben.");
+        }
+
         return new Viewable("/course.ftl", this.model);
     }
 
@@ -476,7 +481,10 @@ public class Pages implements Closeable {
                                 .build(this.user.getId(), id);
                 break;
             case "course_in_admission":
-                return Response.status(500).entity(this.courseApply(id, e)).build();
+                url = UriBuilder.fromUri("/courses/{id}").build(id);
+                return Response.status(404)
+                        .entity(this.course(id, "course_in_admission", e.toString())) /* ??? post=??? */
+                        .build();
             default:
                 // unreachable
                 throw new RuntimeException(e);
@@ -484,17 +492,6 @@ public class Pages implements Closeable {
         }
 
         return Response.seeOther(url).build();
-    }
-
-    private Viewable courseApply(@PathParam("id") String id, IllegalStateException error) {
-        Course course = this.service.getCourse(id);
-        this.model.put("course", course);
-        this.model
-                .put("notification",
-                        "Die Ranglisten des Studiengang"
-                                + course.getName()
-                                + " wurden schon generiert. Daher können Sie sich nicht mehr bewerben.");
-        return new Viewable("/course.ftl", this.model);
     }
 
     /* Course.publish */
