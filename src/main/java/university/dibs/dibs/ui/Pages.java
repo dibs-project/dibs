@@ -462,7 +462,7 @@ public class Pages implements Closeable {
                     .build(this.user.getId(), id);
                 break;
             case "course_in_admission":
-        	url = UriBuilder.fromUri("/courses/{id}?error=course_in_admission").build(id);
+                url = UriBuilder.fromUri("/courses/{id}?error=course_in_admission").build(id);
                 break;
             default:
                 // unreachable
