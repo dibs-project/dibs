@@ -505,7 +505,7 @@ public class Pages implements Closeable {
         Course course = this.service.getCourse(id);
         URI url = null;
 
-        if(!course.isPublished()) {
+        if (!course.isPublished()) {
             url = UriBuilder.fromUri("/courses/{id}?error=course_not_published").build(id);
         } else {
             course.startAdmission(this.user);
