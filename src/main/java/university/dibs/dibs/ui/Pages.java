@@ -431,6 +431,10 @@ public class Pages implements Closeable {
             this.model.put("notification",
                 "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");
         }
+        if (error != null && error.equals("course_not_published")) {
+            this.model.put("notification",
+                "Der Studiengang wurde noch nicht veröffentlich. Daher können Sie das Zulassungsverfahren nicht starten.");
+        }
         return new Viewable("/course.ftl", this.model);
     }
 
@@ -499,8 +503,15 @@ public class Pages implements Closeable {
     public Response courseStartAdmission(@PathParam("id") String id) {
         // TODO: handle course_unpublished error
         Course course = this.service.getCourse(id);
-        course.startAdmission(this.user);
-        return Response.seeOther(UriBuilder.fromUri("/courses/{id}/").build(id)).build();
+        URI url = null;
+
+        if(!course.isPublished()) {
+            url = UriBuilder.fromUri("/courses/{id}?error=course_not_published").build(id);
+        } else {
+            course.startAdmission(this.user);
+            url = UriBuilder.fromUri("/courses/{id}").build(id);
+        }
+        return Response.seeOther(url).build();
     }
 
     /* Create course */
