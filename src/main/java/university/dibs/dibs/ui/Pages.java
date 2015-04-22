@@ -508,8 +508,8 @@ public class Pages implements Closeable {
     @POST
     @Path("courses/{id}/start-admission")
     public Response courseStartAdmission(@PathParam("id") String id) {
-	Course course = this.service.getCourse(id);
-	UriBuilder url = UriBuilder.fromUri("/courses/{id}").resolveTemplate("id", id);
+        Course course = this.service.getCourse(id);
+        UriBuilder url = UriBuilder.fromUri("/courses/{id}").resolveTemplate("id", id);
         try {
             course.startAdmission(this.user);
         } catch (IllegalStateException e) {
