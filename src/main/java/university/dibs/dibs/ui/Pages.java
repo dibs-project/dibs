@@ -435,7 +435,7 @@ public class Pages implements Closeable {
             this.model.put("notification",
                 "Das Zulassungsverfahren wurde bereits gestartet. Sie können sich nicht bewerben.");
         }
-        if (error != null && error.equals("course_not_published")) {
+        if (error != null && error.equals("course_unpublished")) {
             this.model.put("notification",
                 "Das Zulassungsverfahren kann nicht gestartet werden, solange der Studiengang unveröffentlicht ist.");
         }
@@ -508,17 +508,14 @@ public class Pages implements Closeable {
     @POST
     @Path("courses/{id}/start-admission")
     public Response courseStartAdmission(@PathParam("id") String id) {
-        // TODO: handle course_unpublished error
-        Course course = this.service.getCourse(id);
-        URI url = null;
-
-        if (!course.isPublished()) {
-            url = UriBuilder.fromUri("/courses/{id}?error=course_not_published").build(id);
-        } else {
+	Course course = this.service.getCourse(id);
+	UriBuilder url = UriBuilder.fromUri("/courses/{id}").resolveTemplate("id", id);
+        try {
             course.startAdmission(this.user);
-            url = UriBuilder.fromUri("/courses/{id}").build(id);
+        } catch (IllegalStateException e) {
+            url.queryParam("error", e.getCode());
         }
-        return Response.seeOther(url).build();
+        return Response.seeOther(url.build()).build();
     }
 
     /* Create course */
