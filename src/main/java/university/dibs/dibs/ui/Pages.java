@@ -60,11 +60,11 @@ import university.dibs.dibs.Application;
 import university.dibs.dibs.ApplicationService;
 import university.dibs.dibs.Course;
 import university.dibs.dibs.DibsException;
+import university.dibs.dibs.DibsException.IllegalStateException;
+import university.dibs.dibs.DibsException.ObjectNotFoundException;
 import university.dibs.dibs.Information;
 import university.dibs.dibs.Session;
 import university.dibs.dibs.User;
-import university.dibs.dibs.DibsException.IllegalStateException;
-import university.dibs.dibs.DibsException.ObjectNotFoundException;
 
 // TODO put private "overloaded" methods directly after their public counterparts
 /**
@@ -431,6 +431,10 @@ public class Pages implements Closeable {
             this.model.put("notification",
                 "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");
         }
+        if (error != null && error.equals("course_in_admission")) {
+            this.model.put("notification",
+                "Das Zulassungsverfahren wurde bereits gestartet. Sie können sich nicht bewerben.");
+        }
         if (error != null && error.equals("course_not_published")) {
             this.model.put("notification",
                 "Der Studiengang wurde noch nicht veröffentlich. Daher können Sie das Zulassungsverfahren nicht starten.");
@@ -460,6 +464,9 @@ public class Pages implements Closeable {
                 url = UriBuilder
                     .fromUri("/users/{id}/connect-to-dosv?course-id={course-id}")
                     .build(this.user.getId(), id);
+                break;
+            case "course_in_admission":
+                url = UriBuilder.fromUri("/courses/{id}?error=course_in_admission").build(id);
                 break;
             default:
                 // unreachable
