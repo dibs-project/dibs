@@ -437,7 +437,7 @@ public class Pages implements Closeable {
         }
         if (error != null && error.equals("course_not_published")) {
             this.model.put("notification",
-                "Der Studiengang wird noch nicht veröffentlich. Sie können das Zulassungsverfahren nicht starten.");
+                "Das Zulassungsverfahren kann nicht gestartet werden, solange der Studiengang unveröffentlicht ist.");
         }
         return new Viewable("/course.ftl", this.model);
     }
