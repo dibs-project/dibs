@@ -60,11 +60,11 @@ import university.dibs.dibs.Application;
 import university.dibs.dibs.ApplicationService;
 import university.dibs.dibs.Course;
 import university.dibs.dibs.DibsException;
+import university.dibs.dibs.DibsException.IllegalStateException;
+import university.dibs.dibs.DibsException.ObjectNotFoundException;
 import university.dibs.dibs.Information;
 import university.dibs.dibs.Session;
 import university.dibs.dibs.User;
-import university.dibs.dibs.DibsException.IllegalStateException;
-import university.dibs.dibs.DibsException.ObjectNotFoundException;
 
 // TODO put private "overloaded" methods directly after their public counterparts
 /**
@@ -433,7 +433,7 @@ public class Pages implements Closeable {
         }
         if (error != null && error.equals("course_in_admission")) {
             this.model.put("notification",
-                "Das Zulassungsverfahren des Studiengangs " + course.getName() + " wurde schon gestartet. Daher können Sie sich nicht bewerben.");
+                "Das Zulassungsverfahren wurde bereits gestartet. Sie können sich nicht bewerben.");
         }
         return new Viewable("/course.ftl", this.model);
     }
