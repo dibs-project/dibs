@@ -1,17 +1,17 @@
 /*
  * dibs
- * Copyright (C) 2015 Humboldt-Universität zu Berlin
- * 
- * This program is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software Foundation,
- * either version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with this
- * program.  If not, see <http://www.gnu.org/licenses/>
+ * Copyright (C) 2015  Humboldt-Universität zu Berlin
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.  If
+ * not, see <http://www.gnu.org/licenses/>.
  */
 
 package university.dibs.dibs;
@@ -21,15 +21,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashMap;
+import university.dibs.dibs.DibsException.IllegalStateException;
 
 import org.junit.Test;
 
-import university.dibs.dibs.AllocationRule;
-import university.dibs.dibs.Application;
-import university.dibs.dibs.Evaluation;
-import university.dibs.dibs.Information;
-import university.dibs.dibs.DibsException.IllegalStateException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CourseTest extends DibsTest {
     @Test
@@ -57,7 +54,7 @@ public class CourseTest extends DibsTest {
 
     @Test
     public void testApplyExistingInformation() {
-        HashMap<String, Object> args = new HashMap<String, Object>();
+        Map<String, Object> args = new HashMap<String, Object>();
         args.put("grade", 4.0);
         Information information =
             this.user.createInformation("qualification", args, null);
@@ -73,6 +70,13 @@ public class CourseTest extends DibsTest {
     public void testApplyUnpublished() {
         exception.expect(IllegalStateException.class);
         course.unpublish(null);
+        course.apply(user.getId(), null);
+    }
+
+    @Test
+    public void testApplyUserAlreadyApplied() {
+        exception.expect(IllegalStateException.class);
+        course.apply(user.getId(), null);
         course.apply(user.getId(), null);
     }
 
@@ -93,7 +97,7 @@ public class CourseTest extends DibsTest {
     @Test
     public void testStartAdmission() {
         String applicationId = course.apply(user.getId(), null).getId();
-        HashMap<String, Object> args = new HashMap<String, Object>();
+        Map<String, Object> args = new HashMap<String, Object>();
         args.put("grade", 4.0);
         user.createInformation("qualification", args, null);
         course.startAdmission(null);

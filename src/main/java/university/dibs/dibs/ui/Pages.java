@@ -70,6 +70,7 @@ import javax.xml.ws.WebServiceException;
 /**
  * @author Sven Pfaller
  * @author Markus Michler
+ * @author Phuong Anh Ha
  */
 @Path("/")
 @Produces("text/html")
@@ -446,6 +447,9 @@ public class Pages implements Closeable {
             this.model.put("notification",
                 "Das Zulassungsverfahren kann nicht gestartet werden, solange der Studiengang unveröffentlicht ist.");
         }
+        if (error != null && error.equals("user_already_applied")) {
+            this.model.put("notification", "Du hast dich bereits für diesen Studiengang beworben.");
+        }
         return new Viewable("/course.ftl", this.model);
     }
 
@@ -468,12 +472,14 @@ public class Pages implements Closeable {
                     url = UriBuilder.fromUri("/courses/{id}").build(id);
                     break;
                 case "user_not_connected":
-                    url = UriBuilder
-                        .fromUri("/users/{id}/connect-to-dosv?course-id={course-id}")
+                    url = UriBuilder.fromUri("/users/{id}/connect-to-dosv?course-id={course-id}")
                         .build(this.user.getId(), id);
                     break;
                 case "course_in_admission":
                     url = UriBuilder.fromUri("/courses/{id}?error=course_in_admission").build(id);
+                    break;
+                case "user_already_applied":
+                    url = UriBuilder.fromUri("/courses/{id}?error=user_already_applied").build(id);
                     break;
                 default:
                     // unreachable
