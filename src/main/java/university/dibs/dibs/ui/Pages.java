@@ -429,7 +429,7 @@ public class Pages implements Closeable {
         }
         if (error != null && error.equals("course_has_applications")) {
             this.model.put("notification",
-                "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");
+                "Die Veröffentlichung kann nicht zurückgezogen werden, solange es Bewerbungen auf diesen Studiengang gibt.");
         }
         if (error != null && error.equals("course_in_admission")) {
             this.model.put("notification",
