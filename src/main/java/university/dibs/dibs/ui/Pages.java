@@ -429,11 +429,15 @@ public class Pages implements Closeable {
         }
         if (error != null && error.equals("course_has_applications")) {
             this.model.put("notification",
-                "Die Veröffentlichung kann nicht zurückgezogen werden solange es Bewerbungen auf diesen Studiengang gibt.");
+                "Die Veröffentlichung kann nicht zurückgezogen werden, solange es Bewerbungen auf diesen Studiengang gibt.");
         }
         if (error != null && error.equals("course_in_admission")) {
             this.model.put("notification",
                 "Das Zulassungsverfahren wurde bereits gestartet. Sie können sich nicht bewerben.");
+        }
+        if (error != null && error.equals("course_unpublished")) {
+            this.model.put("notification",
+                "Das Zulassungsverfahren kann nicht gestartet werden, solange der Studiengang unveröffentlicht ist.");
         }
         return new Viewable("/course.ftl", this.model);
     }
@@ -504,10 +508,14 @@ public class Pages implements Closeable {
     @POST
     @Path("courses/{id}/start-admission")
     public Response courseStartAdmission(@PathParam("id") String id) {
-        // TODO: handle course_unpublished error
         Course course = this.service.getCourse(id);
-        course.startAdmission(this.user);
-        return Response.seeOther(UriBuilder.fromUri("/courses/{id}/").build(id)).build();
+        UriBuilder url = UriBuilder.fromUri("/courses/{id}").resolveTemplate("id", id);
+        try {
+            course.startAdmission(this.user);
+        } catch (IllegalStateException e) {
+            url.queryParam("error", e.getCode());
+        }
+        return Response.seeOther(url.build()).build();
     }
 
     /* Create course */
