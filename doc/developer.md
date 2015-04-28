@@ -23,7 +23,7 @@ To run all tests:
 
 To run only integration tests:
 
-    mvn test-compile failsafe:integration-test
+    mvn test-compile failsafe:integration-test failsafe:verify
 
 Run dibs Development Server 
 --------------------------
