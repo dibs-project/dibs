@@ -590,6 +590,20 @@ public class ApplicationService {
     }
 
     /**
+     * Returns the criterion with the specified <code>id</code>.
+     *
+     * @param id criterion id
+     * @return retrieved criterion
+     */
+    public Criterion getCriterion(String id) {
+        Criterion criterion = this.criteria.get(id);
+        if (criterion == null) {
+            throw new ObjectNotFoundException(id);
+        }
+        return criterion;
+    }
+
+    /**
      * All criteria in dibs.
      *
      * @see #getCriteria(Map, User)
@@ -652,13 +666,6 @@ public class ApplicationService {
      */
     public Map<String, Information.Type> getInformationTypes() {
         return unmodifiableMap(this.informationTypes);
-    }
-
-    /**
-     * Verfügbare Kriterien (indiziert nach ID).
-     */
-    public Map<String, Criterion> getCriteria() {
-        return unmodifiableMap(this.criteria);
     }
 
     /**

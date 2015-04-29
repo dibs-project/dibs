@@ -72,7 +72,7 @@ public class Evaluation extends DibsObject {
      * Kriterium, auf das sich die Bewertung bezieht.
      */
     public Criterion getCriterion() {
-        return this.service.getCriteria().get(this.criterionId);
+        return this.service.getCriterion(this.criterionId);
     }
 
     /**
