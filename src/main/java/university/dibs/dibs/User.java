@@ -1,20 +1,23 @@
 /*
  * dibs
- * Copyright (C) 2015 Humboldt-Universität zu Berlin
- * 
- * This program is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software Foundation,
- * either version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with this
- * program.  If not, see <http://www.gnu.org/licenses/>
+ * Copyright (C) 2015  Humboldt-Universität zu Berlin
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.  If
+ * not, see <http://www.gnu.org/licenses/>.
  */
 
 package university.dibs.dibs;
+
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import java.io.IOError;
 import java.sql.Connection;
@@ -22,9 +25,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.dbutils.handlers.MapHandler;
-import org.apache.commons.dbutils.handlers.MapListHandler;
 
 /**
  * Benutzer, der mit dem Bewerbungssystem interagiert.
@@ -34,9 +34,9 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
  */
 public class User extends DibsObject {
     /** Role: applicant. */
-    public static String ROLE_APPLICANT = "applicant";
+    public static final String ROLE_APPLICANT = "applicant";
     /** Role: administrator. */
-    public static String ROLE_ADMIN = "admin";
+    public static final String ROLE_ADMIN = "admin";
 
     private String name;
     private String email;
@@ -45,6 +45,11 @@ public class User extends DibsObject {
     private String dosvBid;
     private String dosvBan;
 
+    /**
+     * Initializes User.
+     *
+     * @param args TODO
+     */
     User(Map<String, Object> args) {
         super(args);
         this.name = (String) args.get("name");
@@ -74,7 +79,6 @@ public class User extends DibsObject {
         Information information = type.create(args, this, agent);
 
         try {
-            // XXX open a transaction as called methods rely on it
             // TODO implement proper transaction system
             Connection db = this.service.getDb();
             db.setAutoCommit(false);
@@ -98,7 +102,7 @@ public class User extends DibsObject {
      * @return Liste aller Informationen dieses Benutzers
      */
     public List<Information> getInformationSet(User agent) {
-        ArrayList<Information> informationSet = new ArrayList<Information>();
+        List<Information> informationSet = new ArrayList<Information>();
         for (Information.Type type : service.getInformationTypes().values()) {
             try {
                 String sql = String.format("SELECT * FROM \"%s\" WHERE user_id = ?", type.getId());
@@ -149,10 +153,10 @@ public class User extends DibsObject {
             List<Map<String, Object>> queryResults = service.getQueryRunner().query(
                 service.getDb(), "SELECT * FROM application WHERE user_id = ?",
                 new MapListHandler(), this.getId());
-            for(Map<String, Object> args : queryResults) {
-               args.put("service", service);
-               applications.add(new Application(args));
-           }
+            for (Map<String, Object> args : queryResults) {
+                args.put("service", service);
+                applications.add(new Application(args));
+            }
             return applications;
         } catch (SQLException e) {
             throw new IOError(e);
@@ -165,6 +169,7 @@ public class User extends DibsObject {
      *
      * @param dosvBid DoSV-Benutzer-ID
      * @param dosvBan DOSV-Benutzer-Autorisierungsnummer
+     * @param agent TODO
      *
      * @return <code>true</code>, wenn der Benutzer verbunden wurde,
      * <code>false</code> wenn er nicht authentifiziert werden konnte.
@@ -174,7 +179,7 @@ public class User extends DibsObject {
     public boolean connectToDosv(String dosvBid, String dosvBan, User agent) {
         if (!service.getDosvSync().authenticate(dosvBid, dosvBan)) {
             return false;
-        };
+        }
         try {
             Connection db = service.getDb();
             db.setAutoCommit(false);
@@ -193,6 +198,8 @@ public class User extends DibsObject {
         }
         return true;
     }
+
+    /* ---- Properties ---- */
 
     /**
      * Name which dibs uses to address the user.
@@ -226,13 +233,15 @@ public class User extends DibsObject {
      * Bewerber-ID für das DoSV.
      */
     public String getDosvBid() {
-        return dosvBid;
+        return this.dosvBid;
     }
 
     /**
      *  Bewerber-Autorisierungsnummer für das DoSV.
      */
     public String getDosvBan() {
-        return dosvBan;
+        return this.dosvBan;
     }
+
+    /* ---- /Properties ---- */
 }
