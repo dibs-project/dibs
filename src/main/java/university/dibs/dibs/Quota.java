@@ -156,7 +156,7 @@ public class Quota extends DibsObject {
             queryResults = service.getQueryRunner().query(service.getDb(), sql,
                 new MapListHandler(), id);
             for (Map<String, Object> args : queryResults) {
-                rankingCriteria.add(service.getCriteria().get(args.get("criterion_id")));
+                rankingCriteria.add(service.getCriterion((String) args.get("criterion_id")));
             }
             return rankingCriteria;
         } catch (SQLException e) {

@@ -88,6 +88,8 @@
     </dependencies>
 
     <build>
+        <defaultGoal>test-compile</defaultGoal>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

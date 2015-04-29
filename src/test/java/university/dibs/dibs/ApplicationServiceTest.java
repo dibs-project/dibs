@@ -164,7 +164,7 @@ public class ApplicationServiceTest extends DibsTest {
     public void testGetCriteriaFilter() {
         HashMap<String, Object> filter = new HashMap<>();
         filter.put("required_information_type_id", "qualification");
-        assertEquals(Arrays.asList(this.service.getCriteria().get("qualification")),
-            this.service.getCriteria(filter, null));
+        assertEquals(Arrays.asList(this.service.getCriterion("qualification")),
+                     this.service.getCriteria(filter, null));
     }
 }

@@ -67,16 +67,14 @@ public class QuotaTest extends DibsTest {
 
     @Test
     public final void testAddRankingCriterion() {
-        QualificationCriterion criterion =
-            (QualificationCriterion) service.getCriteria().get("qualification");
+        Criterion criterion = service.getCriterion("qualification");
         quota.addRankingCriterion("qualification", null);
         assertTrue(quota.getRankingCriteria().contains(criterion));
     }
 
     @Test
     public final void testAddRankingCriterionRedundantCriterionId() {
-        QualificationCriterion criterion =
-            (QualificationCriterion) service.getCriteria().get("qualification");
+        Criterion criterion = service.getCriterion("qualification");
         quota.addRankingCriterion("qualification", null);
         quota.addRankingCriterion("qualification", null);
         assertTrue(quota.getRankingCriteria().contains(criterion));
