@@ -39,6 +39,8 @@
         <property name="basedir" value="${basedir}"/>
     -->
 
+    <property name="fileExtensions" value="java, properties, xml"/>
+
     <!-- Checks that a package-info.java file exists for each package.     -->
     <!-- See http://checkstyle.sf.net/config_javadoc.html#JavadocPackage -->
     <module name="JavadocPackage"/>
@@ -76,7 +78,9 @@
     <!-- </module> -->
 
     <!-- dibs specific rules (sorted alphabetically by category). The overall configuration is based
-    on https://raw.githubusercontent.com/checkstyle/checkstyle/checkstyle-6.1.1/sun_checks.xml . -->
+    on
+    https://raw.githubusercontent.com/checkstyle/checkstyle/checkstyle-6.6/src/main/resources/sun_checks.xml
+    . -->
     <!-- ignore missing @return tags for properties (getters) -->
     <module name="SuppressionCommentFilter">
         <property name="offCommentFormat" value="^/\* ---- Properties ---- \*/$"/>
@@ -179,7 +183,6 @@
         <module name="InnerAssignment"/>
         <module name="MagicNumber"/>
         <module name="MissingSwitchDefault"/>
-        <module name="RedundantThrows"/>
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
 
