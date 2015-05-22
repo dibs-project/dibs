@@ -1,17 +1,17 @@
 /*
  * dibs
- * Copyright (C) 2015 Humboldt-Universität zu Berlin
- * 
- * This program is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software Foundation,
- * either version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with this
- * program.  If not, see <http://www.gnu.org/licenses/>
+ * Copyright (C) 2015  Humboldt-Universität zu Berlin
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.  If
+ * not, see <http://www.gnu.org/licenses/>.
  */
 
 package university.dibs.dibs;
@@ -21,17 +21,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import university.dibs.dibs.DibsException.IllegalStateException;
+import university.dibs.dibs.DibsException.ObjectNotFoundException;
 
 import org.junit.Test;
 
-import university.dibs.dibs.ApplicationService;
-import university.dibs.dibs.Course;
-import university.dibs.dibs.Session;
-import university.dibs.dibs.User;
-import university.dibs.dibs.DibsException.IllegalStateException;
-import university.dibs.dibs.DibsException.ObjectNotFoundException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ApplicationServiceTest extends DibsTest {
     @Test
@@ -149,12 +146,12 @@ public class ApplicationServiceTest extends DibsTest {
         // unpublished course
         Course course =
             this.service.createCourse("Science of Computer", 500, false, null);
-        HashMap<String, Object> filter = new HashMap<>();
+        Map<String, Object> filter = new HashMap<>();
         filter.put("published", false);
         assertEquals(Arrays.asList(course), this.service.getCourses(filter));
     }
 
-    @Test()
+    @Test
     public void testGetQuotaNonExisting() {
         this.exception.expect(ObjectNotFoundException.class);
         this.service.getQuota("foo");
@@ -162,7 +159,7 @@ public class ApplicationServiceTest extends DibsTest {
 
     @Test
     public void testGetCriteriaFilter() {
-        HashMap<String, Object> filter = new HashMap<>();
+        Map<String, Object> filter = new HashMap<>();
         filter.put("required_information_type_id", "qualification");
         assertEquals(Arrays.asList(this.service.getCriterion("qualification")),
                      this.service.getCriteria(filter, null));

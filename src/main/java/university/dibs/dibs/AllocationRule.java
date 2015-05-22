@@ -1,32 +1,32 @@
 /*
  * dibs
- * Copyright (C) 2015 Humboldt-Universität zu Berlin
- * 
- * This program is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software Foundation,
- * either version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with this
- * program.  If not, see <http://www.gnu.org/licenses/>
+ * Copyright (C) 2015  Humboldt-Universität zu Berlin
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.  If
+ * not, see <http://www.gnu.org/licenses/>.
  */
 
 package university.dibs.dibs;
 
 import static university.dibs.dibs.Util.isInRange;
 
+import university.dibs.dibs.DibsException.IllegalStateException;
+
+import org.apache.commons.dbutils.handlers.MapHandler;
+
 import java.io.IOError;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Random;
-
-import org.apache.commons.dbutils.handlers.MapHandler;
-
-import university.dibs.dibs.DibsException.IllegalStateException;
 
 /**
  * Rule for allocating a contingent of available places to a course's applicants.
@@ -57,22 +57,23 @@ public class AllocationRule extends DibsObject {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("illegal name: empty");
         }
-        Course course = getCourse();
+        Course course = this.getCourse();
         if (course.isPublished()) {
             throw new IllegalStateException("course_published");
         }
         // NOTE Race Condition: SELECT-UPDATE
         try {
-            Connection db = service.getDb();
+            Connection db = this.service.getDb();
             db.setAutoCommit(false);
             String quotaId = "quota:" + Integer.toString(new Random().nextInt());
-            service.getQueryRunner().insert(service.getDb(), "INSERT INTO quota VALUES (?, ?, ?)",
-                new MapHandler(), quotaId, name, percentage);
-            service.getQueryRunner().update(this.service.getDb(),
+            this.service.getQueryRunner().insert(this.service.getDb(),
+                "INSERT INTO quota VALUES (?, ?, ?)", new MapHandler(), quotaId, name, percentage);
+            this.service.getQueryRunner().update(this.service.getDb(),
                 "UPDATE allocation_rule SET quota_id = ? WHERE id = ?", quotaId, this.id);
             this.quotaId = quotaId;
-            service.getJournal().record(ApplicationService.ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED,
-                this.id, DibsObject.getId(agent), quotaId);
+            this.service.getJournal().record(
+                ApplicationService.ACTION_TYPE_ALLOCATION_RULE_QUOTA_CREATED, this.id,
+                DibsObject.getId(agent), quotaId);
             db.commit();
             db.setAutoCommit(true);
             return service.getQuota(this.quotaId);
@@ -81,11 +82,13 @@ public class AllocationRule extends DibsObject {
         }
     }
 
+    /* ---- Properties ---- */
+
     /**
      * Quote der Vergaberegel.
      */
     public Quota getQuota() {
-        return quotaId != null ? service.getQuota(quotaId) : null;
+        return this.quotaId != null ? service.getQuota(this.quotaId) : null;
     }
 
     /**
@@ -95,11 +98,13 @@ public class AllocationRule extends DibsObject {
         try {
             Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
                 "SELECT * FROM course WHERE allocation_rule_id = ?",
-                new MapHandler(), id);
-            args.put("service", service);
+                new MapHandler(), this.id);
+            args.put("service", this.service);
             return new Course(args);
         } catch (SQLException e) {
             throw new IOError(e);
         }
     }
+
+    /* ---- /Properties ---- */
 }

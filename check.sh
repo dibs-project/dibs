@@ -7,7 +7,9 @@ set -e
 
 echo Linting...
 # TODO: mvn checkstyle:check
-mvn checkstyle:check -Dcheckstyle.includes=**/ApplicationService.java,**/User.java
+mvn checkstyle:check -Dcheckstyle.includes="**/ApplicationService.java, **/User.java,\
+    **/AllocationRule.java, **/Application.java, **/Course.java, **/Qualification.java,\
+    **/Quota.java, **/DosvSync.java, **/ApplicationServiceTest.java, **/ApplicationTest.java"
 echo "\nRunning unit tests..."
 mvn test
 echo "\nRunning integration tests..."

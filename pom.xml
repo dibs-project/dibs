@@ -126,6 +126,7 @@
                 </dependencies>
                 <configuration>
                     <configLocation>misc/checkstyle.xml</configLocation>
+                    <suppressionsLocation>misc/suppressions.xml</suppressionsLocation>
                     <includeTestSourceDirectory>true</includeTestSourceDirectory>
                 </configuration>
             </plugin>
