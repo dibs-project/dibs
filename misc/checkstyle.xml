@@ -205,7 +205,7 @@
         <module name="FinalClass"/>
         <module name="HideUtilityClassConstructor"/>
         <module name="InterfaceIsType"/>
-        <module name="VisibilityModifier"/>
+        <!--<module name="VisibilityModifier"/>-->
 
 
         <!-- Miscellaneous other checks.                   -->
@@ -238,7 +238,8 @@
         <module name="JavadocTagContinuationIndentation"/>
         <module name="JavadocMethod">
             <property name="scope" value="public"/>
-            <property name="ignoreMethodNamesRegex" value="test.*|before"/>
+            <property name="ignoreMethodNamesRegex"
+                value="test.*|(common)?[Bb]efore|(common)?[Aa]fter"/>
         </module>
         <module name="JavadocVariable">
             <property name="scope" value="protected"/>
@@ -258,7 +259,11 @@
             <property name="tokens" value="COMMA"/>
             <property name="option" value="EOL"/>
         </module>
+        <module name="VisibilityModifier">
+            <property name="protectedAllowed" value="true"/>
+        </module>
     </module>
+
     <module name="SuppressionFilter">
         <property name="file" value="misc/suppressions.xml"/>
     </module>
