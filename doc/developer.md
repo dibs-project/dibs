@@ -54,6 +54,8 @@ Code Conventions
 * Wrap object properties (i.e. getters) in a block between `/* ---- Properties ----*/` and
   `/* ---- /Properties ----/*`
 * Mark subordinate overloaded methods with `// overload`
+* HTML: [void elements](http://www.w3.org/TR/html5/syntax.html#void-elements) use self-closing
+  notation, e.g. `<br />`.
 
 We use Checkstyle to enforce code conventions (see `misc/checkstyle.xml`). If, in certain
 circumstances, an exception from a rule is reasonable, mark the affected line with
