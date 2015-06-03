@@ -1,8 +1,7 @@
 dibs Contributing
 =================
 
-How to Contribute
------------------
+## How to Contribute
 
  1. For any non-trivial change:
    1. [Create an issue](https://github.com/dibs-project/dibs/issues) describing the intended change

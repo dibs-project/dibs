@@ -1,8 +1,7 @@
-dibs-User Documentation
-======================
+dibs User Documentation
+=======================
 
-Overview
----------
+## Overview
 
 dibs is a system for receiving university applications, evaluating application information
 and applicant ranking. It is built as a web application.
@@ -55,8 +54,7 @@ Course.apply                |                                 |
                             | Course.startAdmission           | Course.generateRankings
 ```
 
-Backend
--------
+## Backend
 
 The dibs backend is located in the `university.dibs.dibs`. DoSV-specific backend classes
 are contained in `university.dibs.dibs.dosv`. The root class of the backend is
@@ -75,8 +73,7 @@ The backend uses
  * [PostgreSQL](http://www.postgresql.org/)
  * [Apache Commons DbUtils](http://commons.apache.org/proper/commons-dbutils/)
 
-User Interface
---------------
+## User Interface
 
 The user interface code is located in the `university.dibs.dibs.ui` package. `Ui` is the
 main class and primarily responsible for initializing the user interface. All pages (i.e.

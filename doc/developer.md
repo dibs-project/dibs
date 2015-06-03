@@ -1,8 +1,7 @@
 dibs Developer Documentation
-===========================
+============================
 
-Development Environment Setup
------------------------------
+## Development Environment Setup
 
 To set up the test environment, copy `test.default.properties` to
 `test.properties` and customize it to your needs.
@@ -14,8 +13,7 @@ To test the connection to DoSV we use integration tests.
 In order to run those, you need to create an account on the test portal of Hochschulstart
 and set BID and BAN in `test.properties`.
 
-Testing dibs
------------
+## Testing dibs
 
 To run all tests:
 
@@ -25,15 +23,13 @@ To run only integration tests:
 
     mvn test-compile failsafe:integration-test failsafe:verify
 
-Run dibs Development Server
---------------------------
+## Run dibs Development Server
 
 Start the dibs-Development Server:
 
     ./dibs.sh
 
-Design Conventions
-------------------
+## Design Conventions
 
 * General principles: [KISS](http://en.wikipedia.org/wiki/KISS_principle),
   [DRY](http://en.wikipedia.org/wiki/Don%27t_repeat_yourself)
@@ -42,8 +38,7 @@ Design Conventions
 * Utilities used should be self-contained
 * *Object-oriented* structure that abstracts from the DB. DB access is contained within the object.
 
-Code Conventions
-----------------
+## Code Conventions
 
 * *Be consistent*: Write readable and maintainable code. Look at other contributors' code and take
   it as orientation.
