@@ -223,7 +223,7 @@
         <module name="JavadocTagContinuationIndentation"/>
         <module name="JavadocMethod">
             <property name="scope" value="public"/>
-            <property name="ignoreMethodNamesRegex" value="test.*|before()"/>
+            <property name="ignoreMethodNamesRegex" value="test.*|before"/>
         </module>
         <module name="JavadocVariable">
             <property name="scope" value="protected"/>
@@ -240,9 +240,16 @@
             <property name="allowNoEmptyLineBetweenFields" value="true"/>
         </module>
         <module name="SeparatorWrap">
-             <property name="tokens" value="DOT"/>
-             <property name="option" value="nl"/>
+            <property name="tokens" value="DOT"/>
+            <property name="option" value="nl"/>
         </module>
+        <module name="SeparatorWrap">
+            <property name="tokens" value="COMMA"/>
+            <property name="option" value="EOL"/>
+        </module>
+    </module>
+    <module name="SuppressionFilter">
+        <property name="file" value="misc/suppressions.xml"/>
     </module>
 
 </module>

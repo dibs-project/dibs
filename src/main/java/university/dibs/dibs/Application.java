@@ -43,19 +43,19 @@ import java.util.Set;
 public class Application extends DibsObject {
 
     // Konstanten für den Bewerbungsstatus
-    /** Incomplete: the initial status of an application. */
+    /** Initial status. */
     public static final String STATUS_INCOMPLETE = "incomplete";
-    /** Complete: the applicant has added all information necessary for evaluating the relevant
-     * criteria.*/
+    /** Status when all information necessary for evaluating the relevant criteria has been
+     * added. */
     public static final String STATUS_COMPLETE = "complete";
-    /** Valid: the status needed for applications to take part in the admission process. */
+    /** Status when the application takes part in the admission process. */
     public static final String STATUS_VALID = "valid";
-    /** Withdrawn: The applicant has decided not to pursue this application any further. */
+    /** Status when the applicant has decided not to pursue this application any further. */
     public static final String STATUS_WITHDRAWN = "withdrawn";
-    /** Admitted: The applicant is offered a an enrollment in the course they applied to. */
+    /** Status when the applicant is offered an enrollment in the course they applied to. */
     public static final String STATUS_ADMITTED = "admitted";
     // TODO change to "accepted"?
-    /** Confimed: The applicant has confirmed their intent to enroll. */
+    /** Status when the applicant has confirmed their intent to enroll. */
     public static final String STATUS_CONFIRMED = "confirmed";
 
     /** Supported filters for {@link #getEvaluations(Map, User)}. */

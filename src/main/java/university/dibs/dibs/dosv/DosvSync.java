@@ -160,7 +160,7 @@ public class DosvSync {
     /**
      * Initializes DosvSync.
      *
-     * @param service ApplicationService used for DB access.
+     * @param service ApplicationService used accessing dibs.
      */
     public DosvSync(ApplicationService service) {
         // TODO validate dosvConfig
