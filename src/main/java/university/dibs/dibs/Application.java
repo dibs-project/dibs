@@ -1,22 +1,28 @@
 /*
  * dibs
- * Copyright (C) 2015 Humboldt-Universität zu Berlin
- * 
- * This program is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software Foundation,
- * either version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with this
- * program.  If not, see <http://www.gnu.org/licenses/>
+ * Copyright (C) 2015  Humboldt-Universität zu Berlin
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.  If
+ * not, see <http://www.gnu.org/licenses/>.
  */
 
 package university.dibs.dibs;
 
 import static java.util.Collections.nCopies;
+
+import university.dibs.dibs.DibsException.IllegalStateException;
+
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOError;
 import java.sql.SQLException;
@@ -28,12 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.dbutils.handlers.MapHandler;
-import org.apache.commons.dbutils.handlers.MapListHandler;
-import org.apache.commons.lang3.StringUtils;
-
-import university.dibs.dibs.DibsException.IllegalStateException;
-
 /**
  * Bewerbung, mit der Benutzer am Zulassungsverfahren teilnehmen.
  *
@@ -43,12 +43,19 @@ import university.dibs.dibs.DibsException.IllegalStateException;
 public class Application extends DibsObject {
 
     // Konstanten für den Bewerbungsstatus
+    /** Initial status. */
     public static final String STATUS_INCOMPLETE = "incomplete";
+    /** Status when all information necessary for evaluating the relevant criteria has been
+     * added. */
     public static final String STATUS_COMPLETE = "complete";
+    /** Status when the application takes part in the admission process. */
     public static final String STATUS_VALID = "valid";
+    /** Status when the applicant has decided not to pursue this application any further. */
     public static final String STATUS_WITHDRAWN = "withdrawn";
+    /** Status when the applicant is offered an enrollment in the course they applied to. */
     public static final String STATUS_ADMITTED = "admitted";
     // TODO change to "accepted"?
+    /** Status when the applicant has confirmed their intent to enroll. */
     public static final String STATUS_CONFIRMED = "confirmed";
 
     /** Supported filters for {@link #getEvaluations(Map, User)}. */
@@ -61,6 +68,11 @@ public class Application extends DibsObject {
     private Date modificationTime;
     private final int dosvVersion;
 
+    /**
+     * Initializes Application.
+     *
+     * @param args TODO
+     */
     Application(Map<String, Object> args) {
         super(args);
         this.userId = (String) args.get("user_id");
@@ -75,16 +87,16 @@ public class Application extends DibsObject {
      * Accepts an admission for this Application.
      *
      * @throws IllegalStateException if the status is not <code>"admitted"</code>.
-     * (code: <code>"application_not_admitted"</code>)
+     *     (code: <code>"application_not_admitted"</code>)
      */
     public void accept() {
-        if (!getStatus().equals(STATUS_ADMITTED)) {
+        if (!this.getStatus().equals(STATUS_ADMITTED)) {
             throw new IllegalStateException("application_not_admitted");
         }
         // TODO IllegalStateException("application_is_dosv") if the
         // admission can only be accepted via Hochschulstart.de once Course.startAdmission()
         // is testable for DoSV courses.
-        setStatus(STATUS_CONFIRMED, true, null);
+        this.setStatus(STATUS_CONFIRMED, true, null);
     }
 
     /**
@@ -114,14 +126,16 @@ public class Application extends DibsObject {
      *
      * @see #getEvaluations(Map, User)
      */
+    // overload
     public List<Evaluation> getEvaluations(User agent) {
         return this.getEvaluations(new HashMap<String, Object>(), agent);
     }
 
     /**
      * All evaluations belonging to this application.
-     *
+     * @param filter TODO
      * @param agent active user
+     * @return TODO
      */
     public List<Evaluation> getEvaluations(Map<String, Object> filter, User agent) {
         if (!GET_EVALUATIONS_FILTER_KEYS.containsAll(filter.keySet())) {
@@ -164,55 +178,57 @@ public class Application extends DibsObject {
     void setStatus(String status, boolean doCommit, User agent) {
         Date now = new Date();
         try {
-            service.getDb().setAutoCommit(false);
-            service.getQueryRunner().update(service.getDb(),
+            this.service.getDb().setAutoCommit(false);
+            this.service.getQueryRunner().update(service.getDb(),
                 "UPDATE application SET status = ?, modification_time = ? WHERE id = ?",
                 status, new Timestamp(now.getTime()), this.id);
-            service.getJournal().record(ApplicationService.ACTION_TYPE_APPLICATION_STATUS_SET,
+            this.service.getJournal().record(ApplicationService.ACTION_TYPE_APPLICATION_STATUS_SET,
                 this.id, DibsObject.getId(agent), status);
             if (doCommit) {
-                service.getDb().commit();
-                service.getDb().setAutoCommit(true);
+                this.service.getDb().commit();
+                this.service.getDb().setAutoCommit(true);
             }
         } catch (SQLException e) {
             throw new IOError(e);
         }
         this.status = status;
-        modificationTime = now;
+        this.modificationTime = now;
     }
 
     void assignInformation(Information information) {
         // ordnet eine Information der Bewerbung (bzw. den entsprechenden Bewertungen) zu
-        HashMap<String, Object> filter = new HashMap<String, Object>();
+        Map<String, Object> filter = new HashMap<String, Object>();
         filter.put("required_information_type_id", information.getType().getId());
         for (Evaluation evaluation : this.getEvaluations(filter, null)) {
             evaluation.assignInformation(information);
         }
 
         // TODO will be replaced by update method / (pseudo) event
-        setStatus(STATUS_VALID, false, null);
+        this.setStatus(STATUS_VALID, false, null);
     }
 
     void userInformationCreated(User user, Information information) {
         this.assignInformation(information);
     }
 
+    /* ---- Properties ---- */
+
     /**
      * Benutzer, zu dem die Bewerbung gehört.
      */
     public User getUser() {
-        return service.getUser(this.userId);
+        return this.service.getUser(this.userId);
     }
 
     /**
      * Studiengang, auf den der Benutzer sich beworben hat.
      */
     public Course getCourse() {
-        return service.getCourse(this.courseId);
+        return this.service.getCourse(this.courseId);
     }
 
     /**
-     * Status der Bewerbung.</br>
+     * Status der Bewerbung.<br>
      * Konstanten:
      * <ul>
      * <li><code>incomplete</code>: angelegt, nicht vollständig
@@ -224,20 +240,22 @@ public class Application extends DibsObject {
      * </ul>
      */
     public String getStatus() {
-        return status;
+        return this.status;
     }
 
     /**
      * Time of the Application's last modification.
      */
     public Date getModificationTime() {
-        return new Date(modificationTime.getTime());
+        return new Date(this.modificationTime.getTime());
     }
 
     /**
      * Application version in the DoSV system.
      */
     public int getDosvVersion() {
-        return dosvVersion;
+        return this.dosvVersion;
     }
+
+    /* ---- /Properties ---- */
 }

@@ -1,17 +1,17 @@
 /*
  * dibs
- * Copyright (C) 2015 Humboldt-Universität zu Berlin
- * 
- * This program is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software Foundation,
- * either version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with this
- * program.  If not, see <http://www.gnu.org/licenses/>
+ * Copyright (C) 2015  Humboldt-Universität zu Berlin
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.  If
+ * not, see <http://www.gnu.org/licenses/>.
  */
 
 package university.dibs.dibs.dosv;
@@ -31,23 +31,6 @@ import static university.dibs.dibs.Application.STATUS_INCOMPLETE;
 import static university.dibs.dibs.Application.STATUS_VALID;
 import static university.dibs.dibs.Application.STATUS_WITHDRAWN;
 
-import java.io.IOError;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import university.dibs.dibs.Application;
 import university.dibs.dibs.ApplicationService;
 import university.dibs.dibs.Course;
@@ -55,6 +38,7 @@ import university.dibs.dibs.Quota;
 import university.dibs.dibs.Rank;
 import university.dibs.dibs.Settings;
 import university.dibs.dibs.User;
+
 import de.hochschulstart.hochschulschnittstelle.benutzerservicev1_0.BenutzerServiceFehler;
 import de.hochschulstart.hochschulschnittstelle.bewerberauswahlserviceparamv1_0.RanglisteErgebnis;
 import de.hochschulstart.hochschulschnittstelle.bewerberauswahlserviceparamv1_0.StudienpaketErgebnis;
@@ -90,31 +74,48 @@ import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studienfach;
 import de.hochschulstart.hochschulschnittstelle.studiengaengev1_0.Studiengang;
 import de.hu_berlin.dosv.DosvClient;
 
+import java.io.IOError;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 // TODO document error handling
 /**
- * DoSV synchronisation class for Courses, Applications and Ranks. All resources are synced
- * as early as possible.
- * <p>
- * <strong>Data Mapping between dibs and the DoSV system</strong>
- * <p>
- * General:
+ * DoSV synchronisation class for Courses, Applications and Ranks. All resources are synced as early
+ * as possible.
+ *
+ * <p><strong>Data Mapping between dibs and the DoSV system</strong>
+ *
+ * <p>General:
  * <ul>
  * <li><code>abschluss.schluessel</code> is always <code>"bachelor"</code></li>
  * <li><code>studienfach.schluessel = course.getId()</code></li>
  * </ul>
- * <p>
- * Courses:
+ *
+ * <p>Courses:
  * <ul>
  * <li><code>published == true -> OEFFENTLICH_SICHTBAR</code></li>
  * <li><code>published == false -> IN_VORBEREITUNG</code></li>
  * <li><code>integrationseinstellungen.bewerbungsort: hochschule</code></li>
  * <li><code>integrationseinstellungen.*bescheidVersandart: hochschule</code></li>
- * <li><code>studienfach.nameDE, einfachstudienangebot.nameDE, *.beschreibungDE =
- * course.name</code></li>
+ * <li><code>studienfach.nameDE, einfachstudienangebot.nameDE, *.beschreibungDE = course.name
+ * </code></li>
  * <li><code>studienpaket.schluessel = course.getId()</code></li>
  * </ul>
- * <p>
- * Applications:
+ *
+ * <p>Applications:
  * <ul>
  * <li><code>STATUS_INCOMPLETE -> EINGEGANGEN</code></li>
  * <li><code>STATUS_COMPLETE -> EINGEGANGEN</code></li>
@@ -123,13 +124,12 @@ import de.hu_berlin.dosv.DosvClient;
  * <li><code>STATUS_CONFIRMED <- ZUGELASSEN</code></li>
  * <li><code>STATUS_WITHDRAWN <- ZURUECKGEZOGEN</code></li>
  * </ul>
- * <p>
- * Each application status is set either by dibs or via Hochschulstart.de.
- * To avoid synchronisation conflicts between <code>STATUS_CONFIRMED</code> and
+ *
+ * <p>Each application status is set either by dibs or via Hochschulstart.de. To avoid
+ * synchronisation conflicts between <code>STATUS_CONFIRMED</code> and
  * <code>STATUS_WITHDRAWN</code>, users can withdraw their application only via Hochschulstart.
  *
- * <p>
- * Rankings:
+ * <p>Rankings:
  * <ul>
  * <li><code>rangliste.schluessel = quota.getId()</code></li>
  * </ul>
@@ -137,8 +137,10 @@ import de.hu_berlin.dosv.DosvClient;
  * @author Markus Michler
  */
 public class DosvSync {
-    private final static Map<String, BewerbungsBearbeitungsstatus> APPLICATION_STATUS_MAPPING_TO_DOSV;
-    private final static Map<BewerbungsBearbeitungsstatus, String> APPLICATION_STATUS_MAPPING_FROM_DOSV;
+    private static final Map<String, BewerbungsBearbeitungsstatus>
+        APPLICATION_STATUS_MAPPING_TO_DOSV;
+    private static final Map<BewerbungsBearbeitungsstatus, String>
+        APPLICATION_STATUS_MAPPING_FROM_DOSV;
     private ApplicationService service;
     private Properties dosvConfig;
 
@@ -155,39 +157,31 @@ public class DosvSync {
         APPLICATION_STATUS_MAPPING_FROM_DOSV.put(ZURUECKGEZOGEN, STATUS_WITHDRAWN);
     }
 
-    private static XMLGregorianCalendar toXMLGregorianCalendar(Date date) {
-        XMLGregorianCalendar xmlCal;
-        GregorianCalendar cal = new GregorianCalendar();
-        cal.setTime(date);
-        try {
-            xmlCal = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
-        } catch (DatatypeConfigurationException e) {
-            // unreachable
-            throw new RuntimeException(e);
-        }
-        return xmlCal;
-    }
-
+    /**
+     * Initializes DosvSync.
+     *
+     * @param service ApplicationService used accessing dibs.
+     */
     public DosvSync(ApplicationService service) {
         // TODO validate dosvConfig
         this.service = service;
-        dosvConfig = new Properties();
-        dosvConfig.putAll(service.getConfig());
+        this.dosvConfig = new Properties();
+        this.dosvConfig.putAll(service.getConfig());
         Settings settings = service.getSettings();
-        dosvConfig.setProperty(DosvClient.SEMESTER, settings.getSemester().substring(4, 6));
-        dosvConfig.setProperty(DosvClient.YEAR, settings.getSemester().substring(0, 4));
+        this.dosvConfig.setProperty(DosvClient.SEMESTER, settings.getSemester().substring(4, 6));
+        this.dosvConfig.setProperty(DosvClient.YEAR, settings.getSemester().substring(0, 4));
     }
 
     /**
      * @param dosvBid DoSV-Benutzer-ID
      * @param dosvBan DoSV-Benutzer-Autorisierungsnummer
-     * @return <code>true</code>, wenn der Benutzer authentifiziert wurde,
-     * ansonsten <code>false</code>.
+     * @return <code>true</code>, wenn der Benutzer authentifiziert wurde, ansonsten
+     *     <code>false</code>.
      */
     public boolean authenticate(String dosvBid, String dosvBan) {
         try {
             // NOTE Instanziierung ist ressourcenintensiv, deshalb hier und nicht im Konstruktor
-            new DosvClient(dosvConfig).abrufenStammdatenDurchHS(dosvBid, dosvBan);
+            new DosvClient(this.dosvConfig).abrufenStammdatenDurchHS(dosvBid, dosvBan);
             return true;
         } catch (BenutzerServiceFehler e) {
             if (e.getFaultInfo() instanceof UnbekannterBenutzerFehler
@@ -206,23 +200,23 @@ public class DosvSync {
      */
     public void synchronize() {
         Date newSyncTime = new Date();
-        pushCourses();
+        this.pushCourses();
         boolean applicationsPushed = false;
         // TODO adjust number of retries to minimize the possibility of a RuntimeException
         for (int i = 0; !applicationsPushed && i < 10; i++) {
-            pullApplications();
-            applicationsPushed = pushApplications();
+            this.pullApplications();
+            applicationsPushed = this.pushApplications();
         }
         if (!applicationsPushed) {
             throw new RuntimeException("Sync exceeded maximum number of retries.");
         }
-        pushRankings();
+        this.pushRankings();
         try {
-            Connection db = service.getDb();
+            Connection db = this.service.getDb();
             db.setAutoCommit(false);
-            service.getQueryRunner().update(db, "UPDATE settings SET dosv_sync_time = ?",
+            this.service.getQueryRunner().update(db, "UPDATE settings SET dosv_sync_time = ?",
                 new Timestamp(newSyncTime.getTime()));
-            service.getJournal().record(
+            this.service.getJournal().record(
                 ApplicationService.ACTION_TYPE_DOSV_SYNC_SYNCHRONIZED, null, null, null);
             db.setAutoCommit(true);
         } catch (SQLException e) {
@@ -234,8 +228,8 @@ public class DosvSync {
         List<Studienangebot> studienangebote = new ArrayList<>();
         List<Studienpaket> studienpakete = new ArrayList<>();
 
-        Date dosvSyncTime = service.getSettings().getDosvSyncTime();
-        for (Course course : service.getCourses()) {
+        Date dosvSyncTime = this.service.getSettings().getDosvSyncTime();
+        for (Course course : this.service.getCourses()) {
             if (!course.isDosv() || dosvSyncTime.after(course.getModificationTime())) {
                 continue;
             }
@@ -321,8 +315,9 @@ public class DosvSync {
             studienangebote.add(einfachstudienangebot);
         }
         try {
-            // NOTE Instantiation is resource intensive so it happens here and not in the constructor
-            DosvClient dosvClient = new DosvClient(dosvConfig);
+            // NOTE Instantiation is resource intensive so it happens here and not in the
+            // constructor
+            DosvClient dosvClient = new DosvClient(this.dosvConfig);
 
             List<StudienangebotErgebnis> studienangebotErgebnisse =
                 dosvClient.anlegenAendernStudienangeboteDurchHS(studienangebote);
@@ -349,14 +344,14 @@ public class DosvSync {
     }
 
     private void pullApplications() {
-        Connection db = service.getDb();
+        Connection db = this.service.getDb();
         Date[] updateTime = new Date[1];
-        updateTime[0] = service.getSettings().getDosvApplicationsServerTime();
+        updateTime[0] = this.service.getSettings().getDosvApplicationsServerTime();
         List<Bewerbung> bewerbungen;
 
         /* SAF 303 */
         // NOTE Instantiation is resource intensive so it happens here and not in the constructor
-        DosvClient dosvClient = new DosvClient(dosvConfig);
+        DosvClient dosvClient = new DosvClient(this.dosvConfig);
         try {
             List<String> referenzen =
                 dosvClient.anfragenNeueGeaenderteBewerbungenDurchHS(updateTime);
@@ -377,23 +372,25 @@ public class DosvSync {
                 EinfachstudienangebotsSchluessel einfachstudienangebotsSchluessel =
                     einfachstudienangebotsbewerbung.getEinfachstudienangebotsSchluessel();
                 if (newStatus == null) {
-                    service.getQueryRunner().update(service.getDb(),
+                    this.service.getQueryRunner().update(this.service.getDb(),
                         "UPDATE application SET dosv_version = ? "
-                        + "WHERE course_id = ? AND EXISTS (SELECT id FROM \"user\" WHERE id = user_id AND dosv_bid = ?)",
+                        + "WHERE course_id = ? AND EXISTS "
+                        + "(SELECT id FROM \"user\" WHERE id = user_id AND dosv_bid = ?)",
                         einfachstudienangebotsbewerbung.getVersionSeSt(),
                         einfachstudienangebotsSchluessel.getStudienfachSchluessel(),
                         einfachstudienangebotsbewerbung.getBewerberId());
                 } else {
-                    service.getQueryRunner().update(service.getDb(),
-                        "UPDATE application SET status = ?, dosv_version = ?, modification_time = CURRENT_TIMESTAMP "
-                        + "WHERE course_id = ? AND EXISTS (SELECT id FROM \"user\" WHERE id = user_id AND dosv_bid = ?)",
+                    this.service.getQueryRunner().update(this.service.getDb(),
+                        "UPDATE application SET status = ?, dosv_version = ?, "
+                        + "modification_time = CURRENT_TIMESTAMP WHERE course_id = ? AND EXISTS "
+                        + "(SELECT id FROM \"user\" WHERE id = user_id AND dosv_bid = ?)",
                         newStatus, einfachstudienangebotsbewerbung.getVersionSeSt(),
                         einfachstudienangebotsSchluessel.getStudienfachSchluessel(),
                         einfachstudienangebotsbewerbung.getBewerberId());
                 }
             }
 
-            service.getQueryRunner().update(service.getDb(),
+            this.service.getQueryRunner().update(this.service.getDb(),
                 "UPDATE settings SET dosv_remote_applications_pull_time = ?",
                 new Timestamp(updateTime[0].getTime()));
             db.commit();
@@ -407,10 +404,10 @@ public class DosvSync {
         boolean done = true;
         List<Bewerbung> bewerbungenNeu = new ArrayList<>();
         List<Bewerbung> bewerbungenGeaendert = new ArrayList<>();
-        Date dosvSynctime = service.getSettings().getDosvSyncTime();
+        Date dosvSynctime = this.service.getSettings().getDosvSyncTime();
 
         // TODO should be optimized by WHERE filter
-        List<Application> applications = service.getApplications();
+        List<Application> applications = this.service.getApplications();
         for (Application application : applications) {
             BewerbungsBearbeitungsstatus dosvNewStatus =
                 APPLICATION_STATUS_MAPPING_TO_DOSV.get(application.getStatus());
@@ -449,38 +446,40 @@ public class DosvSync {
         }
 
         try {
-            // NOTE Instantiation is resource intensive so it happens here and not in the constructor
-            DosvClient dosvClient = new DosvClient(dosvConfig);
+            // NOTE Instantiation is resource intensive so it happens here and not in the
+            // constructor
+            DosvClient dosvClient = new DosvClient(this.dosvConfig);
 
             /* SAF 301 */
-            List<BewerbungErgebnis> bewerbungErgebnisse = (dosvClient
-                .uebermittelnNeueBewerbungenAnSeSt(bewerbungenNeu));
+            List<BewerbungErgebnis> bewerbungErgebnisse =
+                dosvClient.uebermittelnNeueBewerbungenAnSeSt(bewerbungenNeu);
 
             /* SAF 302 */
             bewerbungErgebnisse.addAll(dosvClient
                 .uebermittelnGeaenderteBewerbungenAnSeSt(bewerbungenGeaendert));
 
-           for (BewerbungErgebnis bewerbungErgebnis : bewerbungErgebnisse) {
-               if (bewerbungErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
-                   /* "Account zur Löschung vorgesehen" */
-                   if (bewerbungErgebnis.getGrundZurueckweisung().contains("30235")) {
-                       // TODO error handling, user notification
-                   }
-                   /* "Versionskonflikt" */
-                   if (bewerbungErgebnis.getGrundZurueckweisung().contains("30233")) {
-                       done = false;
-                   } else {
-                       // unreachable
-                       EinfachstudienangebotsbewerbungsSchluessel bewerbungsSchluessel
-                           = (EinfachstudienangebotsbewerbungsSchluessel)
-                           bewerbungErgebnis.getBewerbungsSchluessel();
+            for (BewerbungErgebnis bewerbungErgebnis : bewerbungErgebnisse) {
+                if (bewerbungErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
+                    /* "Account zur Löschung vorgesehen" */
+                    // checkstyle: ignore EmptyBlock, temporary with TODO
+                    if (bewerbungErgebnis.getGrundZurueckweisung().contains("30235")) {
+                        // TODO error handling, user notification
+                    }
+                    /* "Versionskonflikt" */
+                    if (bewerbungErgebnis.getGrundZurueckweisung().contains("30233")) {
+                        done = false;
+                    } else {
+                        // unreachable
+                        EinfachstudienangebotsbewerbungsSchluessel bewerbungsSchluessel =
+                            (EinfachstudienangebotsbewerbungsSchluessel) bewerbungErgebnis
+                                .getBewerbungsSchluessel();
                         throw new RuntimeException(String.format("%, %: %",
                             bewerbungsSchluessel.getBewerberId(),
                             bewerbungsSchluessel.getFachkennzeichenSchluessel(),
                             bewerbungErgebnis.getGrundZurueckweisung()));
-                   }
-               }
-           }
+                    }
+                }
+            }
         } catch (BewerbungenServiceFehler e) {
             // unreachable
             throw new RuntimeException(e);
@@ -490,48 +489,63 @@ public class DosvSync {
     }
 
     private void pushRankings() {
-          // TODO pull webservice call out of loop
-          for (Course course : service.getCourses()) {
-              if (!(course.isDosv() && service.getSettings().getDosvSyncTime()
-                      .before(course.getModificationTime()) && course.isAdmission())) {
-                  continue;
-              }
-              Quota quota = course.getAllocationRule().getQuota();
-              Rangliste rangliste = new Rangliste();
+        // TODO pull webservice call out of loop
+        for (Course course : this.service.getCourses()) {
+            if (!(course.isDosv()
+                && this.service.getSettings().getDosvSyncTime()
+                    .before(course.getModificationTime()) && course.isAdmission())) {
+                continue;
+            }
+            Quota quota = course.getAllocationRule().getQuota();
+            Rangliste rangliste = new Rangliste();
 
-              rangliste.setNameDe(quota.getName());
-              rangliste.setSchluessel(quota.getId());
-              rangliste.setStudienpaketSchluessel(course.getId());
-              rangliste.setStatus(RanglistenStatus.BEFUELLT);
-              // "Kopfdaten"
-              rangliste.setPlaetzeProzentual((double) quota.getPercentage());
-              // TODO List<Integer, Integer> Quota.level
-              rangliste.setEbene(RanglistenEbene.HAUPTQUOTEN);
-              rangliste.setIstVorwegzulasserrangliste(false);
-              rangliste.setIstChancenrangliste(false);
-              rangliste.setAbarbeitungsposition(1);
+            rangliste.setNameDe(quota.getName());
+            rangliste.setSchluessel(quota.getId());
+            rangliste.setStudienpaketSchluessel(course.getId());
+            rangliste.setStatus(RanglistenStatus.BEFUELLT);
+            // "Kopfdaten"
+            rangliste.setPlaetzeProzentual((double) quota.getPercentage());
+            // TODO List<Integer, Integer> Quota.level
+            rangliste.setEbene(RanglistenEbene.HAUPTQUOTEN);
+            rangliste.setIstVorwegzulasserrangliste(false);
+            rangliste.setIstChancenrangliste(false);
+            rangliste.setAbarbeitungsposition(1);
 
-              for (Rank rank : quota.getRanking()) {
-                  Ranglisteneintrag ranglisteneintrag = new Ranglisteneintrag();
-                  ranglisteneintrag.setBewerberId(rank.getUser().getDosvBid());
-                  ranglisteneintrag.setRang(rank.getIndex() + 1);
-                  ranglisteneintrag.setStatus(RanglisteneintragsStatus.BELEGT);
-                  rangliste.getEintrag().add(ranglisteneintrag);
-              }
+            for (Rank rank : quota.getRanking()) {
+                Ranglisteneintrag ranglisteneintrag = new Ranglisteneintrag();
+                ranglisteneintrag.setBewerberId(rank.getUser().getDosvBid());
+                ranglisteneintrag.setRang(rank.getIndex() + 1);
+                ranglisteneintrag.setStatus(RanglisteneintragsStatus.BELEGT);
+                rangliste.getEintrag().add(ranglisteneintrag);
+            }
 
-              RanglisteErgebnis ranglisteErgebnis;
-              try {
-                  // NOTE Instantiation is resource intensive so it happens here and not in the constructor
-                  ranglisteErgebnis =
-                      new DosvClient(dosvConfig).uebermittelnRanglistenAnSeSt(Arrays
-                          .asList(rangliste)).get(0);
-              } catch (BewerberauswahlServiceFehler e) {
-                  throw new RuntimeException(e);
-              }
-              if (ranglisteErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
-                  throw new RuntimeException(ranglisteErgebnis.getGrundZurueckweisung());
-                  // unreachable
-              }
-          }
-      }
+            RanglisteErgebnis ranglisteErgebnis;
+            try {
+                // NOTE Instantiation is resource intensive so it happens here and not in
+                // the constructor
+                ranglisteErgebnis =
+                    new DosvClient(this.dosvConfig).uebermittelnRanglistenAnSeSt(
+                        Arrays.asList(rangliste)).get(0);
+            } catch (BewerberauswahlServiceFehler e) {
+                throw new RuntimeException(e);
+            }
+            if (ranglisteErgebnis.getErgebnisStatus().equals(ZURUECKGEWIESEN)) {
+                throw new RuntimeException(ranglisteErgebnis.getGrundZurueckweisung());
+                // unreachable
+            }
+        }
+    }
+
+    private static XMLGregorianCalendar toXMLGregorianCalendar(Date date) {
+        XMLGregorianCalendar xmlCal;
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(date);
+        try {
+            xmlCal = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
+        } catch (DatatypeConfigurationException e) {
+            // unreachable
+            throw new RuntimeException(e);
+        }
+        return xmlCal;
+    }
 }

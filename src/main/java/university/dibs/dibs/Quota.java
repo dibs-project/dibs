@@ -1,20 +1,28 @@
 /*
  * dibs
- * Copyright (C) 2015 Humboldt-Universität zu Berlin
- * 
- * This program is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software Foundation,
- * either version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with this
- * program.  If not, see <http://www.gnu.org/licenses/>
+ * Copyright (C) 2015  Humboldt-Universität zu Berlin
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.  If
+ * not, see <http://www.gnu.org/licenses/>.
  */
 
 package university.dibs.dibs;
+
+import university.dibs.dibs.DibsException.IllegalStateException;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOError;
 import java.sql.Connection;
@@ -29,14 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.Predicate;
-import org.apache.commons.dbutils.handlers.MapHandler;
-import org.apache.commons.dbutils.handlers.MapListHandler;
-import org.apache.commons.lang3.StringUtils;
-
-import university.dibs.dibs.DibsException.IllegalStateException;
 
 /**
  * Contains the criteria for the creation of a ranking list for a percentage of a course's
@@ -66,18 +66,21 @@ public class Quota extends DibsObject {
      * @param agent ausführender Benutzer
      */
     public void addRankingCriterion(String criterionId, User agent) {
-        // TODO Sobald es mehrere Kriterien gibt, muss die Funktion angepasst werden, da die Reihenfolge der Kriterien nicht gewährleistet werden kann
-        if (getAllocationRule().getCourse().isPublished()) {
+        // TODO Sobald es mehrere Kriterien gibt, muss die Funktion angepasst werden, da die
+        // Reihenfolge der Kriterien nicht gewährleistet werden kann
+        if (this.getAllocationRule().getCourse().isPublished()) {
             throw new IllegalStateException("course_published");
         }
         // NOTE Race Condition: SELECT-INSERT
-        Connection db = service.getDb();
+        Connection db = this.service.getDb();
         try {
             db.setAutoCommit(false);
-            service.getQueryRunner().insert(service.getDb(), "INSERT INTO quota_ranking_criteria VALUES(?, ?)",
-                new MapHandler(), id, criterionId);
-            service.getJournal().record(ApplicationService.ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED,
-                this.id, DibsObject.getId(agent), criterionId);
+            this.service.getQueryRunner().insert(this.service.getDb(),
+                "INSERT INTO quota_ranking_criteria VALUES(?, ?)", new MapHandler(), this.id,
+                criterionId);
+            this.service.getJournal().record(
+                ApplicationService.ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED, this.id,
+                DibsObject.getId(agent), criterionId);
             db.commit();
             db.setAutoCommit(true);
         } catch (SQLException e) {
@@ -104,8 +107,8 @@ public class Quota extends DibsObject {
         Map<String, Object> filterArgs = new HashMap<>();
         filterArgs.put("status", Application.STATUS_VALID);
         List<Application> applications = this.getApplications(filterArgs);
-        final Map<Application,List<Evaluation>> evaluations = this.getEvaluations();
-        final HashMap<Application,Integer> lotnumbers = new HashMap<>();
+        final Map<Application, List<Evaluation>> evaluations = this.getEvaluations();
+        final Map<Application, Integer> lotnumbers = new HashMap<>();
         for (Application application : applications) {
             lotnumbers.put(application, new Random().nextInt(1000000));
         }
@@ -117,7 +120,7 @@ public class Quota extends DibsObject {
                     Predicate<Evaluation> predicate = new Predicate<Evaluation>() {
                         @Override
                         public boolean evaluate(Evaluation evaluation) {
-                            return (evaluation.getCriterion().getId().equals(criterion.id));
+                            return evaluation.getCriterion().getId().equals(criterion.id);
                         }
                     };
                     Evaluation eval1 = CollectionUtils.find(evaluations.get(a1), predicate);
@@ -127,13 +130,13 @@ public class Quota extends DibsObject {
                         return (int) value;
                     }
                 }
-                return lotnumbers.get(a1)- lotnumbers.get(a2);
+                return lotnumbers.get(a1) - lotnumbers.get(a2);
             }
         });
         List<Rank> ranking = new ArrayList<Rank>();
         for (int i = 0; i < applications.size(); i++) {
             Application application = applications.get(i);
-            HashMap<String, Object> args = new HashMap<String, Object>();
+            Map<String, Object> args = new HashMap<String, Object>();
             args.put("quota_id", this.getId());
             args.put("user_id", application.getUser().getId());
             args.put("application_id", application.getId());
@@ -146,51 +149,20 @@ public class Quota extends DibsObject {
     }
 
     /**
-     * Kriterien für die Sortierung der Bewerber auf der Rangliste.
-     */
-    public List<Criterion> getRankingCriteria() {
-        List<Criterion> rankingCriteria = new ArrayList<Criterion>();
-        try {
-            String sql = "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
-            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
-            queryResults = service.getQueryRunner().query(service.getDb(), sql,
-                new MapListHandler(), id);
-            for (Map<String, Object> args : queryResults) {
-                rankingCriteria.add(service.getCriterion((String) args.get("criterion_id")));
-            }
-            return rankingCriteria;
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    /**
-     * Gibt alle Bewerbungen mit den dazugehörigen Evaluationen
-     * für die Quote des Studiengangs zurück.
-     *
-     * @return Map mit Bewerbungen und Liste von Evaluation
-     */
-    Map<Application,List<Evaluation>> getEvaluations() {
-        Map<Application,List<Evaluation>> evaluationsList = new HashMap<>();
-        List<Application> applications = this.getApplications();
-        for(Application application : applications) {
-            //TODO Performance. unperformant wegen jede abfrage einzeln
-            evaluationsList.put(application, application.getEvaluations(null));
-        }
-        return evaluationsList;
-    }
-
-    /**
      * All Applications that are included in this Quota.
      *
      * @see #getApplications(Map)
      */
+    // overload
     public List<Application> getApplications() {
-        return getApplications(new HashMap<String, Object>());
+        return this.getApplications(new HashMap<String, Object>());
     }
 
     /**
      * All Applications that are included in this Quota.
+     *
+     * @param filter TODO
+     * @return TODO
      */
     public List<Application> getApplications(Map<String, Object> filter) {
         if (!GET_APPLICATIONS_FILTER_KEYS.containsAll(filter.keySet())) {
@@ -200,7 +172,7 @@ public class Quota extends DibsObject {
         ArrayList<String> filterConditions = new ArrayList<>();
         ArrayList<Object> filterValues = new ArrayList<>();
         filterConditions.add("allocation_rule.quota_id = ?");
-        filterValues.add(id);
+        filterValues.add(this.id);
 
         String status = (String) filter.get("status");
         if (status != null) {
@@ -215,12 +187,12 @@ public class Quota extends DibsObject {
                     + "LEFT JOIN course ON application.course_id = course.id "
                     + "LEFT JOIN allocation_rule ON course.allocation_rule_id = allocation_rule.id "
                     + filterSql;
-            List<Map<String, Object>> results = service.getQueryRunner().query(
-                service.getDb(), sql, new MapListHandler(), filterValues.toArray());
+            List<Map<String, Object>> results = this.service.getQueryRunner().query(
+                this.service.getDb(), sql, new MapListHandler(), filterValues.toArray());
 
             List<Application> applications = new ArrayList<>();
             for (Map<String, Object> args : results) {
-                args.put("service", service);
+                args.put("service", this.service);
                 applications.add(new Application(args));
             }
             return applications;
@@ -230,17 +202,17 @@ public class Quota extends DibsObject {
         }
     }
 
+    /* ---- Properties ---- */
+
     /**
-     * Ruft die Rangliste für die Quote ab.
-     *
-     * @return Rangliste
+     * Ranking for this Quota.
      */
     public List<Rank> getRanking() {
         ArrayList<Rank> ranking = new ArrayList<Rank>();
         try {
             String sql = "SELECT * FROM rank WHERE quota_id = ?";
             List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
-            queryResults = service.getQueryRunner().query(service.getDb(), sql,
+            queryResults = this.service.getQueryRunner().query(this.service.getDb(), sql,
                 new MapListHandler(), this.id);
             for (Map<String, Object> args : queryResults) {
                 args.put("service", this.service);
@@ -259,14 +231,14 @@ public class Quota extends DibsObject {
      * Name der Quote.
      */
     public String getName() {
-        return name;
+        return this.name;
     }
 
     /**
      * Prozentualer Anteil (0..100) der Quote an der Gesamtzahl der vergebenen Studienplätze.
      */
     public int getPercentage() {
-        return percentage;
+        return this.percentage;
     }
 
     /**
@@ -274,13 +246,50 @@ public class Quota extends DibsObject {
      */
     public AllocationRule getAllocationRule() {
         try {
-            Map<String, Object> args = service.getQueryRunner().query(service.getDb(),
+            Map<String, Object> args = this.service.getQueryRunner().query(this.service.getDb(),
                 "SELECT * FROM allocation_rule WHERE quota_id = ?",
-                new MapHandler(), id);
-            args.put("service", service);
+                new MapHandler(), this.id);
+            args.put("service", this.service);
             return new AllocationRule(args);
         } catch (SQLException e) {
             throw new IOError(e);
         }
     }
+
+    /**
+     * Kriterien für die Sortierung der Bewerber auf der Rangliste.
+     */
+    public List<Criterion> getRankingCriteria() {
+        List<Criterion> rankingCriteria = new ArrayList<Criterion>();
+        try {
+            String sql = "SELECT criterion_id FROM quota_ranking_criteria WHERE quota_id = ?";
+            List<Map<String, Object>> queryResults = new ArrayList<Map<String, Object>>();
+            queryResults = this.service.getQueryRunner().query(this.service.getDb(), sql,
+                new MapListHandler(), this.id);
+            for (Map<String, Object> args : queryResults) {
+                rankingCriteria.add(this.service.getCriterion((String) args.get("criterion_id")));
+            }
+            return rankingCriteria;
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    /**
+     * Gibt alle Bewerbungen mit den dazugehörigen Evaluationen
+     * für die Quote des Studiengangs zurück.
+     *
+     * @return Map mit Bewerbungen und Liste von Evaluation
+     */
+    Map<Application, List<Evaluation>> getEvaluations() {
+        Map<Application, List<Evaluation>> evaluationsList = new HashMap<>();
+        List<Application> applications = this.getApplications();
+        for (Application application : applications) {
+            //TODO Performance. unperformant wegen jede abfrage einzeln
+            evaluationsList.put(application, application.getEvaluations(null));
+        }
+        return evaluationsList;
+    }
+
+    /* ---- /Properties ---- */
 }
