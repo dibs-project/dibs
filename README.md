@@ -1,28 +1,24 @@
 dibs
-===
+====
 
 Application system with DoSV-support.
 
-Dependencies
-------------
+## Dependencies
 
  * Java         >= 7.0
  * PostgreSQL   >= 9.2
  * Apache Maven >= 3.0
 
-Building dibs
-------------
+## Building dibs
 
 For building dibs use:
 
     mvn compile
 
-Configuring dibs
----------------
+## Configuring dibs
 
-In order to configure dibs, copy the file
-`[project-dir]/src/main/resources/default.properties` to
-`[project-dir]/dibs.properties` and edit them according to your needs.
+In order to configure dibs, copy the file `src/main/resources/default.properties` to
+`dibs.properties` (in the root directory) and edit them according to your needs.
 
 dibs uses a PostgreSQL database. If needed you can create a local Database (with user), by
 using the tool `psql` as PostgreSQL superuser (in most cases `postgres`) with the
@@ -36,14 +32,12 @@ By default, user name, password and database name are set to "dibs".
 Before synchronizing dibs to the "Dialogorientiertes Serviceverfahren", the web services
 must be configured: Insert values for keys with the `dosv_` prefix.
 
-Browser Support
----------------
+## Browser Support
 
 We support the current and the previous version of the popular browsers (i.e. Firefox,
 Chrome, Safari, Internet Explorer).
 
-Created with
-------------
+## Created with
 
  * Java (7.0) by Oracle - https://www.java.com/
  * PostgreSQL (9.2) by The PostgreSQL Global Development Group -
@@ -65,8 +59,7 @@ Created with
  * JUnit (4.11) by JUnit - http://junit.org/
  * Apache Maven (3.0) by The Apache Software Foundation - https://maven.apache.org/
 
-Contributors
-------------
+## Contributors
 
 * Markus Michler - markus.michler@uv.hu-berlin.de
 * Sven Pfaller  - sven.pfaller@hu-berlin.de
@@ -75,4 +68,4 @@ Contributors
 * Lars Schilhaneck - lars.schilhaneck.1@hu-berlin.de
 * Johannes Caspary - johannes.caspary@cms.hu-berlin.de
 
-Copyright (C) 2015 Humboldt-Universität zu Berlin
+Copyright (C) 2015  Humboldt-Universität zu Berlin

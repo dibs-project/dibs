@@ -1,8 +1,7 @@
 dibs Prototype Theme
-===================
+====================
 
-Layout
-------
+## Layout
 
 ```
  --------------------------------
@@ -16,14 +15,12 @@ Layout
  --------------------------------
 ```
 
-Colors
-------
+## Colors
 
  * Text / Primary: #333
  * Background:     #fff
 
-Spacing
--------
+## Spacing
 
 General:
 
@@ -51,8 +48,7 @@ Button / Input:
  \------/
 ```
 
-Forms
------
+## Forms
 
 ```html
 <form method="POST" action="/login/">
