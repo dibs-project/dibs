@@ -41,18 +41,18 @@ Structure:
 Process:
 
 ```
-   . Applicant                            | Employee                        | System
-  ----------------------------------------+---------------------------------+------------------------
-   .                                      | ApplicationService.createUser   |
-   .                                      | ApplicationService.createCourse |
-   .                                      | Course.createAllocationRule     |
-   .                                      | AllocationRule.createQuota      |
-   .                                      | Quota.addRankingCriterion       |
-   .                                      | Course.publish                  |
-   . ApplicationService.register          |                                 |
-   . User.createInformation               |                                 |
-   . Course.apply                         |                                 |
-   .                                      | Course.startAdmission           | Course.generateRankings
+Applicant                   | Employee                        | System
+----------------------------+---------------------------------+------------------------
+                            | ApplicationService.createUser   |
+                            | ApplicationService.createCourse |
+                            | Course.createAllocationRule     |
+                            | AllocationRule.createQuota      |
+                            | Quota.addRankingCriterion       |
+                            | Course.publish                  |
+ApplicationService.register |                                 |
+User.createInformation      |                                 |
+Course.apply                |                                 |
+                            | Course.startAdmission           | Course.generateRankings
 ```
 
 Backend

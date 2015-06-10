@@ -62,9 +62,9 @@
         </dependency>
 
         <dependency>
-             <groupId>org.glassfish.jersey.ext</groupId>
-             <artifactId>jersey-mvc-freemarker</artifactId>
-             <version>2.11</version>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-mvc-freemarker</artifactId>
+            <version>2.11</version>
         </dependency>
 
         <dependency>
@@ -125,8 +125,17 @@
                     </dependency>
                 </dependencies>
                 <configuration>
+                    <sourceDirectory>${project.basedir}</sourceDirectory>
+                    <includes>
+                        **/*.md, **/*.txt, **/*.sql, **/*.ftl, **/*.css, **/*.sh, **/*.xml,
+                        test.default.properties, src/main/resources/default.properties,
+                        <!-- TODO: replace with **/*.java -->
+                        **/ApplicationService.java, **/User.java, **/AllocationRule.java,
+                        **/Application.java, **/Course.java, **/Qualification.java, **/Quota.java,
+                        **/DosvSync.java, **/ApplicationServiceTest.java, **/ApplicationTest.java
+                    </includes>
+                    <excludes>target/**, misc/checkstyle.xml</excludes>
                     <configLocation>misc/checkstyle.xml</configLocation>
-                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
                 </configuration>
             </plugin>
         </plugins>

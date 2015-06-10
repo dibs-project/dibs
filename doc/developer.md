@@ -10,11 +10,11 @@ To set up the test environment, copy `test.default.properties` to
 dibs needs a PostgreSQL-Database for testing. By default we assume that there is a
 local Database named "dibs_test". `README.md` describes how to set up a local Database.
 
-To test the connection to DoSV we use integration tests. 
+To test the connection to DoSV we use integration tests.
 In order to run those, you need to create an account on the test portal of Hochschulstart
 and set BID and BAN in `test.properties`.
 
-Testing dibs 
+Testing dibs
 -----------
 
 To run all tests:
@@ -25,7 +25,7 @@ To run only integration tests:
 
     mvn test-compile failsafe:integration-test failsafe:verify
 
-Run dibs Development Server 
+Run dibs Development Server
 --------------------------
 
 Start the dibs-Development Server:
