@@ -1,22 +1,30 @@
 /*
  * dibs
- * Copyright (C) 2015 Humboldt-Universität zu Berlin
- * 
- * This program is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software Foundation,
- * either version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with this
- * program.  If not, see <http://www.gnu.org/licenses/>
+ * Copyright (C) 2015  Humboldt-Universität zu Berlin
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.  If
+ * not, see <http://www.gnu.org/licenses/>.
  */
 
 package university.dibs.dibs.ui;
 
 import static org.apache.commons.collections4.MapUtils.toProperties;
+
+import university.dibs.dibs.ApplicationService;
+import university.dibs.dibs.DibsException.IllegalStateException;
+
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.webapp.WebAppContext;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -38,20 +46,17 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriBuilder;
 
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.webapp.WebAppContext;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
-
-import university.dibs.dibs.ApplicationService;
-import university.dibs.dibs.DibsException.IllegalStateException;
-
 /**
  * @author Sven Pfaller
  */
 public class Ui extends ResourceConfig {
     private static Logger logger = Logger.getLogger(Ui.class.getPackage().getName());
 
+    /**
+     * TODO.
+     *
+     * @param servletContext TODO
+     */
     public Ui(@Context ServletContext servletContext) {
         // Jersey konfigurieren
         this.packages(this.getClass().getPackage().getName());
@@ -135,6 +140,12 @@ public class Ui extends ResourceConfig {
         }, interval, interval);
     }
 
+    /**
+     * TODO.
+     *
+     * @param args TODO
+     * @throws Exception TODO
+     */
     public static void main(String[] args) throws Exception {
         // Logging konfigurieren
         // Format: "$Zeit $Level $Logger: $Nachricht[\n$Fehler]\n"
