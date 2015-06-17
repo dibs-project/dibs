@@ -16,6 +16,8 @@
 
 package university.dibs.dibs;
 
+import static org.junit.Assume.assumeNoException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,6 +30,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Basisklasse für dibs-Tests. Übernimmt die Initialisierung (und das anschließende
@@ -40,6 +43,8 @@ import java.util.Properties;
  * @author Sven Pfaller
  */
 public abstract class DibsTest {
+    private static Logger logger = Logger.getLogger(DibsTest.class.getPackage().getName());
+
     /**
      * TODO.
      */
@@ -88,9 +93,13 @@ public abstract class DibsTest {
             // ignorieren
         }
 
-        this.db = DriverManager.getConnection(this.config.getProperty("db_url"),
-            this.config.getProperty("db_user"),
-            this.config.getProperty("db_password"));
+        try {
+            this.db = DriverManager.getConnection(this.config.getProperty("db_url"),
+                this.config.getProperty("db_user"), this.config.getProperty("db_password"));
+        } catch (SQLException e) {
+            this.logger.warning("failed to connect to database, skipping test");
+            assumeNoException(e);
+        }
         ApplicationService.setupStorage(this.db, true);
 
         this.service = new ApplicationService(this.db, this.config);
