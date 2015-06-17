@@ -13,7 +13,7 @@ Application system with DoSV-support.
 
 For building dibs use:
 
-    mvn compile
+    mvn package
 
 ## Configuring dibs
 
