@@ -118,6 +118,9 @@
         <property name="headerFile" value="misc/header.txt"/>
         <property name="fileExtensions" value="java"/>
     </module>
+    <module name="SuppressionFilter">
+        <property name="file" value="misc/suppressions.xml"/>
+    </module>
 
     <module name="TreeWalker">
 
@@ -262,10 +265,6 @@
         <module name="VisibilityModifier">
             <property name="protectedAllowed" value="true"/>
         </module>
-    </module>
-
-    <module name="SuppressionFilter">
-        <property name="file" value="misc/suppressions.xml"/>
     </module>
 
 </module>
