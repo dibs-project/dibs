@@ -87,7 +87,7 @@ public class ApplicationTest extends DibsTest {
     @Test
     public final void testSetStatus() {
         String newStatus = Application.STATUS_COMPLETE;
-        this.application.setStatus(newStatus, true, null);
+        this.application.setStatus(newStatus, null);
         this.application = service.getApplication(this.application.getId());
         assertEquals(this.application.getStatus(), newStatus);
     }

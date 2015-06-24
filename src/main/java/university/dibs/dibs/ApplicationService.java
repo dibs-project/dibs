@@ -105,6 +105,7 @@ public class ApplicationService {
     private Journal journal;
     private Map<String, Information.Type> informationTypes;
     private Map<String, Criterion> criteria;
+    private int transactionLevel;
     private QueryRunner queryRunner;
     private DosvSync dosvSync;
 
@@ -132,6 +133,7 @@ public class ApplicationService {
         args.put("service", this);
         this.criteria.put("qualification", new QualificationCriterion(args));
 
+        this.transactionLevel = -1;
         this.queryRunner = new QueryRunner();
         this.dosvSync = new DosvSync(this);
     }
@@ -156,14 +158,13 @@ public class ApplicationService {
         // TODO: validate role
 
         try {
-            this.db.setAutoCommit(false);
+            this.beginTransaction();
             String id = String.format("user:%s", new Random().nextInt());
             new QueryRunner().insert(this.getDb(),
                 "INSERT INTO \"user\" VALUES(?, ?, ?, ?, ?)",
                 new MapHandler(), id, name, email, credential, role);
             this.journal.record(ACTION_TYPE_USER_CREATED, null, null, id);
-            this.db.commit();
-            this.db.setAutoCommit(true);
+            this.endTransaction();
             return this.getUser(id);
         } catch (SQLException e) {
             // TODO: check for duplicate email
@@ -428,14 +429,13 @@ public class ApplicationService {
         }
 
         try {
-            this.db.setAutoCommit(false);
+            this.beginTransaction();
             String id = String.format("course:%s", new Random().nextInt());
             this.queryRunner.insert(this.getDb(),
                 "INSERT INTO course (id, name, capacity, dosv) VALUES (?, ?, ?, ?)",
                 new MapHandler(), id, name, capacity, dosv);
             this.journal.record(ACTION_TYPE_COURSE_CREATED, null, DibsObject.getId(agent), name);
-            this.db.commit();
-            this.db.setAutoCommit(true);
+            this.endTransaction();
             return this.getCourse(id);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -601,6 +601,43 @@ public class ApplicationService {
                 });
         }
         return criteria;
+    }
+
+    /**
+     * Begins a database transaction. Has to be used in conjunction with {@link #endTransaction}.
+     */
+    public void beginTransaction() {
+        if (this.transactionLevel == -1) {
+            try {
+                this.db.setAutoCommit(false);
+            } catch (SQLException e) {
+                throw new IOError(e);
+            }
+        }
+        this.transactionLevel++;
+    }
+
+    /**
+     * Ends a database transaction and commits if it is the root transaction.
+     * Has to be used in conjunction with {@link #beginTransaction}.
+     *
+     * @throws IllegalStateException if no transaction is open
+     *     (code: <code>transaction_not_open</code>).
+     */
+    public void endTransaction() {
+        if (this.transactionLevel == -1) {
+            throw new IllegalStateException("transaction_not_open");
+        }
+
+        this.transactionLevel--;
+        if (this.transactionLevel == -1) {
+            try {
+                this.db.commit();
+                this.db.setAutoCommit(true);
+            } catch (SQLException e) {
+                throw new IOError(e);
+            }
+        }
     }
 
     /* ---- Properties ---- */

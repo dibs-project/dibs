@@ -25,7 +25,6 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOError;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,26 +71,19 @@ public class Quota extends DibsObject {
             throw new IllegalStateException("course_published");
         }
         // NOTE Race Condition: SELECT-INSERT
-        Connection db = this.service.getDb();
         try {
-            db.setAutoCommit(false);
+            this.service.beginTransaction();
             this.service.getQueryRunner().insert(this.service.getDb(),
                 "INSERT INTO quota_ranking_criteria VALUES(?, ?)", new MapHandler(), this.id,
                 criterionId);
             this.service.getJournal().record(
                 ApplicationService.ACTION_TYPE_QUOTA_RANKING_CRITERION_ADDED, this.id,
                 DibsObject.getId(agent), criterionId);
-            db.commit();
-            db.setAutoCommit(true);
+            this.service.endTransaction();
         } catch (SQLException e) {
             if (e.getSQLState().equals("23505")) {
                 // unique violation ignorieren
-                try {
-                    db.rollback();
-                    db.setAutoCommit(true);
-                } catch (SQLException e1) {
-                    throw new IOError(e1);
-                }
+                service.endTransaction();
             } else {
                 throw new IOError(e);
             }

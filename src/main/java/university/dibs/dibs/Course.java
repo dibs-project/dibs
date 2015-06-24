@@ -22,7 +22,6 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import java.io.IOError;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -69,8 +68,7 @@ public class Course extends DibsObject {
         }
         //NOTE Race Condition: SELECT-UPDATE
         try {
-            Connection db = this.service.getDb();
-            db.setAutoCommit(false);
+            this.service.beginTransaction();
             String ruleId = "allocation_rule:" + Integer.toString(new Random().nextInt());
             this.service.getQueryRunner().insert(this.service.getDb(),
                 "INSERT INTO allocation_rule VALUES (?)", new MapHandler(), ruleId);
@@ -80,8 +78,7 @@ public class Course extends DibsObject {
             this.service.getJournal().record(
                 ApplicationService.ACTION_TYPE_COURSE_ALLOCATION_RULE_CREATED,
                 this.id, DibsObject.getId(agent), ruleId);
-            db.commit();
-            db.setAutoCommit(true);
+            this.service.endTransaction();
             return this.service.getAllocationRule(this.allocationRuleId);
         } catch (SQLException e) {
             throw new IOError(e);
@@ -112,7 +109,7 @@ public class Course extends DibsObject {
         }
         // NOTE Race Condition: SELECT-INSERT
         try {
-            this.service.getDb().setAutoCommit(false);
+            this.service.beginTransaction();
             String applicationId =
                 String.format("application:%s", new Random().nextInt());
             this.service.getQueryRunner().insert(this.service.getDb(),
@@ -142,8 +139,7 @@ public class Course extends DibsObject {
 
             this.service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_APPLIED,
                 this.id, DibsObject.getId(agent), applicationId);
-            this.service.getDb().commit();
-            this.service.getDb().setAutoCommit(true);
+            this.service.endTransaction();
             return application;
 
         } catch (SQLException e) {
@@ -171,15 +167,13 @@ public class Course extends DibsObject {
         }
         // NOTE Race Condition: SELECT-UPDATE
         try {
-            Connection db = this.service.getDb();
-            db.setAutoCommit(false);
+            this.service.beginTransaction();
             this.service.getQueryRunner().update(this.service.getDb(),
                 "UPDATE course SET published = TRUE, modification_time = ? WHERE id = ?",
                 new Timestamp(now.getTime()), getId());
             this.service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_PUBLISHED,
                 this.id, DibsObject.getId(agent), null);
-            db.commit();
-            db.setAutoCommit(true);
+            this.service.endTransaction();
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -202,15 +196,13 @@ public class Course extends DibsObject {
         }
         // NOTE Race Condition: SELECT-UPDATE
         try {
-            Connection db = this.service.getDb();
-            db.setAutoCommit(false);
+            this.service.beginTransaction();
             this.service.getQueryRunner().update(this.service.getDb(),
                 "UPDATE course SET published = FALSE, modification_time = ? WHERE id = ?",
                 new Timestamp(now.getTime()), getId());
             this.service.getJournal().record(ApplicationService.ACTION_TYPE_COURSE_UNPUBLISHED,
                 this.id, DibsObject.getId(agent), null);
-            db.commit();
-            db.setAutoCommit(true);
+            this.service.endTransaction();
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -230,8 +222,7 @@ public class Course extends DibsObject {
         }
         // NOTE Race Condition: SELECT-UPDATE
         try {
-            Connection db = this.service.getDb();
-            db.setAutoCommit(false);
+            this.service.beginTransaction();
             this.service.getQueryRunner().update(this.service.getDb(),
                 "UPDATE course SET admission = TRUE, modification_time = ? WHERE id = ?",
                 new Timestamp(now.getTime()), getId());
@@ -245,12 +236,11 @@ public class Course extends DibsObject {
             // first local admission step
             if (!this.dosv) {
                 for (Rank rank : this.getAllocationRule().getQuota().getRanking()) {
-                    rank.getApplication().setStatus(Application.STATUS_ADMITTED, false, null);
+                    rank.getApplication().setStatus(Application.STATUS_ADMITTED, null);
                 }
             }
 
-            db.commit();
-            db.setAutoCommit(true);
+            this.service.endTransaction();
         } catch (SQLException e) {
             throw new IOError(e);
         }

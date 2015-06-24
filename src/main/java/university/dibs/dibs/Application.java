@@ -96,7 +96,7 @@ public class Application extends DibsObject {
         // TODO IllegalStateException("application_is_dosv") if the
         // admission can only be accepted via Hochschulstart.de once Course.startAdmission()
         // is testable for DoSV courses.
-        this.setStatus(STATUS_CONFIRMED, true, null);
+        this.setStatus(STATUS_CONFIRMED, null);
     }
 
     /**
@@ -174,20 +174,16 @@ public class Application extends DibsObject {
         }
     }
 
-    // TODO replace doCommit with transaction
-    void setStatus(String status, boolean doCommit, User agent) {
+    void setStatus(String status, User agent) {
         Date now = new Date();
         try {
-            this.service.getDb().setAutoCommit(false);
+            this.service.beginTransaction();
             this.service.getQueryRunner().update(service.getDb(),
                 "UPDATE application SET status = ?, modification_time = ? WHERE id = ?",
                 status, new Timestamp(now.getTime()), this.id);
             this.service.getJournal().record(ApplicationService.ACTION_TYPE_APPLICATION_STATUS_SET,
                 this.id, DibsObject.getId(agent), status);
-            if (doCommit) {
-                this.service.getDb().commit();
-                this.service.getDb().setAutoCommit(true);
-            }
+            this.service.endTransaction();
         } catch (SQLException e) {
             throw new IOError(e);
         }
@@ -199,12 +195,15 @@ public class Application extends DibsObject {
         // ordnet eine Information der Bewerbung (bzw. den entsprechenden Bewertungen) zu
         Map<String, Object> filter = new HashMap<String, Object>();
         filter.put("required_information_type_id", information.getType().getId());
+
+        this.service.beginTransaction();
         for (Evaluation evaluation : this.getEvaluations(filter, null)) {
             evaluation.assignInformation(information);
         }
 
         // TODO will be replaced by update method / (pseudo) event
-        this.setStatus(STATUS_VALID, false, null);
+        this.setStatus(STATUS_VALID, null);
+        this.service.endTransaction();
     }
 
     void userInformationCreated(User user, Information information) {
