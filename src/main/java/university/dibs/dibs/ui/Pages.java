@@ -1,23 +1,36 @@
 /*
  * dibs
- * Copyright (C) 2015 Humboldt-Universität zu Berlin
- * 
- * This program is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software Foundation,
- * either version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with this
- * program.  If not, see <http://www.gnu.org/licenses/>
+ * Copyright (C) 2015  Humboldt-Universität zu Berlin
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.  If
+ * not, see <http://www.gnu.org/licenses/>.
  */
 
 package university.dibs.dibs.ui;
 
 import static org.apache.commons.collections4.MapUtils.toProperties;
 import static university.dibs.dibs.ui.Util.checkContainsRequired;
+
+import university.dibs.dibs.Application;
+import university.dibs.dibs.ApplicationService;
+import university.dibs.dibs.Course;
+import university.dibs.dibs.DibsException;
+import university.dibs.dibs.DibsException.IllegalStateException;
+import university.dibs.dibs.DibsException.ObjectNotFoundException;
+import university.dibs.dibs.Information;
+import university.dibs.dibs.Session;
+import university.dibs.dibs.User;
+
+import org.glassfish.jersey.server.CloseableService;
+import org.glassfish.jersey.server.mvc.Viewable;
 
 import java.io.Closeable;
 import java.io.IOError;
@@ -53,19 +66,6 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.ws.WebServiceException;
 
-import org.glassfish.jersey.server.CloseableService;
-import org.glassfish.jersey.server.mvc.Viewable;
-
-import university.dibs.dibs.Application;
-import university.dibs.dibs.ApplicationService;
-import university.dibs.dibs.Course;
-import university.dibs.dibs.DibsException;
-import university.dibs.dibs.DibsException.IllegalStateException;
-import university.dibs.dibs.DibsException.ObjectNotFoundException;
-import university.dibs.dibs.Information;
-import university.dibs.dibs.Session;
-import university.dibs.dibs.User;
-
 // TODO put private "overloaded" methods directly after their public counterparts
 /**
  * @author Sven Pfaller
@@ -78,7 +78,7 @@ public class Pages implements Closeable {
     private ApplicationService service;
     private User user;
     private Session session;
-    private HashMap<String, Object> model;
+    private Map<String, Object> model;
 
     public Pages(@Context Configuration config, @Context CloseableService closeables,
             @Context UriInfo urlInfo, @CookieParam("session") Cookie sessionCookie) {
@@ -140,7 +140,7 @@ public class Pages implements Closeable {
             return Response.seeOther(UriBuilder.fromUri("/login/").build()).build();
         }
 
-        this.model.put("applications", user.getApplications());
+        this.model.put("applications", this.user.getApplications());
         return Response.ok().entity(new Viewable("/index.ftl", this.model)).build();
     }
 
@@ -238,26 +238,26 @@ public class Pages implements Closeable {
     @Path("users/{id}/create-information")
     public Viewable createInformation(@PathParam("id") String id, @QueryParam("type")
             String typeId) {
-        Information.Type type = service.getInformationTypes().get(typeId);
+        Information.Type type = this.service.getInformationTypes().get(typeId);
         if (type == null) {
             throw new NotFoundException();
         }
-        return createInformation(id, type.getId(), null, null);
+        return this.createInformation(id, type.getId(), null, null);
     }
 
     private Viewable createInformation(String userId, String typeId,
             MultivaluedMap<String, String> form, IllegalArgumentException formError) {
-        model.put("type", typeId);
-        model.put("form", form);
-        model.put("formError", formError);
-        return new Viewable(String.format("/user-create-information-%s.ftl", typeId), model);
+        this.model.put("type", typeId);
+        this.model.put("form", form);
+        this.model.put("formError", formError);
+        return new Viewable(String.format("/user-create-information-%s.ftl", typeId), this.model);
     }
 
     @POST
     @Path("users/{id}/create-information")
     public Response createInformation(@PathParam("id") String id, @QueryParam("type")
             String typeId, MultivaluedMap<String, String> form) {
-        Information.Type type = service.getInformationTypes().get(typeId);
+        Information.Type type = this.service.getInformationTypes().get(typeId);
         if (type == null) {
             throw new NotFoundException();
         }
@@ -273,13 +273,13 @@ public class Pages implements Closeable {
 
             Map<String, Object> args = new HashMap<>();
             args.put("grade", grade);
-            Information information = user.createInformation(type.getId(), args, user);
+            Information information = this.user.createInformation(type.getId(), args, this.user);
 
             URI url = UriBuilder.fromUri("information/{id}/").build(information.getId());
 
             return Response.seeOther(url).build();
         } catch (IllegalArgumentException e) {
-            return Response.status(400).entity(createInformation(id, type.getId(), form, e))
+            return Response.status(400).entity(this.createInformation(id, type.getId(), form, e))
                 .build();
         }
     }
@@ -302,7 +302,7 @@ public class Pages implements Closeable {
 
             boolean connected = this.user.connectToDosv(form.getFirst("dosv-bid"),
                 form.getFirst("dosv-ban"), this.user);
-            if (connected == false) {
+            if (!connected) {
                 throw new IllegalArgumentException("dosv_bid_dosv_ban_bad");
             }
 
@@ -351,12 +351,12 @@ public class Pages implements Closeable {
     @GET
     @Path("information/{id}/")
     public Viewable information(@PathParam("id") String id) {
-        Information information = service.getInformation(id);
+        Information information = this.service.getInformation(id);
 
-        model.put("information", information);
+        this.model.put("information", information);
 
         // TODO introduce conditional for different Information.Types
-        return new Viewable("/information-qualification.ftl", model);
+        return new Viewable("/information-qualification.ftl", this.model);
     }
 
     /* Application */
@@ -371,13 +371,13 @@ public class Pages implements Closeable {
 
         List<Information.Type> requiredInformationTypes = new ArrayList<>();
         // TODO replace hardcoded list with backend method
-        requiredInformationTypes.add(service.getInformationTypes().get("qualification"));
+        requiredInformationTypes.add(this.service.getInformationTypes().get("qualification"));
 
         Map<String, Information> requiredInformationMap = new HashMap<>();
         for (Information.Type type : requiredInformationTypes) {
             Information information = null;
             try {
-                information = user.getInformationByType(type.getId());
+                information = this.user.getInformationByType(type.getId());
             } catch (DibsException.ObjectNotFoundException e) {
                 // do nothing
             }
@@ -396,7 +396,7 @@ public class Pages implements Closeable {
         URI url = null;
         Application application = null;
         try {
-            application = service.getApplication(id);
+            application = this.service.getApplication(id);
             application.accept();
         } catch (IllegalStateException e) {
             // TODO
@@ -456,21 +456,21 @@ public class Pages implements Closeable {
 
         } catch (IllegalStateException e) {
             switch (e.getCode()) {
-            case "course_not_published":
-                // handled by 404 after redirect
-                url = UriBuilder.fromUri("/courses/{id}").build(id);
-                break;
-            case "user_not_connected":
-                url = UriBuilder
-                    .fromUri("/users/{id}/connect-to-dosv?course-id={course-id}")
-                    .build(this.user.getId(), id);
-                break;
-            case "course_in_admission":
-                url = UriBuilder.fromUri("/courses/{id}?error=course_in_admission").build(id);
-                break;
-            default:
-                // unreachable
-                throw new RuntimeException(e);
+                case "course_not_published":
+                    // handled by 404 after redirect
+                    url = UriBuilder.fromUri("/courses/{id}").build(id);
+                    break;
+                case "user_not_connected":
+                    url = UriBuilder
+                        .fromUri("/users/{id}/connect-to-dosv?course-id={course-id}")
+                        .build(this.user.getId(), id);
+                    break;
+                case "course_in_admission":
+                    url = UriBuilder.fromUri("/courses/{id}?error=course_in_admission").build(id);
+                    break;
+                default:
+                    // unreachable
+                    throw new RuntimeException(e);
             }
         }
 
@@ -540,7 +540,7 @@ public class Pages implements Closeable {
             }
 
             Course course = this.service.createCourse(form.getFirst("name"), capacity,
-                form.containsKey("dosv"), user);
+                form.containsKey("dosv"), this.user);
             // NOTE the first prototype does not feature a frontend for AllocationRule and
             // Quota creation.
             course.createAllocationRule(this.user)
