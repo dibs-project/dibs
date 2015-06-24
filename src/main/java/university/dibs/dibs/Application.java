@@ -195,12 +195,15 @@ public class Application extends DibsObject {
         // ordnet eine Information der Bewerbung (bzw. den entsprechenden Bewertungen) zu
         Map<String, Object> filter = new HashMap<String, Object>();
         filter.put("required_information_type_id", information.getType().getId());
+
+        this.service.beginTransaction();
         for (Evaluation evaluation : this.getEvaluations(filter, null)) {
             evaluation.assignInformation(information);
         }
 
         // TODO will be replaced by update method / (pseudo) event
         this.setStatus(STATUS_VALID, null);
+        this.service.endTransaction();
     }
 
     void userInformationCreated(User user, Information information) {

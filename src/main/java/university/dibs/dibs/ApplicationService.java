@@ -105,7 +105,7 @@ public class ApplicationService {
     private Journal journal;
     private Map<String, Information.Type> informationTypes;
     private Map<String, Criterion> criteria;
-    private Integer transactionLevel;
+    private int transactionLevel;
     private QueryRunner queryRunner;
     private DosvSync dosvSync;
 
@@ -603,6 +603,43 @@ public class ApplicationService {
         return criteria;
     }
 
+    /**
+     * Begins a database transaction. Has to be used in conjunction with {@link #endTransaction}.
+     */
+    public void beginTransaction() {
+        if (this.transactionLevel == -1) {
+            try {
+                this.db.setAutoCommit(false);
+            } catch (SQLException e) {
+                throw new IOError(e);
+            }
+        }
+        this.transactionLevel++;
+    }
+
+    /**
+     * Ends a database transaction and commits if it is the root transaction.
+     * Has to be used in conjunction with {@link #beginTransaction}.
+     *
+     * @throws IllegalStateException if no transaction is open
+     *     (code: <code>transaction_not_open</code>).
+     */
+    public void endTransaction() {
+        if (this.transactionLevel == -1) {
+            throw new IllegalStateException("transaction_not_open");
+        }
+
+        this.transactionLevel--;
+        if (this.transactionLevel == -1) {
+            try {
+                this.db.commit();
+                this.db.setAutoCommit(true);
+            } catch (SQLException e) {
+                throw new IOError(e);
+            }
+        }
+    }
+
     /* ---- Properties ---- */
 
     /**
@@ -625,45 +662,6 @@ public class ApplicationService {
             return new Settings(args);
         } catch (SQLException e) {
             throw new IOError(e);
-        }
-    }
-
-    /**
-     * Begins a database transaction. Has to be used in conjunction with {@link #endTransaction}.
-     */
-    public void beginTransaction() {
-        if (this.transactionLevel == -1) {
-            try {
-                // TODO record inital commit mode as soon as autocommit is not required by setup
-                // anymore
-                this.db.setAutoCommit(false);
-            } catch (SQLException e) {
-                throw new IOError(e);
-            }
-        }
-        this.transactionLevel++;
-    }
-
-    /**
-     * Ends a database transaction and commits if it is the root transaction.
-     * Has to be used in conjunction with {@link #beginTransaction}.
-     *
-     * @throws IllegalStateException when the outmost nested transaction is already closed
-     *     (code: <code>"transaction_not_open"</code>).
-     */
-    public void endTransaction() {
-        if (this.transactionLevel == -1) {
-            throw new IllegalStateException("transaction_not_open");
-        }
-
-        this.transactionLevel--;
-        if (this.transactionLevel == -1) {
-            try {
-                this.db.commit();
-                this.db.setAutoCommit(true);
-            } catch (SQLException e) {
-                throw new IOError(e);
-            }
         }
     }
 

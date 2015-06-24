@@ -77,10 +77,12 @@ public class User extends DibsObject {
         }
         Information information = type.create(args, this, agent);
 
+        this.service.beginTransaction();
         // Pseudo-Ereignis auslösen
         for (Application application : this.getApplications()) {
             application.userInformationCreated(this, information);
         }
+        this.service.endTransaction();
 
         return information;
     }

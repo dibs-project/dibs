@@ -24,51 +24,54 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOError;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class ApplicationServiceTransactionTest extends DibsTest {
+    private Connection db2;
+    private QueryRunner queryRunner;
+
     @Before
     public void before() throws SQLException {
-        new QueryRunner().update(db, "DROP TABLE IF EXISTS _tmp; CREATE TABLE _tmp (value VARCHAR(256))");
-        new QueryRunner().update(db, "INSERT INTO _tmp (value) VALUES (NULL)");
+        this.queryRunner = new QueryRunner();
+        this.queryRunner.update(this.db, "DROP TABLE IF EXISTS _tmp");
+        this.queryRunner.update(this.db, "CREATE TABLE _tmp (value VARCHAR(256))");
+        this.queryRunner.update(this.db, "INSERT INTO _tmp (value) VALUES (NULL)");
+
+        this.db2 = DriverManager.getConnection(this.config.getProperty("db_url"),
+            this.config.getProperty("db_user"),
+            this.config.getProperty("db_password"));
     }
 
     @Test
-    public final void testTransactionIllegalState() {
+    public void testEndTransactionBeginMissing() {
         this.exception.expect(DibsException.IllegalStateException.class);
 
-        this.service.beginTransaction();
-        this.service.endTransaction();
         this.service.endTransaction();
     }
 
     @Test
-    public final void testTransactionNested() {
+    public void testNestedTransaction() throws SQLException {
         this.service.beginTransaction();
-        this.setValue("a");
 
         this.service.beginTransaction();
-        this.setValue("b");
+        this.queryRunner.update(this.db, "UPDATE _tmp SET value = ?", "x");
         this.service.endTransaction();
 
-        this.setValue("c");
+        assertEquals("x", this.getValue(this.db));
+        assertEquals(null, this.getValue(this.db2));
+
         this.service.endTransaction();
 
-        assertEquals("c", this.getValue());
+        assertEquals("x", this.getValue(this.db));
+        assertEquals("x", this.getValue(this.db2));
     }
 
-    private void setValue(String value) {
+    private String getValue(Connection db) {
         try {
-            new QueryRunner().update(db, "UPDATE _tmp SET value = ?", value);
-        } catch (SQLException e) {
-            throw new IOError(e);
-        }
-    }
-
-    private String getValue() {
-        try {
-            return new QueryRunner().query(db, "SELECT * FROM _tmp",
-                new ScalarHandler<String>("value"));
+            return this.queryRunner.query(db, "SELECT * FROM _tmp", new ScalarHandler<String>(
+                "value"));
         } catch (SQLException e) {
             throw new IOError(e);
         }
