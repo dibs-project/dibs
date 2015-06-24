@@ -5,6 +5,6 @@
     <suppress files="^(?!.*/DibsTest.java$).*(Test|IT)\.java$" checks="JavadocType"/>
     <!-- Checkstyle does not find the package-info in the src/-path and we cannot duplicate it in
     the test/-path, so we switch the check off for tests. -->
-    <suppress files="^.*(Test|IT)\.java$" checks="JavadocPackage"/>
-    <suppress files="^.*/Pages.java$" checks="JavadocMethod"/>
+    <suppress files="(Test|IT)\.java$" checks="JavadocPackage"/>
+    <suppress files="Pages.java$" checks="JavadocMethod"/>
 </suppressions>
