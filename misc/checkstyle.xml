@@ -101,6 +101,9 @@
         <property name="checkFormat" value="$1"/>
         <property name="influenceFormat" value="1"/>
     </module>
+    <module name="SuppressionFilter">
+        <property name="file" value="misc/suppressions.xml"/>
+    </module>
     <module name="RegexpSingleline">
         <!-- Long import statements, URLs and strings are okay -->
         <property name="format" value="^(?!import|.*(://|'.*'|&quot;.*&quot;)).{101}"/>
@@ -117,9 +120,6 @@
     <module name="Header">
         <property name="headerFile" value="misc/header.txt"/>
         <property name="fileExtensions" value="java"/>
-    </module>
-    <module name="SuppressionFilter">
-        <property name="file" value="misc/suppressions.xml"/>
     </module>
 
     <module name="TreeWalker">
