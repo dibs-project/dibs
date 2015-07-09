@@ -135,7 +135,10 @@ public class ApplicationService {
 
         this.transactionLevel = -1;
         this.queryRunner = new QueryRunner();
-        this.dosvSync = new DosvSync(this);
+        if ("true".equals(config.getProperty("dosv_sync_enabled"))) {
+            this.dosvSync = new DosvSync(this);
+        }
+
     }
 
     /**
@@ -695,7 +698,7 @@ public class ApplicationService {
     }
 
     /**
-     * DoSV-Synchronisationsklasse.
+     * DoSV synchronisation class. Is <code>null</code> if not enabled.
      */
     public DosvSync getDosvSync() {
         return this.dosvSync;

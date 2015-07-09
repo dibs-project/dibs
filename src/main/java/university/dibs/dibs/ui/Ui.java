@@ -99,6 +99,7 @@ public class Ui extends ResourceConfig {
         }
 
         logger.info("setting up storage…");
+        final Properties config = toProperties(Ui.this.getProperties());
         try {
             ApplicationService.setupStorage(db);
             logger.info("storage set up");
@@ -113,13 +114,16 @@ public class Ui extends ResourceConfig {
         }
 
         /* Set up timer task for DoSV synchronisation */
+        final ApplicationService service = new ApplicationService(db, config);
+        if (service.getDosvSync() == null) {
+            return;
+        }
         Long interval =
             Long.parseLong((String) this.getProperty("dosv_sync_interval")) * 1000 * 60;
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 Connection db;
-                Properties config = toProperties(Ui.this.getProperties());
                 try {
                     db = DriverManager.getConnection(config.getProperty("db_url"),
                         config.getProperty("db_user"),
@@ -128,7 +132,7 @@ public class Ui extends ResourceConfig {
                     throw new IOError(e);
                 }
 
-                new ApplicationService(db, config).getDosvSync().synchronize();
+                service.getDosvSync().synchronize();
                 logger.info("DoSV synchronized");
 
                 try {
