@@ -87,10 +87,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.XMLConstants;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -110,7 +110,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Dispatch;
-import javax.xml.ws.Response;
 import javax.xml.ws.Service;
 import javax.xml.ws.Service.Mode;
 import javax.xml.ws.handler.Handler;
@@ -191,19 +190,8 @@ public class DosvSync {
         APPLICATION_STATUS_MAPPING_FROM_DOSV.put(ZURUECKGEZOGEN, STATUS_WITHDRAWN);
 
         NAMESPACES = new HashMap<>();
-        // NOTE namespace prefixes follow the conventions used by Hochschulstart.de
-        NAMESPACES.put("ns1", "http://CommonV1_0.HochschulSchnittstelle.hochschulstart.de");
-        NAMESPACES.put("ns2", "http://ServiceverfahrenV1_0.HochschulSchnittstelle.hochschulstart.de");
-        NAMESPACES.put("ns3", "http://BenutzerServiceParamV1_0.HochschulSchnittstelle.hochschulstart.de");
-        NAMESPACES.put("ns4", "http://BenutzerV1_0.HochschulSchnittstelle.hochschulstart.de");
-        NAMESPACES.put("ns5", "http://BewerberauswahlServiceParamV1_0.HochschulSchnittstelle.hochschulstart.de");
-        NAMESPACES.put("ns6", "http://BewerberauswahlV1_0.HochschulSchnittstelle.hochschulstart.de");
-        NAMESPACES.put("ns7", "http://StudiengaengeV1_0.HochschulSchnittstelle.hochschulstart.de");
-        NAMESPACES.put("ns8", "http://BewerbungenServiceParamV1_0.HochschulSchnittstelle.hochschulstart.de");
-        NAMESPACES.put("ns9", "http://BewerbungenV1_0.HochschulSchnittstelle.hochschulstart.de");
-        NAMESPACES.put("ns10", "http://UnterstuetzungsServiceParamV1_0.HochschulSchnittstelle.hochschulstart.de");
-        NAMESPACES.put("ns11", "http://UnterstuetzungV1_0.HochschulSchnittstelle.hochschulstart.de");
-        NAMESPACES.put("ns12", "http://StudiengaengeServiceParamV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("common", "http://CommonV1_0.HochschulSchnittstelle.hochschulstart.de");
+        NAMESPACES.put("benutzer", "http://BenutzerServiceParamV1_0.HochschulSchnittstelle.hochschulstart.de");
     }
 
     /**
@@ -223,25 +211,23 @@ public class DosvSync {
         // webservice configuration
         // TODO throw ConfigurationException when configuration is missing
         Properties config = service.getConfig();
-        String[] wsEndpointSuffixes =
-            {"studiengaengeService", "benutzerService", "bewerbungenService",
-                "bewerberauswahlService"};
+        List<String> wsEndpointSuffixes = Arrays.asList("studiengaengeService", "benutzerService",
+            "bewerbungenService", "bewerberauswahlService");
         this.dispatches = new HashMap<>();
         QName wsName = new QName("dosv");
         Service webService = Service.create(wsName);
         String wsUrl = config.getProperty("dosv_url");
-        webService.addPort(wsName, SOAPBinding.SOAP11HTTP_BINDING, wsUrl);
-        for (int n = 0; n < 4; n++) {
+        for (String wsEndpointSuffix : wsEndpointSuffixes) {
+            QName portName = new QName(wsEndpointSuffix);
+            webService.addPort(portName, SOAPBinding.SOAP11HTTP_BINDING, wsUrl + wsEndpointSuffix);
             Dispatch<SOAPMessage> dispatch =
-                webService.createDispatch(wsName, SOAPMessage.class, Mode.MESSAGE);
+                webService.createDispatch(portName, SOAPMessage.class, Mode.MESSAGE);
             Map<String, Object> requestContext = dispatch.getRequestContext();
-            requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, wsUrl
-                + wsEndpointSuffixes[n]);
             requestContext.put(BindingProvider.USERNAME_PROPERTY,
                 config.getProperty("dosv_user"));
             requestContext.put(BindingProvider.PASSWORD_PROPERTY,
                 config.getProperty("dosv_password"));
-            this.dispatches.put(wsEndpointSuffixes[n], dispatch);
+            this.dispatches.put(wsEndpointSuffix, dispatch);
             if (logger.isLoggable(Level.FINE)) {
                 @SuppressWarnings("rawtypes")
                 // Typecast to Handler<SOAPMessageContext> not possible
@@ -264,36 +250,30 @@ public class DosvSync {
             request = MessageFactory.newInstance().createMessage();
             SOAPBody body = request.getSOAPBody();
             SOAPBodyElement requestElement =
-                body.addBodyElement(new QName(NAMESPACES.get("ns3"),
-                    "abrufenStammdatenDurchHSRequest", "ns3"));
-            requestElement.addNamespaceDeclaration("ns1", NAMESPACES.get("ns1"));
-            requestElement.addChildElement("version", "ns1").setValue(WS_VERSION);
-            requestElement.addChildElement("bewerberId", "ns3").setValue(dosvBid);
-            requestElement.addChildElement("BAN", "ns3").setValue(dosvBan);
+                body.addBodyElement(new QName(NAMESPACES.get("benutzer"),
+                    "abrufenStammdatenDurchHSRequest", "benutzer"));
+            requestElement.addNamespaceDeclaration(XMLConstants.DEFAULT_NS_PREFIX,
+                NAMESPACES.get("common"));
+            requestElement.addChildElement("version").setValue(WS_VERSION);
+            requestElement.addChildElement("bewerberId", "benutzer").setValue(dosvBid);
+            requestElement.addChildElement("BAN", "benutzer").setValue(dosvBan);
         } catch (SOAPException e) {
             // unreachable
             throw new RuntimeException(e);
         }
 
-        Response<SOAPMessage> response =
-            this.dispatches.get("benutzerService").invokeAsync(request);
-
         try {
-            response.get();
-        } catch (ExecutionException e) {
-            SOAPFaultException soapFaultException = (SOAPFaultException) e.getCause();
-            String faultType =
-                soapFaultException.getFault().getDetail().getFirstChild().getAttributes()
-                    .getNamedItem("xsi:type").getNodeValue();
+            this.dispatches.get("benutzerService").invoke(request);
+        } catch (SOAPFaultException e) {
+            String faultType = e.getFault().getDetail().getFirstChild().getAttributes()
+                .getNamedItem("xsi:type").getNodeValue();
             if (faultType.equals("UnbekannterBenutzerFehler")
                 || faultType.equals("AutorisierungsFehler")) {
                 return false;
             } else {
-                throw new RuntimeException(e);
+                // unreachable
+                throw e;
             }
-        } catch (InterruptedException e) {
-            // unreachable
-            throw new RuntimeException(e);
         }
 
         return true;
@@ -694,6 +674,6 @@ public class DosvSync {
         }
 
         @Override
-        public void close(MessageContext arg0) { }
+        public void close(MessageContext context) { }
     }
 }

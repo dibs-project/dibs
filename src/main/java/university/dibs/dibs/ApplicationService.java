@@ -698,7 +698,7 @@ public class ApplicationService {
     }
 
     /**
-     * DoSV synchronisation class. Is <code>null</code> when unconfigured.
+     * DoSV synchronisation class. Is <code>null</code> if not enabled.
      */
     public DosvSync getDosvSync() {
         return this.dosvSync;
