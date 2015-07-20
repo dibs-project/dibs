@@ -114,8 +114,7 @@ public class Ui extends ResourceConfig {
         }
 
         /* Set up timer task for DoSV synchronisation */
-        final ApplicationService service = new ApplicationService(db, config);
-        if (service.getDosvSync() == null) {
+        if (config.getProperty("dosv_sync_enabled").equals("false")) {
             return;
         }
         Long interval =
@@ -132,7 +131,7 @@ public class Ui extends ResourceConfig {
                     throw new IOError(e);
                 }
 
-                service.getDosvSync().synchronize();
+                new ApplicationService(db, config).getDosvSync().synchronize();
                 logger.info("DoSV synchronized");
 
                 try {
