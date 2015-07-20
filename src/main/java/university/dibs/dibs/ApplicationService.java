@@ -19,6 +19,16 @@ package university.dibs.dibs;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.commons.collections4.CollectionUtils.filter;
 
+import university.dibs.dibs.DibsException.IllegalStateException;
+import university.dibs.dibs.DibsException.ObjectNotFoundException;
+import university.dibs.dibs.dosv.DosvSync;
+
+import org.apache.commons.collections4.Predicate;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,16 +46,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
-
-import org.apache.commons.collections4.Predicate;
-import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.MapHandler;
-import org.apache.commons.dbutils.handlers.MapListHandler;
-import org.apache.commons.lang3.StringUtils;
-
-import university.dibs.dibs.DibsException.IllegalStateException;
-import university.dibs.dibs.DibsException.ObjectNotFoundException;
-import university.dibs.dibs.dosv.DosvSync;
 
 /**
  * Repräsentiert den Bewerbungsdienst, bzw.&nbsp;den Bewerbungsprozess.
