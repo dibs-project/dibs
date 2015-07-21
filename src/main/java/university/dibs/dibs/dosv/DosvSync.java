@@ -282,6 +282,27 @@ public class DosvSync {
     /**
      * Synchronises Courses, Applications and Ranks.
      *
+     * <p>
+     * Condition for pushing an object to the DoSV: <code>dosvSynctime <= object.timeStamp</code>,
+     * where <code>dosvSynctime</code> is the time of the last successful synchronization of dibs
+     * with the DoSV and <code>timeStamp</code> is the time of the object's last modification. For
+     * inclusion in the sync, the course associated with an application or a ranking has to have the
+     * <code>dosv</code>-flag set. The prerequisite for pushing a ranking to the DoSV is that the
+     * course is in the admission phase.
+     *
+     * <p>
+     * Synopsis:
+     * <ul>
+     * <li>push courses</li>
+     * <li>for n attempts do</li>
+     * <ul>
+     * <li>pull applications</li>
+     * <li>push applications, return false on version conflict</li>
+     * </ul>
+     * <li>fail sync if every push returned false</li>
+     * <li>push rankings</li>
+     * </ul>
+     *
      * @throws
      */
     public void synchronize() {
