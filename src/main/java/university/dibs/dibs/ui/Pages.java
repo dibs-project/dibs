@@ -223,7 +223,8 @@ public class Pages implements Closeable {
         } catch (IllegalArgumentException e) {
             return Response.status(400).entity(this.register(form, e, null)).build();
         } catch (IllegalStateException e) {
-            return Response.seeOther(UriBuilder.fromUri("/register?error={error}").build(e.getCode())).build();
+            return Response.seeOther(UriBuilder.fromUri("/register?error={error}")
+                .build(e.getCode())).build();
         }
     }
 
@@ -231,8 +232,9 @@ public class Pages implements Closeable {
             IllegalArgumentException formError, @QueryParam("error") String error) {
         this.model.put("form", form);
         this.model.put("formError", formError);
-        if (error != null && error.equals("email_duplicated")) {
-            this.model.put("notification", "Die Email-Adresse wurde bereits registriert. Bitte wenden Sie andere Email-Adresse an.");
+        if (error != null && error.equals("email_already_existing")) {
+            this.model.put("notification",
+                "Es existiert bereits ein Account mit dieser E-Mail-Adresse.");
         }
         return new Viewable("/register.ftl", this.model);
     }
