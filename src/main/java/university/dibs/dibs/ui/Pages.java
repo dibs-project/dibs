@@ -204,8 +204,8 @@ public class Pages implements Closeable {
 
     @GET
     @Path("register")
-    public Viewable register() {
-        return this.register(null, null);
+    public Viewable register(@QueryParam("error") String error) {
+        return this.register(null, null, error);
     }
 
     @POST
@@ -221,14 +221,21 @@ public class Pages implements Closeable {
             return Response.seeOther(UriBuilder.fromUri("/login/").build()).build();
 
         } catch (IllegalArgumentException e) {
-            return Response.status(400).entity(this.register(form, e)).build();
+            return Response.status(400).entity(this.register(form, e, null)).build();
+        } catch (IllegalStateException e) {
+            return Response.seeOther(UriBuilder.fromUri("/register?error={error}")
+                .build(e.getCode())).build();
         }
     }
 
     private Viewable register(MultivaluedMap<String, String> form,
-            IllegalArgumentException formError) {
+            IllegalArgumentException formError, @QueryParam("error") String error) {
         this.model.put("form", form);
         this.model.put("formError", formError);
+        if (error != null && error.equals("email_already_existing")) {
+            this.model.put("notification",
+                "Es existiert bereits ein Account mit dieser E-Mail-Adresse.");
+        }
         return new Viewable("/register.ftl", this.model);
     }
 

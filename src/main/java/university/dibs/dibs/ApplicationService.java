@@ -149,6 +149,8 @@ public class ApplicationService {
      * @param credential credential
      * @param role role
      * @return new user
+     * @throws DibsException.IllegalStateException if the email was already registered
+     *     (<code>email_already_existing</code>).
      */
     public User createUser(String name, String email, String credential, String role) {
         if (name.isEmpty()) {
@@ -170,8 +172,11 @@ public class ApplicationService {
             this.endTransaction();
             return this.getUser(id);
         } catch (SQLException e) {
-            // TODO: check for duplicate email
-            throw new IOError(e);
+            if (e.getSQLState().equals("23505")) {
+                throw new IllegalStateException("email_already_existing");
+            } else {
+                throw new IOError(e);
+            }
         }
     }
 

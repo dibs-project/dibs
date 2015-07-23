@@ -55,6 +55,13 @@ public class ApplicationServiceTest extends DibsTest {
     }
 
     @Test
+    public void testCreateUserEmailAlreadyExisting() {
+        this.exception.expect(IllegalStateException.class);
+        this.service.createUser("Jen", "barber@example.org", "barber@example.org:secr3t",
+            User.ROLE_APPLICANT);
+    }
+
+    @Test
     public void testGetUser() {
         assertEquals(this.user, this.service.getUser(this.user.getId()));
     }
