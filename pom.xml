@@ -132,8 +132,8 @@
                         contributing.md, README.md, doc/*.md, license.txt, misc/header.txt,
                         src/main/resources/dibs.sql, src/main/webapp/templates/*.ftl,
                         src/main/webapp/static/*.css, check.sh, dibs.sh, pom.xml,
-                        src/main/webapp/WEB-INF/web.xml, test.default.properties,
-                        src/main/resources/default.properties,
+                        src/main/webapp/WEB-INF/web.xml, misc/suppressions.xml,
+                        test.default.properties, src/main/resources/default.properties,
                         <!-- TODO: replace with **/*.java -->
                         **/ApplicationService.java, **/User.java, **/AllocationRule.java,
                         **/Application.java, **/Course.java, **/Qualification.java, **/Quota.java,
