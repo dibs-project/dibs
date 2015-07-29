@@ -129,7 +129,10 @@
                 <configuration>
                     <sourceDirectory>${project.basedir}</sourceDirectory>
                     <includes>
-                        **/*.md, **/*.txt, **/*.sql, **/*.ftl, **/*.css, **/*.sh, **/*.xml,
+                        contributing.md, README.md, doc/*.md, license.txt, misc/header.txt,
+                        src/main/resources/dibs.sql, src/main/webapp/templates/*.ftl,
+                        src/main/webapp/static/*.css, check.sh, dibs.sh, pom.xml,
+                        src/main/webapp/WEB-INF/web.xml, misc/suppressions.xml,
                         test.default.properties, src/main/resources/default.properties,
                         <!-- TODO: replace with **/*.java -->
                         **/ApplicationService.java, **/User.java, **/AllocationRule.java,
@@ -138,7 +141,6 @@
                         **/DibsTest.java, **/Ui.java, **/Pages.java, **/DosvSyncIT.java,
                         **/ApplicationServiceTransactionTest.java
                     </includes>
-                    <excludes>target/**, misc/checkstyle.xml</excludes>
                     <configLocation>misc/checkstyle.xml</configLocation>
                 </configuration>
             </plugin>
