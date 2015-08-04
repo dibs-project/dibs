@@ -92,10 +92,11 @@ public class Course extends DibsObject {
      * @param agent executing user
      * @return created Application
      *
-     * @throws DibsException.IllegalStateException
-     *  if the course is not published (<code>course_not_published</code>),
-     *      the course is in admission (<code>course_in_admission</code>)
-     *      or the user is not connected to the DoSV (<code>user_not_connected</code>)
+     * @throws DibsException.IllegalStateException if the course is not published
+     *     (<code>course_not_published</code>), the course is in admission
+     *     (<code>course_in_admission</code>), the user is not connected to the DoSV
+     *     (<code>user_not_connected</code>) or the user has already applied for the course
+     *     (<code>user_already_applied</code>).
      */
     public Application apply(String userId, User agent) {
         if (!this.service.getCourse(id).isPublished()) {
@@ -143,7 +144,11 @@ public class Course extends DibsObject {
             return application;
 
         } catch (SQLException e) {
-            throw new IOError(e);
+            if (e.getSQLState().equals("23505")) {
+                throw new IllegalStateException("user_already_applied");
+            } else {
+                throw new IOError(e);
+            }
         }
     }
 
