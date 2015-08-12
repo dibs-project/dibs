@@ -245,9 +245,7 @@ public class Pages implements Closeable {
     @GET
     @Path("users/{id}")
     public Viewable user(@PathParam("id") String id) {
-        User user = this.service.getUser(id);
-        this.model.put("email", user.getEmail());
-        this.model.put("name", user.getName());
+        this.model.put("userObject", this.service.getUser(id));
         return new Viewable("/user.ftl", this.model);
     }
 
