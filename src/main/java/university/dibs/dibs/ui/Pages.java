@@ -240,6 +240,16 @@ public class Pages implements Closeable {
         return new Viewable("/register.ftl", this.model);
     }
 
+    /* User */
+
+    @GET
+    @Path("users/{id}")
+    public Viewable user(@PathParam("id") String id) {
+        this.model.put("userObject", this.service.getUser(id));
+        return new Viewable("/user.ftl", this.model);
+    }
+
+
     /* User.createInformation */
 
     @GET
