@@ -56,7 +56,7 @@ Course.apply                |                                 |
 
 Algorithms:
 
-The algorithm used to synchronize dibs with the DoSV is described in dosv-sync.md.
+The algorithm used to synchronize dibs with Hochschulstart.de is described in `dosv-sync.md`.
 
 ## Backend
 

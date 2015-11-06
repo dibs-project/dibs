@@ -283,12 +283,12 @@ public class DosvSync {
      * Synchronises Courses, Applications and Ranks.
      *
      * <p>
-     * Condition for pushing an object to the DoSV: <code>dosvSynctime <= object.timeStamp</code>,
-     * where <code>dosvSynctime</code> is the time of the last successful synchronization of dibs
-     * with the DoSV and <code>timeStamp</code> is the time of the object's last modification. For
-     * inclusion in the sync, the course associated with an application or a ranking has to have the
-     * <code>dosv</code>-flag set. The prerequisite for pushing a ranking to the DoSV is that the
-     * course is in the admission phase.
+     * Condition for pushing an object to Hochschulstart.de: <code>dosvSynctime <= object.timeStamp
+     * </code>, where <code>dosvSynctime</code> is the time of the last successful synchronization
+     * of dibs with Hochschulstart.de and <code>timeStamp</code> is the time of the object's last
+     * modification. For inclusion in the sync, the course associated with an application or a
+     * ranking has to have the <code>dosv</code>-flag set. The prerequisite for pushing a ranking to
+     * Hochschulstart.de is that the course is in the admission phase.
      *
      * <p>
      * Synopsis:
