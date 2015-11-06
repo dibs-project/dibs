@@ -54,6 +54,10 @@ Course.apply                |                                 |
                             | Course.startAdmission           | Course.generateRankings
 ```
 
+Algorithms:
+
+The algorithm used to synchronize dibs with Hochschulstart.de is described in `dosv-sync.md`.
+
 ## Backend
 
 The dibs backend is located in the `university.dibs.dibs`. DoSV-specific backend classes
