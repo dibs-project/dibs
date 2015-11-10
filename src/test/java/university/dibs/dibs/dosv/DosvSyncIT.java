@@ -81,12 +81,21 @@ public class DosvSyncIT extends DibsTest {
     public void testSynchronizeApplications() {
         this.user.connectToDosv(this.bid, this.ban, null);
         String applicationId = this.dosvCourse.apply(this.user.getId(), null).getId();
-        this.service.getDosvSync().synchronize();
+        this.service.getDosvSync().synchronize(); // push application
         assertEquals(-1, this.service.getApplication(applicationId).getDosvVersion());
-        this.service.getDosvSync().synchronize();
-        assertEquals(0, this.service.getApplication(applicationId).getDosvVersion());
-        this.service.getDosvSync().synchronize();
-        assertEquals(0, this.service.getApplication(applicationId).getDosvVersion());
+        this.service.getDosvSync().synchronize(); // pull application
+        int versionDosvInitial = this.service.getApplication(applicationId).getDosvVersion();
+        assertTrue(versionDosvInitial > -1);
+        this.service.getDosvSync().synchronize(); // pull application again
+        int versionDosvNew = this.service.getApplication(applicationId).getDosvVersion();
+        assertEquals(versionDosvInitial, versionDosvNew);
+
+        Map<String, Object> args = new HashMap<>();
+        args.put("grade", 4.0);
+        this.user.createInformation("qualification", args, null);
+        this.service.getDosvSync().synchronize(); // push application
+        this.service.getDosvSync().synchronize(); // pull application
+        assertTrue(versionDosvNew < this.service.getApplication(applicationId).getDosvVersion());
     }
 
     @Test

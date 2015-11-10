@@ -95,5 +95,5 @@ CREATE TABLE session (
     end_time TIMESTAMP NOT NULL
 );
 
-INSERT INTO settings (id, semester, storage_version, dosv_sync_time) VALUES ('settings', '2014WS', '0',
-    CURRENT_TIMESTAMP);
+INSERT INTO settings (id, semester, storage_version, dosv_sync_time) VALUES ('settings', '2015WS',
+    '0', CURRENT_TIMESTAMP);
