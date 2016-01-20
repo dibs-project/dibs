@@ -37,9 +37,6 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
@@ -150,14 +147,7 @@ public class Ui extends ResourceConfig {
      * @throws Exception TODO
      */
     public static void main(String[] args) throws Exception {
-        // Logging konfigurieren
-        // Format: "$Zeit $Level $Logger: $Nachricht[\n$Fehler]\n"
-        System.setProperty("java.util.logging.SimpleFormatter.format",
-            "%1$tT %4$s %3$s: %5$s%6$s%n");
-        LogManager.getLogManager().reset();
-        ConsoleHandler handler = new ConsoleHandler();
-        handler.setLevel(Level.FINEST);
-        Logger.getLogger("").addHandler(handler);
+        university.dibs.dibs.Util.configureLogger(false);
 
         // Jetty-Logging konfigurieren
         System.setProperty("org.eclipse.jetty.util.log.class",

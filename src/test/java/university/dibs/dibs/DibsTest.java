@@ -101,6 +101,7 @@ public abstract class DibsTest {
             assumeNoException(e);
         }
         ApplicationService.setupStorage(this.db, true);
+        Util.configureLogger(this.config.getProperty("debug").equals("true"));
 
         this.service = new ApplicationService(this.db, this.config);
         this.admin = this.service.getUsers().get(0);

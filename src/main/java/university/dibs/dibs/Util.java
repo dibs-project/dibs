@@ -16,6 +16,10 @@
 
 package university.dibs.dibs;
 
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * Collection of utilities.
@@ -34,5 +38,27 @@ public class Util {
      */
     public static <T extends Comparable<T>> boolean isInRange(T value, T min, T max) {
         return value.compareTo(min) >= 0 && value.compareTo(max) <= 0;
+    }
+
+    /**
+     * Configures Java Logging for dibs and sets the output format and verbosity.
+     *
+     * @param debugOn If <code>true</code>, will set the log level to FINE for dibs in order to
+     * display debug messages
+     */
+    public static void configureLogger(boolean debugOn) {
+        // Format: "$Time $Level $Logger: $Message[\n$Error]\n"
+        System.setProperty("java.util.logging.SimpleFormatter.format",
+            "%1$tT %4$s %3$s: %5$s%6$s%n");
+        LogManager.getLogManager().reset();
+        ConsoleHandler handler = new ConsoleHandler();
+        // handler lets all messages through; output verbosity is regulated via Logger.setLevel()
+        handler.setLevel(Level.FINEST);
+        Logger.getLogger("").addHandler(handler);
+
+        if (debugOn) {
+            // limit debug logging to dibs
+            Logger.getLogger("university.dibs.dibs").setLevel(Level.FINE);
+        }
     }
 }
