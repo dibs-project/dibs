@@ -92,6 +92,7 @@ public abstract class DibsTest {
         } catch (FileNotFoundException e) {
             // ignorieren
         }
+        Util.configureLogging(this.config.getProperty("debug").equals("true"));
 
         try {
             this.db = DriverManager.getConnection(this.config.getProperty("db_url"),

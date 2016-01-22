@@ -13,6 +13,8 @@ To test the connection to DoSV we use integration tests.
 In order to run those, you need to create an account on the test portal of Hochschulstart
 and set BID and BAN in `test.properties`.
 
+Debug messages are logged on level FINE. To display them set the `debug` property to `true`.
+
 ## Testing dibs
 
 To run all tests:
