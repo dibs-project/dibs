@@ -41,12 +41,12 @@ public class Util {
     }
 
     /**
-     * Configures Java Logging for dibs and sets the output format and verbosity.
+     * Configures Java logging for dibs and sets the output format and verbosity.
      *
-     * @param debugOn If <code>true</code>, will set the log level to FINE for dibs in order to
-     * display debug messages
+     * @param debug If <code>true</code>, will set the log level to <code>FINE</code> for dibs in
+     * order to display debug messages
      */
-    public static void configureLogger(boolean debugOn) {
+    public static void configureLogging(boolean debug) {
         // Format: "$Time $Level $Logger: $Message[\n$Error]\n"
         System.setProperty("java.util.logging.SimpleFormatter.format",
             "%1$tT %4$s %3$s: %5$s%6$s%n");
@@ -56,7 +56,7 @@ public class Util {
         handler.setLevel(Level.FINEST);
         Logger.getLogger("").addHandler(handler);
 
-        if (debugOn) {
+        if (debug) {
             // limit debug logging to dibs
             Logger.getLogger("university.dibs.dibs").setLevel(Level.FINE);
         }

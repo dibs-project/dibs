@@ -147,7 +147,7 @@ public class Ui extends ResourceConfig {
      * @throws Exception TODO
      */
     public static void main(String[] args) throws Exception {
-        university.dibs.dibs.Util.configureLogger(false);
+        university.dibs.dibs.Util.configureLogging(false);
 
         // Jetty-Logging konfigurieren
         System.setProperty("org.eclipse.jetty.util.log.class",

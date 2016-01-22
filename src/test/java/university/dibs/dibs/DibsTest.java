@@ -92,6 +92,7 @@ public abstract class DibsTest {
         } catch (FileNotFoundException e) {
             // ignorieren
         }
+        Util.configureLogging(this.config.getProperty("debug").equals("true"));
 
         try {
             this.db = DriverManager.getConnection(this.config.getProperty("db_url"),
@@ -101,7 +102,6 @@ public abstract class DibsTest {
             assumeNoException(e);
         }
         ApplicationService.setupStorage(this.db, true);
-        Util.configureLogger(this.config.getProperty("debug").equals("true"));
 
         this.service = new ApplicationService(this.db, this.config);
         this.admin = this.service.getUsers().get(0);
